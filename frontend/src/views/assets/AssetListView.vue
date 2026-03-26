@@ -1,0 +1,184 @@
+<template>
+  <div class="max-w-6xl mx-auto">
+    <!-- Page header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">
+          {{ authStore.isManager ? t('asset.title') : t('asset.titleMy') }}
+        </h1>
+        <p class="text-sm text-gray-500 mt-1">{{ t('common.total') }} {{ filteredAssets.length }} {{ t('common.items') }}</p>
+      </div>
+      <RouterLink v-if="authStore.isManager" to="/assets/new" class="btn-primary">
+        <span></span> {{ t('asset.addAsset') }}
+      </RouterLink>
+    </div>
+
+    <!-- Filters -->
+    <div class="card p-4 mb-5">
+      <div class="flex flex-wrap gap-3 items-center">
+        <!-- Search -->
+        <div class="flex-1 min-w-56">
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></span>
+            <input
+              v-model="searchQuery"
+              type="text"
+              class="form-input pl-9"
+              :placeholder="t('asset.searchPlaceholder')"
+            />
+          </div>
+        </div>
+        <!-- Category filter -->
+        <select v-model="filterCategory" class="form-select w-36">
+          <option value="">{{ t('asset.filterCategory') }}: {{ t('common.all') }}</option>
+          <option value="computer">{{ t('asset.categories.computer') }}</option>
+          <option value="phone">{{ t('asset.categories.phone') }}</option>
+          <option value="tablet">{{ t('asset.categories.tablet') }}</option>
+        </select>
+        <!-- Status filter -->
+        <select v-model="filterStatus" class="form-select w-36">
+          <option value="">{{ t('asset.filterStatus') }}: {{ t('common.all') }}</option>
+          <option value="normal">{{ t('asset.statuses.normal') }}</option>
+          <option value="under_repair">{{ t('asset.statuses.under_repair') }}</option>
+        </select>
+        <!-- Reset -->
+        <button
+          v-if="searchQuery || filterCategory || filterStatus"
+          class="btn-secondary btn-sm"
+          @click="resetFilters"
+        >{{ t('common.reset') }}</button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card overflow-hidden">
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>{{ t('asset.assetNumber') }}</th>
+              <th>{{ t('asset.name') }}</th>
+              <th>{{ t('asset.category') }}</th>
+              <th>{{ t('asset.model') }}</th>
+              <th>{{ t('asset.location') }}</th>
+              <th v-if="authStore.isManager">{{ t('asset.owner') }}</th>
+              <th>{{ t('asset.department') }}</th>
+              <th>{{ t('asset.status') }}</th>
+              <th class="text-center">{{ t('common.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="pagedAssets.length === 0">
+              <td :colspan="authStore.isManager ? 9 : 8" class="text-center py-12 text-gray-400">
+                <div class="flex flex-col items-center gap-2">
+                  <span class="text-4xl"></span>
+                  <span>{{ t('common.noData') }}</span>
+                </div>
+              </td>
+            </tr>
+            <tr v-for="asset in pagedAssets" :key="asset.id">
+              <td class="font-mono text-xs text-indigo-600 font-medium">{{ asset.assetNumber }}</td>
+              <td class="font-medium text-gray-900">{{ asset.name }}</td>
+              <td>
+                <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium">
+                  {{ categoryIcon(asset.category) }} {{ t(`asset.categories.${asset.category}`) }}
+                </span>
+              </td>
+              <td class="text-gray-600">{{ asset.model }}</td>
+              <td class="text-gray-600 text-xs">{{ asset.location }}</td>
+              <td v-if="authStore.isManager" class="text-gray-600">{{ getUserName(asset.ownerId) }}</td>
+              <td class="text-gray-600 text-xs">{{ asset.department }}</td>
+              <td><StatusBadge :status="asset.status" type="asset" /></td>
+              <td class="text-center">
+                <div class="flex items-center justify-center gap-2">
+                  <RouterLink
+                    :to="`/assets/${asset.id}`"
+                    class="btn-secondary btn-sm"
+                  >{{ t('common.detail') }}</RouterLink>
+                  <RouterLink
+                    v-if="authStore.isManager"
+                    :to="`/assets/${asset.id}/edit`"
+                    class="btn-primary btn-sm"
+                  >{{ t('common.edit') }}</RouterLink>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="px-4 pb-4">
+        <Pagination
+          :total="filteredAssets.length"
+          :page-size="pageSize"
+          :current-page="currentPage"
+          @page-change="currentPage = $event"
+        />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import { useAssetsStore } from '@/stores/assets'
+import { mockUsers } from '@/stores/auth'
+import { useI18n } from '@/composables/useI18n'
+import StatusBadge from '@/components/common/StatusBadge.vue'
+import Pagination from '@/components/common/Pagination.vue'
+
+const authStore = useAuthStore()
+const assetsStore = useAssetsStore()
+const { t } = useI18n()
+
+const searchQuery = ref('')
+const filterCategory = ref('')
+const filterStatus = ref('')
+const currentPage = ref(1)
+const pageSize = 10
+
+const sourceAssets = computed(() =>
+  authStore.isManager
+    ? assetsStore.getAll()
+    : assetsStore.getByOwnerId(authStore.currentUser?.id)
+)
+
+const filteredAssets = computed(() => {
+  let list = sourceAssets.value
+  const q = searchQuery.value.trim().toLowerCase()
+  if (q) {
+    list = list.filter((a) =>
+      a.name.toLowerCase().includes(q) ||
+      a.assetNumber.toLowerCase().includes(q) ||
+      a.model.toLowerCase().includes(q) ||
+      a.location.toLowerCase().includes(q) ||
+      (getUserName(a.ownerId)).toLowerCase().includes(q)
+    )
+  }
+  if (filterCategory.value) list = list.filter((a) => a.category === filterCategory.value)
+  if (filterStatus.value)   list = list.filter((a) => a.status === filterStatus.value)
+  return list
+})
+
+const pagedAssets = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return filteredAssets.value.slice(start, start + pageSize)
+})
+
+function resetFilters() {
+  searchQuery.value = ''
+  filterCategory.value = ''
+  filterStatus.value = ''
+  currentPage.value = 1
+}
+
+function getUserName(ownerId) {
+  return mockUsers.find((u) => u.id === ownerId)?.name || ownerId
+}
+
+function categoryIcon(cat) {
+  return { computer: '', phone: '', tablet: '' }[cat] || ''
+}
+</script>
