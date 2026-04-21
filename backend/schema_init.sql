@@ -1,9 +1,17 @@
 use AssetDB;
+CREATE TABLE department 
+(
+    idDepartment INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100)
+);
+
 CREATE TABLE User(
     idUser INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(45),
     email VARCHAR(45) UNIQUE,
-    role ENUM('user', 'admin')
+    idDepartment INT NOT NULL,
+    role ENUM('user', 'admin'),
+    FOREIGN KEY (idDepartment) REFERENCES department(idDepartment)
 );
 CREATE TABLE Equipment(
     idEquipment INT PRIMARY KEY AUTO_INCREMENT,
@@ -12,6 +20,7 @@ CREATE TABLE Equipment(
     category VARCHAR(100),
     model VARCHAR(100),
     spec VARCHAR(255),
+    serial_number varchar(100),
     supplier VARCHAR(100),
     purchase_date DATE,
     purchase_price DECIMAL(10,2),
