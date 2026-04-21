@@ -17,7 +17,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="sm:col-span-2">
             <label class="form-label">{{ t('asset.name') }} <span class="text-red-500">*</span></label>
-            <input v-model="form.name" type="text" class="form-input" required :placeholder="`例：MacBook Pro 16"`" />
+            <input v-model="form.name" type="text" class="form-input" required :placeholder="`例：MacBook Pro 16`" />
           </div>
           <div>
             <label class="form-label">{{ t('asset.category') }} <span class="text-red-500">*</span></label>
