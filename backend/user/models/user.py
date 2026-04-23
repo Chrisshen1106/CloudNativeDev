@@ -18,4 +18,4 @@ class UserModel(db.Model):
     idDepartment = db.Column(db.Integer, db.ForeignKey('department.idDepartment'), nullable=False)
     role = db.Column(db.Enum('user', 'admin', name='user_role'), nullable=False)
     
-    department = db.relationship("Department", back_populates="users")
+    department = db.relationship("DepartmentModel", back_populates="users")
