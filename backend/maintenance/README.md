@@ -13,6 +13,14 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 uv sync
 ```
 
+## setup environment variable
+```shell
+cp .env.example .env
+```
+
+Modify the `.env`
+
+
 # To run this service
 
 ## Development mode
