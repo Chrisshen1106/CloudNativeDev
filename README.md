@@ -8,6 +8,7 @@ frontend使用方法_Rapid
 4. npm install
 5. npm run dev
 
+==========
 
 # 先進入asset-service的微服務資料夾
 cd backend\asset-service
