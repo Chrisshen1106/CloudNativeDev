@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from marshmallow import ValidationError
 from controllers.user import user_controller
 
 
@@ -22,3 +23,16 @@ def get_user_by_id(id: int):
         return jsonify({"message": "User not found"}), 404
     except ValueError as e:
         return jsonify({"message": str(e)}), 400
+    
+@user_bp.route('/login', methods=['POST'])
+def login():
+    try:
+        data = request.get_json()
+        user = user_controller.getUserByEmail(data)
+        if user:
+            return jsonify(user), 200
+        return jsonify({"message": "User not found"}), 404
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 400
+    except Exception as e:
+        return jsonify({"message": f"Internal server error: {str(e)}"}), 500
