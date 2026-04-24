@@ -15,7 +15,10 @@ def create_user():
 
 @user_bp.route('/<int:id>', methods=['GET'])
 def get_user_by_id(id: int):
-    user = user_controller.getUserById(id)
-    if user:
-        return jsonify(user), 200
-    return jsonify({"message": "User not found"}), 404
+    try:
+        user = user_controller.getUserById(id)
+        if user:
+            return jsonify(user), 200
+        return jsonify({"message": "User not found"}), 404
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 400

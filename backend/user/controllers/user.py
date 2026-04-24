@@ -2,7 +2,7 @@ from models.database import db
 from models import UserSchema, UserModel
 
 class UserController:
-    def createUser(self, data: dict) -> dict | None:
+    def createUser(self, data: dict) -> dict:
         try:
             schema = UserSchema()
             user_data = schema.load(data)
@@ -11,14 +11,16 @@ class UserController:
             db.session.commit()
             return schema.dump(new_user)
         except Exception as e:
-            print(f"Error creating user: {e}")
-            return None
+            raise ValueError(f"Error creating user: {e}")
     
     def getUserById(self, id: int) -> dict | None:
-        user = UserModel.query.get(id)
-        if user:
-            return UserSchema().dump(user)
-        return None
+        try:
+            user = UserModel.query.get(id)
+            if user:
+                return UserSchema().dump(user)
+            return None
+        except Exception as e:
+            raise ValueError(f"Error getting user by ID: {e}")
     
     def getAllUsers(self) -> list[dict]:
         users = UserModel.query.all()
