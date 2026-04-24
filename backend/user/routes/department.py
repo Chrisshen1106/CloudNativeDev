@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from controlers.department import department_controller
+from controllers.department import department_controller
 
 dept_bp = Blueprint('department', __name__, url_prefix='/department')
 
