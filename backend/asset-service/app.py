@@ -31,7 +31,7 @@ def create_app():
     
     # 註冊 API 路由
     app.register_blueprint(equipment_bp)
-    app.register_blueprint(user_bp)
+    # app.register_blueprint(user_bp)
 
     # 模擬簡單的權限 Middleware (測試用)
     @app.before_request
