@@ -6,7 +6,8 @@ class UserSchema(Schema):
     name = fields.String(required=True)
     email = fields.Email(required=True)
     password = fields.String(required=True, load_only=True)
-    idDepartment = fields.Integer(required=True)
+    idDepartment = fields.Integer(required=True, load_only=True)
+    department = fields.Pluck('DepartmentSchema', 'name', dump_only=True)
     role = fields.String(required=True, validate=validate.OneOf(['user', 'admin']))
     
 

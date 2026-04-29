@@ -26,12 +26,11 @@ class UserController:
         except Exception as e:
             raise ValueError(f"Error getting user by ID: {e}")
     
-    def getUserByEmail(self, data: dict) -> dict | None:
+    def getUserByEmail(self, email: str) -> UserModel | None:
         try:
-            validated_data = self.schema(only=['email']).load(data)
-            user = self.model.query.filter_by(email=validated_data['email']).first()
+            user = self.model.query.filter_by(email=email).first()
             if user:
-                return self.schema().dump(user)
+                return user
             return None
         except Exception as e:
             raise ValueError(f"Error getting user by email: {e}")
