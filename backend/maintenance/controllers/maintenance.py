@@ -3,14 +3,24 @@ from models import MaintenanceModel, MaintenanceSchema
 
 class MaintenanceController:
     
-    def createMaintenance(self, data: dict) -> dict:
+    def __init__(self):
+        self.schema = MaintenanceSchema
+        self.model = MaintenanceModel
+
+    def getAllForms(self) -> list[dict]:
         try:
-            schema = MaintenanceSchema()
-            maintenance_data = schema.load(data)
-            new_maintenance = MaintenanceModel(**maintenance_data)
-            db.session.add(new_maintenance)
+            schema = MaintenanceSchema(many=True)
+            maintenances = MaintenanceModel.query.all()
+            return schema.dump(maintenances)
+        except Exception as e:
+            raise e
+
+    def createForm(self, data: dict) -> MaintenanceModel:
+        try:
+            new_form = MaintenanceModel(**data)
+            db.session.add(new_form)
             db.session.commit()
-            return schema.dump(new_maintenance)
+            return new_form
         except Exception as e:
             db.session.rollback()
             raise e
