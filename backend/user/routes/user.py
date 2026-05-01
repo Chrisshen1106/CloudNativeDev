@@ -35,7 +35,7 @@ def login():
         user = user_controller.getUserByEmail(validated_data['email'])
         if user and verify_login(validated_data['password'], user.password):
             response = user_controller.schema().dump(user)
-            response['token'] = create_access_token(identity=str(user.idUser))
+            response['token'] = create_access_token(identity=str(user.idUser), additional_claims={"role": user.role})
             return jsonify(response), 200
         return jsonify({"message": "email or password is incorrect"}), 404
     except ValueError as e:
