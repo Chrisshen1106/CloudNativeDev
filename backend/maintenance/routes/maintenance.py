@@ -1,14 +1,28 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from controllers.maintenance import maintenance_controller
 
-maintenance_bp = Blueprint('maintenance', __name__, url_prefix='/maintenance')
+maintenance_bp = Blueprint('maintenance', __name__, url_prefix='/api')
 
-@maintenance_bp.route('/create', methods=['POST'])
-def create_maintenance():
+@maintenance_bp.route('/forms', methods=['GET'])
+def get_all_forms():
     try:
+        result = maintenance_controller.getAllForms()
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+# 送出維修申請
+@maintenance_bp.route('/form', methods=['POST'])
+@jwt_required()
+def create_form():
+    try:
+        current_user = get_jwt_identity()
         data = request.get_json()
-        result = maintenance_controller.createMaintenance(data)
-        return jsonify(result), 201
+        valided_data = maintenance_controller.schema(only=['idEquipment', 'issue_description']).load(data)
+        form = maintenance_controller.createForm({**valided_data, 'applicant_id': current_user})
+        response = maintenance_controller.schema(only=['idForm', 'status']).dump(form)
+        return jsonify(response), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 400
     
