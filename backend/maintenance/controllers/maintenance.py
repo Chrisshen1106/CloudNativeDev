@@ -25,13 +25,12 @@ class MaintenanceController:
             db.session.rollback()
             raise e
         
-    def getMaintenanceById(self, id: int) -> dict:
+    def getFormById(self, id: int) -> MaintenanceModel | None:
         try:
-            schema = MaintenanceSchema()
-            maintenance = MaintenanceModel.query.get(id)
-            if maintenance:
-                return schema.dump(maintenance)
-            raise ValueError("Maintenance record not found")
+            form = self.model.query.get(id)
+            if form:
+                return form
+            return None
         except Exception as e:
             raise e
         

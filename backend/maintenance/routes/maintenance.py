@@ -10,7 +10,7 @@ def get_all_forms():
         result = maintenance_controller.getAllForms()
         return jsonify(result), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({'error': str(e)}), 500
 
 # 送出維修申請
 @maintenance_bp.route('/form', methods=['POST'])
@@ -24,20 +24,25 @@ def create_form():
         response = maintenance_controller.schema(only=['idForm', 'status']).dump(form)
         return jsonify(response), 201
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
-    
-@maintenance_bp.route('/<int:id>', methods=['GET'])
-def get_maintenance_by_id(id):
+        return jsonify({'error': str(e)}), 500
+
+# 取得維修申請單詳情
+@maintenance_bp.route('/form/<int:id>', methods=['GET'])
+@jwt_required()
+def get_form_by_id(id: int):
     try:
-        result = maintenance_controller.getMaintenanceById(id)
-        return jsonify(result), 200
+        form = maintenance_controller.getFormById(id)
+        if form:
+            response = maintenance_controller.schema().dump(form)
+            return jsonify(response), 200
+        return jsonify({'error': 'Form not found'}), 404
     except Exception as e:
-        return jsonify({'error': str(e)}), 404
-    
+        return jsonify({'error': str(e)}), 500
+
 @maintenance_bp.route('/user/<int:user_id>', methods=['GET'])
 def get_all_maintenance_by_user_id(user_id):
     try:
         result = maintenance_controller.getAllMaintenanceByUserId(user_id)
         return jsonify(result), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 404
+        return jsonify({'error': str(e)}), 500
