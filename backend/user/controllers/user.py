@@ -38,5 +38,16 @@ class UserController:
     def getAllUsers(self) -> list[dict]:
         users = self.model.query.all()
         return self.schema(many=True).dump(users)
-        
+    
+    def deleteUserById(self, id: int) -> bool:
+        try:
+            user = self.model.query.get(id)
+            if user:
+                db.session.delete(user)
+                db.session.commit()
+                return True
+            return False
+        except Exception as e:
+            raise ValueError(f"Error deleting user by ID: {e}")
+
 user_controller = UserController()

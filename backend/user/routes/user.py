@@ -35,9 +35,22 @@ def login():
         user = user_controller.getUserByEmail(validated_data['email'])
         if user and verify_login(validated_data['password'], user.password):
             response = user_controller.schema().dump(user)
-            response['token'] = create_access_token(identity=user.idUser)
+            response['token'] = create_access_token(identity=str(user.idUser))
             return jsonify(response), 200
         return jsonify({"message": "email or password is incorrect"}), 404
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 400
+    except Exception as e:
+        return jsonify({"message": f"Internal server error: {str(e)}"}), 500
+    
+@user_bp.route('/delete', methods=['DELETE'])
+@jwt_required()
+def delete_user_by_id():
+    try:
+        current_user_id = get_jwt_identity()
+        if user_controller.deleteUserById(current_user_id):
+            return jsonify({"message": "User deleted successfully"}), 200
+        return jsonify({"message": "User not found"}), 404
     except ValueError as e:
         return jsonify({"message": str(e)}), 400
     except Exception as e:
