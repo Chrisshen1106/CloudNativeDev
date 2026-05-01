@@ -1,15 +1,11 @@
 import os
-import pathlib
 from flask import Flask
 from dotenv import load_dotenv
 from routes import register_blueprints
 from flask_jwt_extended import JWTManager
 from models.database import db
 
-current_file_path = pathlib.Path(__file__).resolve()
-dotenv_path = current_file_path.parent.parent.parent / '.env'
-
-load_dotenv(dotenv_path)
+load_dotenv()
 jwt = JWTManager()
 
 def create_app():
