@@ -44,19 +44,14 @@ class MaintenanceController:
         except Exception as e:
             raise e
         
-    def updateMaintenanceStatusById(self, id: int, data: dict) -> dict:
-        try:
-            schema = MaintenanceSchema()
-            update_data = schema.load(data, partial=True)
-            
-            if 'status' not in update_data:
-                raise ValueError("Status field is required for update")
-            maintenance = MaintenanceModel.query.get(id)
-            if maintenance:
-                maintenance.status = update_data['status']
+    def updateFormStatusById(self, id: int, status: str) -> MaintenanceModel:
+        try:            
+            form = self.model.query.get(id)
+            if form:
+                form.status = status
                 db.session.commit()
-                return schema.dump(maintenance)
-            raise ValueError("Maintenance record not found")
+                return form
+            raise ValueError("Form not found")
         except Exception as e:
             db.session.rollback()
             raise e
