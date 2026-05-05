@@ -55,5 +55,18 @@ class MaintenanceController:
         except Exception as e:
             db.session.rollback()
             raise e
+        
+    def updateFormById(self, id: int, data: dict) -> MaintenanceModel:
+        try:
+            form = self.model.query.get(id)
+            if form:
+                for key, value in data.items():
+                    setattr(form, key, value)
+                db.session.commit()
+                return form
+            raise ValueError("Form not found")
+        except Exception as e:
+            db.session.rollback()
+            raise e
 
 maintenance_controller = MaintenanceController()

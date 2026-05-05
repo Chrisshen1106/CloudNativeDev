@@ -64,3 +64,22 @@ def review_form(form_id: int):
         return jsonify({'error': str(e)}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+# 維修完成
+@maintenance_bp.route('/complete/<int:form_id>', methods=['PUT'])
+@jwt_required()
+def complete_maintenance(form_id: int):
+    try:
+        claims = get_jwt()
+        if claims.get('role') != 'admin':
+            return jsonify({'error': 'Admin privileges required'}), 403
+        
+        data = maintenance_controller.schema(only=['repair_description', 'repair_solution', 'repair_cost', 'repair_vendor', 'repair_person']).load(request.get_json())        
+        updated_form = maintenance_controller.updateFormById(form_id, data)
+        updated_form = maintenance_controller.updateFormStatusById(form_id, 'completed')
+        response = maintenance_controller.schema(only=['idForm', 'status']).dump(updated_form)
+        return jsonify(response), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
