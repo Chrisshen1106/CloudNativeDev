@@ -1,3 +1,4 @@
+from datetime import datetime
 from marshmallow import Schema, fields, validate
 from models.database import db
 
@@ -34,7 +35,7 @@ class MaintenanceModel(db.Model):
         default='pending',
         nullable=False,
     )
-    requestDate = db.Column(db.DateTime, nullable=False)
+    requestDate = db.Column(db.DateTime, nullable=False, default=datetime.now())
     reviewNote = db.Column(db.String(255), nullable=True)
     review_result = db.Column(db.Enum('approved', 'rejected', name='review_result_enum'))
     repair_start_date = db.Column(db.DateTime)
