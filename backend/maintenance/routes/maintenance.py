@@ -48,7 +48,7 @@ def get_all_maintenance_by_user_id(user_id):
         return jsonify({'error': str(e)}), 500
     
 # 審核維修申請
-@maintenance_bp.route('/form_manager/<int:form_id>/review' , methods=['PUT'])
+@maintenance_bp.route('/review/<int:form_id>' , methods=['PUT'])
 @jwt_required()
 def review_form(form_id: int):
     try:
