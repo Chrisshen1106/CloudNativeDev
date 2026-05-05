@@ -7,11 +7,15 @@ class MaintenanceController:
         self.schema = MaintenanceSchema
         self.model = MaintenanceModel
 
-    def getAllForms(self) -> list[dict]:
+    def getAllForms(self) -> list[MaintenanceModel]:
         try:
-            schema = MaintenanceSchema(many=True)
-            maintenances = MaintenanceModel.query.all()
-            return schema.dump(maintenances)
+            return MaintenanceModel.query.all()
+        except Exception as e:
+            raise e
+
+    def getAllFormsByUserId(self, user_id: int) -> list[MaintenanceModel]:
+        try:
+            return MaintenanceModel.query.filter_by(applicant_id=user_id).all()
         except Exception as e:
             raise e
 
@@ -31,16 +35,6 @@ class MaintenanceController:
             if form:
                 return form
             return None
-        except Exception as e:
-            raise e
-        
-    def getAllMaintenanceByUserId(self, user_id: int) -> list:
-        try:
-            schema = MaintenanceSchema(many=True)
-            maintenances = MaintenanceModel.query.filter_by(applicant_id=user_id).all()
-            if maintenances:
-                return schema.dump(maintenances)
-            raise ValueError(f"No maintenance records found for the specified user id: {user_id}")
         except Exception as e:
             raise e
         

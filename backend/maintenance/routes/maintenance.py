@@ -4,11 +4,29 @@ from controllers.maintenance import maintenance_controller
 
 maintenance_bp = Blueprint('maintenance', __name__, url_prefix='/api')
 
+# 取得維修申請單列表
 @maintenance_bp.route('/forms', methods=['GET'])
+@jwt_required()
 def get_all_forms():
     try:
-        result = maintenance_controller.getAllForms()
-        return jsonify(result), 200
+        user_id = get_jwt_identity()
+        claims = get_jwt()
+        role = claims.get('role')
+        
+        match role:
+            case 'admin':
+                forms = maintenance_controller.getAllForms()
+            case 'user':
+                forms = maintenance_controller.getAllFormsByUserId(user_id)
+            case _:
+                return jsonify({'error': 'Invalid role'}), 403
+
+        data = maintenance_controller.schema(many=True).dump(forms)
+        response = {
+            'total': len(data),
+            'items': data
+        }
+        return jsonify(response), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -36,14 +54,6 @@ def get_form_by_id(id: int):
             response = maintenance_controller.schema().dump(form)
             return jsonify(response), 200
         return jsonify({'error': 'Form not found'}), 404
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@maintenance_bp.route('/user/<int:user_id>', methods=['GET'])
-def get_all_maintenance_by_user_id(user_id):
-    try:
-        result = maintenance_controller.getAllMaintenanceByUserId(user_id)
-        return jsonify(result), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
