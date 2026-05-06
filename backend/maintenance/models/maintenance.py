@@ -1,3 +1,4 @@
+from datetime import datetime
 from marshmallow import Schema, fields, validate
 from models.database import db
 
@@ -9,6 +10,8 @@ class MaintenanceSchema(Schema):
 
     issue_description = fields.Str(required=False, validate=validate.Length(max=255))
     status = fields.Str(required=False, validate=validate.OneOf(['pending', 'approved', 'rejected', 'repairing', 'completed']))
+    requestDate = fields.DateTime(dump_only=True)
+    reviewNote = fields.Str(required=False, validate=validate.Length(max=255))
     review_result = fields.Str(required=False, validate=validate.OneOf(['approved', 'rejected']))
     repair_start_date = fields.DateTime(required=False)
     repair_end_date = fields.DateTime(required=False)
@@ -32,6 +35,8 @@ class MaintenanceModel(db.Model):
         default='pending',
         nullable=False,
     )
+    requestDate = db.Column(db.DateTime, nullable=False, default=datetime.now())
+    reviewNote = db.Column(db.String(255), nullable=True)
     review_result = db.Column(db.Enum('approved', 'rejected', name='review_result_enum'))
     repair_start_date = db.Column(db.DateTime)
     repair_end_date = db.Column(db.DateTime)

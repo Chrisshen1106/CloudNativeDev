@@ -4,11 +4,29 @@ from controllers.maintenance import maintenance_controller
 
 maintenance_bp = Blueprint('maintenance', __name__, url_prefix='/api')
 
+# 取得維修申請單列表
 @maintenance_bp.route('/forms', methods=['GET'])
+@jwt_required()
 def get_all_forms():
     try:
-        result = maintenance_controller.getAllForms()
-        return jsonify(result), 200
+        user_id = get_jwt_identity()
+        claims = get_jwt()
+        role = claims.get('role')
+        
+        match role:
+            case 'admin':
+                forms = maintenance_controller.getAllForms()
+            case 'user':
+                forms = maintenance_controller.getAllFormsByUserId(user_id)
+            case _:
+                return jsonify({'error': 'Invalid role'}), 403
+
+        data = maintenance_controller.schema(many=True).dump(forms)
+        response = {
+            'total': len(data),
+            'items': data
+        }
+        return jsonify(response), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -38,17 +56,9 @@ def get_form_by_id(id: int):
         return jsonify({'error': 'Form not found'}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-@maintenance_bp.route('/user/<int:user_id>', methods=['GET'])
-def get_all_maintenance_by_user_id(user_id):
-    try:
-        result = maintenance_controller.getAllMaintenanceByUserId(user_id)
-        return jsonify(result), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
     
 # 審核維修申請
-@maintenance_bp.route('/form_manager/<int:form_id>/review' , methods=['PUT'])
+@maintenance_bp.route('/review/<int:form_id>' , methods=['PUT'])
 @jwt_required()
 def review_form(form_id: int):
     try:
@@ -58,6 +68,25 @@ def review_form(form_id: int):
         data = request.get_json()
         valided_data = maintenance_controller.schema(only=['status']).load(data)
         updated_form = maintenance_controller.updateFormStatusById(form_id, valided_data['status'])
+        response = maintenance_controller.schema(only=['idForm', 'status']).dump(updated_form)
+        return jsonify(response), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+# 維修完成
+@maintenance_bp.route('/complete/<int:form_id>', methods=['PUT'])
+@jwt_required()
+def complete_maintenance(form_id: int):
+    try:
+        claims = get_jwt()
+        if claims.get('role') != 'admin':
+            return jsonify({'error': 'Admin privileges required'}), 403
+        
+        data = maintenance_controller.schema(only=['repair_description', 'repair_solution', 'repair_cost', 'repair_vendor', 'repair_person']).load(request.get_json())        
+        updated_form = maintenance_controller.updateFormById(form_id, data)
+        updated_form = maintenance_controller.updateFormStatusById(form_id, 'completed')
         response = maintenance_controller.schema(only=['idForm', 'status']).dump(updated_form)
         return jsonify(response), 200
     except ValueError as e:
