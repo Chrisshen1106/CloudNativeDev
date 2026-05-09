@@ -1,3 +1,4 @@
+<!-- 修正：移除檔案開頭多餘 HTML，<template> 必須為第一行 -->
 <template>
   <div class="min-h-screen bg-gradient-to-br from-indigo-950 via-indigo-900 to-indigo-800 flex items-center justify-center p-4">
     <!-- Background decoration -->
@@ -33,56 +34,19 @@
 
       <!-- Card -->
       <div class="bg-white rounded-2xl shadow-2xl p-8">
-        <!-- Demo hint -->
-        <div class="flex items-start gap-2 bg-blue-50 rounded-lg px-3 py-2.5 mb-6 text-xs text-blue-700">
-          <span class="shrink-0 mt-0.5"></span>
-          <span>{{ t('login.demoHint') }}</span>
-        </div>
 
-        <!-- User select -->
+        <!-- Email -->
+        <!-- Email -->
         <div class="mb-4">
-          <label class="form-label">{{ t('login.selectUser') }}</label>
-          <select v-model="selectedUserId" class="form-select">
-            <option value="">{{ t('login.selectUserPlaceholder') }}</option>
-            <option v-for="user in mockUsers" :key="user.id" :value="user.id">
-              {{ user.name }} — {{ user.department }}
-            </option>
-          </select>
+          <label class="form-label">電子信箱</label>
+          <input
+            v-model="email"
+            type="email"
+            class="form-input"
+            placeholder="請輸入電子信箱"
+            @keyup.enter="handleLogin"
+          />
         </div>
-
-        <!-- Selected user info -->
-        <Transition name="fade-down">
-          <div v-if="selectedUser" class="mb-4 bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">
-                {{ selectedUser.name.charAt(0) }}
-              </div>
-              <div>
-                <p class="font-semibold text-gray-900 text-sm">{{ selectedUser.name }}</p>
-                <p class="text-xs text-gray-500">{{ selectedUser.email }}</p>
-              </div>
-            </div>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-              <div class="bg-white rounded-lg px-3 py-2 border border-gray-100">
-                <p class="text-gray-400 mb-0.5">{{ t('login.roleLabel') }}</p>
-                <div class="flex items-center gap-1">
-                  <span
-                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
-                    :class="selectedUser.role === 'manager'
-                      ? 'bg-indigo-100 text-indigo-700'
-                      : 'bg-emerald-100 text-emerald-700'"
-                  >
-                    {{ selectedUser.role === 'manager' ? ' ' + t('login.roleManager') : ' ' + t('login.roleHolder') }}
-                  </span>
-                </div>
-              </div>
-              <div class="bg-white rounded-lg px-3 py-2 border border-gray-100">
-                <p class="text-gray-400 mb-0.5">{{ t('login.deptLabel') }}</p>
-                <p class="font-medium text-gray-700">{{ selectedUser.department }}</p>
-              </div>
-            </div>
-          </div>
-        </Transition>
 
         <!-- Password -->
         <div class="mb-6">
@@ -91,7 +55,7 @@
             v-model="password"
             type="password"
             class="form-input"
-            :placeholder="t('login.passwordPlaceholder')"
+            placeholder="請輸入密碼"
             @keyup.enter="handleLogin"
           />
         </div>
@@ -99,10 +63,18 @@
         <!-- Login button -->
         <button
           class="w-full btn-primary py-3 text-base font-semibold rounded-xl"
-          :disabled="!selectedUserId || !password"
+          :disabled="!email || !password"
           @click="handleLogin"
         >
           {{ t('login.loginButton') }}
+        </button>
+
+        <!-- Register button -->
+        <button
+          class="w-full btn-secondary py-3 text-base font-semibold rounded-xl mt-3"
+          @click="showRegister = true"
+        >
+          {{ t('login.registerButton') || '註冊帳號' }}
         </button>
 
         <!-- Error -->
@@ -111,45 +83,137 @@
         </Transition>
       </div>
 
-      <!-- User list hint -->
-      <div class="mt-6 text-center">
-        <p class="text-indigo-300 text-xs">測試帳號密碼均為 <span class="font-mono bg-white/10 px-1.5 py-0.5 rounded">123456</span></p>
-      </div>
+
+
+      <!-- Register Modal -->
+      <Transition name="fade-down">
+        <div v-if="showRegister" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative">
+            <button class="absolute top-3 right-3 text-gray-400 hover:text-gray-600" @click="showRegister = false">✕</button>
+            <h2 class="text-xl font-bold mb-4">{{ t('login.registerTitle') || '註冊新帳號' }}</h2>
+            <div class="mb-3">
+              <label class="form-label">姓名</label>
+              <input v-model="regName" type="text" class="form-input" placeholder="請輸入姓名" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input v-model="regEmail" type="email" class="form-input" placeholder="請輸入 Email" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">密碼</label>
+              <input v-model="regPassword" type="password" class="form-input" placeholder="請輸入密碼" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">部門</label>
+              <select v-model="regDepartment" class="form-input">
+                <option value="" disabled>請選擇部門</option>
+                <option value="1">研發部</option>
+                <option value="2">人資部</option>
+                <option value="3">財務部</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">角色</label>
+              <select v-model="regRole" class="form-input">
+                <option value="user">一般使用者</option>
+                <option value="admin">管理員</option>
+              </select>
+            </div>
+            <button class="w-full btn-primary py-3 text-base font-semibold rounded-xl mt-2" :disabled="regLoading" @click="handleRegister">
+              {{ regLoading ? '註冊中...' : (t('login.registerButton') || '註冊') }}
+            </button>
+            <Transition name="fade-down">
+              <p v-if="regError" class="mt-3 text-center text-sm text-red-600">{{ regError }}</p>
+            </Transition>
+          </div>
+        </div>
+      </Transition>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { mockUsers } from '@/stores/auth'
 import { useI18n } from '@/composables/useI18n'
 
 const authStore = useAuthStore()
 const router = useRouter()
 const { t } = useI18n()
 
-const selectedUserId = ref('')
+const email = ref('')
 const password = ref('')
 const errorMsg = ref('')
 
-const selectedUser = computed(() =>
-  selectedUserId.value ? mockUsers.find((u) => u.id === selectedUserId.value) : null
-)
+// 註冊相關
+const showRegister = ref(false)
+const regName = ref('')
+const regEmail = ref('')
+const regPassword = ref('')
+const regDepartment = ref('')
+const regRole = ref('user')
+const regError = ref('')
+const regLoading = ref(false)
+// 部門選單固定三個選項
+function openRegister() {
+  showRegister.value = true
+}
 
-function handleLogin() {
+async function handleLogin() {
   errorMsg.value = ''
-  if (!selectedUserId.value) {
-    errorMsg.value = '請選擇使用者'
+  if (!email.value || !password.value) {
+    errorMsg.value = '請輸入帳號與密碼'
     return
   }
-  if (password.value !== '123456') {
-    errorMsg.value = '密碼錯誤，測試密碼為 123456'
-    return
+  const { success, message } = await authStore.login({ email: email.value, password: password.value })
+  if (success) {
+    router.push('/dashboard')
+  } else {
+    errorMsg.value = message || '登入失敗'
   }
-  authStore.login(selectedUserId.value)
-  router.push('/dashboard')
+}
+
+async function handleRegister() {
+  regError.value = ''
+  regLoading.value = true
+  try {
+    if (!regName.value || !regEmail.value || !regPassword.value || !regDepartment.value || !regRole.value) {
+      regError.value = '請填寫所有欄位'
+      regLoading.value = false
+      return
+    }
+    const res = await fetch('/api/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: regName.value,
+        email: regEmail.value,
+        password: regPassword.value,
+        idDepartment: Number(regDepartment.value),
+        role: regRole.value
+      })
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err?.message || '註冊失敗')
+    }
+    // 註冊成功自動填入登入表單
+    const user = await res.json()
+    email.value = regEmail.value
+    password.value = regPassword.value
+    showRegister.value = false
+    regName.value = ''
+    regEmail.value = ''
+    regPassword.value = ''
+    regDepartment.value = ''
+    regRole.value = 'user'
+    regError.value = ''
+    regLoading.value = false
+  } catch (e) {
+    regError.value = e.message
+    regLoading.value = false
+  }
 }
 </script>
 

@@ -1,37 +1,52 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 
-export const mockUsers = [
-  { id: 'U001', name: '王小明', role: 'holder', department: '研發部', email: 'wang@company.com' },
-  { id: 'U002', name: '李美麗', role: 'holder', department: '業務部', email: 'li@company.com' },
-  { id: 'U003', name: '張志偉', role: 'holder', department: '行銷部', email: 'zhang@company.com' },
-  { id: 'U004', name: '陳大衛', role: 'manager', department: '資產管理部', email: 'chen@company.com' },
-  { id: 'U005', name: '黃桂昱', role: 'manager', department: '資產管理部', email: 'huang@company.com' },
-]
+const STORAGE_KEY = 'ams_current_user'
+const TOKEN_KEY = 'ams_token'
 
 export const useAuthStore = defineStore('auth', () => {
   const currentUser = ref(
-    JSON.parse(localStorage.getItem('ams_current_user') || 'null')
+    JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
   )
+  const token = ref(localStorage.getItem(TOKEN_KEY) || '')
 
-  const isLoggedIn = computed(() => currentUser.value !== null)
-  const isManager = computed(() => currentUser.value?.role === 'manager')
-  const isHolder = computed(() => currentUser.value?.role === 'holder')
+  const isLoggedIn = computed(() => !!currentUser.value && !!token.value)
+  const isManager = computed(() => currentUser.value?.role === 'manager' || currentUser.value?.role === 'admin')
+  const isHolder = computed(() => currentUser.value?.role === 'holder' || currentUser.value?.role === 'user')
 
-  function login(userId) {
-    const user = mockUsers.find((u) => u.id === userId)
-    if (user) {
+  async function login({ email, password }) {
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.message || '登入失敗')
+      }
+      const user = await res.json()
+      console.log('JWT token:', user.token) // 新增這一行
       currentUser.value = user
-      localStorage.setItem('ams_current_user', JSON.stringify(user))
-      return true
+      token.value = user.token
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
+      localStorage.setItem(TOKEN_KEY, user.token)
+      return { success: true, user }
+    } catch (e) {
+      currentUser.value = null
+      token.value = ''
+      localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem(TOKEN_KEY)
+      return { success: false, message: e.message }
     }
-    return false
   }
 
   function logout() {
     currentUser.value = null
-    localStorage.removeItem('ams_current_user')
+    token.value = ''
+    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(TOKEN_KEY)
   }
 
-  return { currentUser, isLoggedIn, isManager, isHolder, login, logout }
+  return { currentUser, token, isLoggedIn, isManager, isHolder, login, logout }
 })

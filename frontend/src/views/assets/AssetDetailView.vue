@@ -110,7 +110,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useAssetsStore } from '@/stores/assets'
 import { useRequestsStore } from '@/stores/requests'
-import { mockUsers } from '@/stores/auth'
+// import { mockUsers } from '@/stores/auth'
 import { useI18n } from '@/composables/useI18n'
 import StatusBadge from '@/components/common/StatusBadge.vue'
 
@@ -133,9 +133,9 @@ const isWarrantyExpired = computed(() => {
   return new Date(asset.value.warrantyExpiry) < new Date()
 })
 
-function getUserName(ownerId) {
-  return mockUsers.find((u) => u.id === ownerId)?.name || ownerId
-}
+// function getUserName(ownerId) {
+//   return mockUsers.find((u) => u.id === ownerId)?.name || ownerId
+// }
 
 function categoryIcon(cat) {
   return { computer: '', phone: '', tablet: '' }[cat] || ''

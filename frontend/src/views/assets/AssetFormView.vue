@@ -122,7 +122,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAssetsStore } from '@/stores/assets'
-import { mockUsers } from '@/stores/auth'
+// import { mockUsers } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useI18n } from '@/composables/useI18n'
 
@@ -133,7 +133,7 @@ const notifStore = useNotificationsStore()
 const { t } = useI18n()
 
 const isEdit = computed(() => !!route.params.id)
-const holderUsers = computed(() => mockUsers.filter((u) => u.role === 'holder'))
+// const holderUsers = computed(() => mockUsers.filter((u) => u.role === 'holder'))
 
 const form = ref({
   name: '',

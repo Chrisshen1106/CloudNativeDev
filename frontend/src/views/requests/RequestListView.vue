@@ -105,7 +105,7 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useAssetsStore } from '@/stores/assets'
 import { useRequestsStore } from '@/stores/requests'
-import { mockUsers } from '@/stores/auth'
+// import { mockUsers } from '@/stores/auth'
 import { useI18n } from '@/composables/useI18n'
 import StatusBadge from '@/components/common/StatusBadge.vue'
 import Pagination from '@/components/common/Pagination.vue'
@@ -120,20 +120,41 @@ const filterStatus = ref('')
 const currentPage = ref(1)
 const pageSize = 10
 
-const sourceRequests = computed(() =>
-  authStore.isManager
-    ? requestsStore.getAll()
-    : requestsStore.getByRequesterId(authStore.currentUser?.id)
-)
+
+import { onMounted, watch } from 'vue'
+
+const sourceRequests = ref([])
+const loading = ref(false)
+const error = ref(null)
+
+async function loadRequests() {
+  loading.value = true
+  error.value = null
+  try {
+    if (authStore.isManager) {
+      sourceRequests.value = await requestsStore.fetchAll()
+    } else {
+      sourceRequests.value = await requestsStore.fetchByRequesterId(authStore.currentUser?.id)
+    }
+  } catch (e) {
+    error.value = e.message || '載入失敗'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadRequests)
+// 若登入帳號變動則重新載入
+watch(() => authStore.currentUser?.id, loadRequests)
 
 const filteredRequests = computed(() => {
-  let list = [...sourceRequests.value].sort((a, b) => b.requestDate.localeCompare(a.requestDate))
+  let list = [...sourceRequests.value].sort((a, b) => (b.requestDate || '').localeCompare(a.requestDate || ''))
   const q = searchQuery.value.trim().toLowerCase()
   if (q) {
     list = list.filter((r) =>
-      r.id.toLowerCase().includes(q) ||
-      getAssetName(r.assetId).toLowerCase().includes(q) ||
-      getUserName(r.requesterId).toLowerCase().includes(q)
+      (r.id || '').toLowerCase().includes(q) ||
+      getAssetName(r.assetId || '').toLowerCase().includes(q) ||
+      getUserName(r.requesterId || '').toLowerCase().includes(q)
     )
   }
   if (filterStatus.value) list = list.filter((r) => r.status === filterStatus.value)
@@ -155,7 +176,7 @@ function getAssetName(assetId) {
   return assetsStore.getById(assetId)?.name || assetId
 }
 
-function getUserName(userId) {
-  return mockUsers.find((u) => u.id === userId)?.name || userId
-}
+// function getUserName(userId) {
+//   return mockUsers.find((u) => u.id === userId)?.name || userId
+// }
 </script>

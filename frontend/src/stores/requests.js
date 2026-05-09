@@ -1,6 +1,21 @@
+  async function fetchById(id) {
+    // 只取數字部分
+    const formId = id.replace(/[^\d]/g, '')
+    const res = await fetch(`${API_BASE}/api/form/${formId}`, {
+      headers: {
+        'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
+      },
+    })
+    if (!res.ok) throw new Error('API error')
+    const data = await res.json()
+    return mapApiToRequest(data)
+  }
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { useAssetsStore } from './assets'
+
+// API base url
+const API_BASE = '/maintenance-api'
 
 const STORAGE_KEY = 'ams_requests'
 
@@ -159,16 +174,52 @@ export const useRequestsStore = defineStore('requests', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(requests.value))
   }
 
-  function getAll() {
-    return requests.value
+
+  async function fetchAll() {
+    // 取得所有申請單（管理者）
+    const res = await fetch(`${API_BASE}/api/forms/`, {
+      headers: {
+        'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
+      },
+    })
+    if (!res.ok) throw new Error('API error')
+    const data = await res.json()
+    return data.items.map(mapApiToRequest)
   }
 
-  function getById(id) {
-    return requests.value.find((r) => r.id === id) || null
+  async function fetchByRequesterId(requesterId) {
+    // 取得自己的申請單（員工）
+    const res = await fetch(`${API_BASE}/api/forms/`, {
+      headers: {
+        'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
+      },
+    })
+    if (!res.ok) throw new Error('API error')
+    const data = await res.json()
+    // 後端會自動只回傳自己的單
+    return data.items.map(mapApiToRequest)
   }
 
-  function getByRequesterId(requesterId) {
-    return requests.value.filter((r) => r.requesterId === requesterId)
+  // 將 API 回傳欄位轉換成前端格式
+  function mapApiToRequest(item) {
+    return {
+      id: item.idForm ? `REQ-${item.idForm}` : '',
+      assetId: item.idEquipment ? `A${item.idEquipment}` : '',
+      requesterId: item.applicant_id ? `U${item.applicant_id}` : '',
+      faultDescription: item.issue_description,
+      status: item.status,
+      requestDate: item.requestDate,
+      reviewerId: item.reviewer_id ? `U${item.reviewer_id}` : null,
+      reviewDate: null,
+      reviewNote: item.reviewNote,
+      repairDate: item.repair_start_date,
+      repairContent: item.repair_description,
+      repairSolution: item.repair_solution,
+      repairCost: item.repair_cost,
+      repairPersonnel: item.repair_person,
+      completionDate: item.repair_end_date,
+      attachments: [],
+    }
   }
 
   function getByAssetId(assetId) {
@@ -207,28 +258,64 @@ export const useRequestsStore = defineStore('requests', () => {
     return newReq
   }
 
-  function approve(requestId, reviewerId, reviewNote) {
-    const req = requests.value.find((r) => r.id === requestId)
-    if (!req || req.status !== 'pending') return false
-    req.status = 'under_repair'
-    req.reviewerId = reviewerId
-    req.reviewDate = new Date().toISOString().split('T')[0]
-    req.reviewNote = reviewNote || ''
-    persist()
-    const assetsStore = useAssetsStore()
-    assetsStore.updateStatus(req.assetId, 'under_repair')
-    return true
+
+  async function approve(requestId, reviewerId, reviewNote) {
+    // 取得 form_id
+    const formId = requestId.replace(/[^\d]/g, '')
+    try {
+      const res = await fetch(`${API_BASE}/review/${formId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'approved' })
+      })
+      if (!res.ok) throw new Error('API error')
+      const data = await res.json()
+      // 更新本地資料
+      const req = requests.value.find((r) => r.id === requestId)
+      if (req) {
+        req.status = 'under_repair'
+        req.reviewerId = reviewerId
+        req.reviewDate = new Date().toISOString().split('T')[0]
+        req.reviewNote = reviewNote || ''
+        persist()
+        const assetsStore = useAssetsStore()
+        assetsStore.updateStatus(req.assetId, 'under_repair')
+      }
+      return true
+    } catch (e) {
+      console.error('approve error', e)
+      return false
+    }
   }
 
-  function reject(requestId, reviewerId, reviewNote) {
-    const req = requests.value.find((r) => r.id === requestId)
-    if (!req || req.status !== 'pending') return false
-    req.status = 'rejected'
-    req.reviewerId = reviewerId
-    req.reviewDate = new Date().toISOString().split('T')[0]
-    req.reviewNote = reviewNote || ''
-    persist()
-    return true
+  async function reject(requestId, reviewerId, reviewNote) {
+    const formId = requestId.replace(/[^\d]/g, '')
+    try {
+      const res = await fetch(`${API_BASE}/review/${formId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'rejected' })
+      })
+      if (!res.ok) throw new Error('API error')
+      const data = await res.json()
+      // 更新本地資料
+      const req = requests.value.find((r) => r.id === requestId)
+      if (req) {
+        req.status = 'rejected'
+        req.reviewerId = reviewerId
+        req.reviewDate = new Date().toISOString().split('T')[0]
+        req.reviewNote = reviewNote || ''
+        persist()
+      }
+      return true
+    } catch (e) {
+      console.error('reject error', e)
+      return false
+    }
   }
 
   function updateRepairDetails(requestId, repairData) {
@@ -239,15 +326,39 @@ export const useRequestsStore = defineStore('requests', () => {
     return true
   }
 
-  function complete(requestId) {
-    const req = requests.value.find((r) => r.id === requestId)
-    if (!req || req.status !== 'under_repair') return false
-    req.status = 'completed'
-    req.completionDate = new Date().toISOString().split('T')[0]
-    persist()
-    const assetsStore = useAssetsStore()
-    assetsStore.updateStatus(req.assetId, 'normal')
-    return true
+  async function complete(requestId, repairData) {
+    const formId = requestId.replace(/[^\d]/g, '')
+    try {
+      const res = await fetch(`${API_BASE}/complete/${formId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          repair_description: repairData.repairContent,
+          repair_solution: repairData.repairSolution,
+          repair_cost: repairData.repairCost,
+          repair_vendor: repairData.repairPersonnel,
+          repair_person: repairData.repairPersonnel,
+        })
+      })
+      if (!res.ok) throw new Error('API error')
+      const data = await res.json()
+      // 更新本地資料
+      const req = requests.value.find((r) => r.id === requestId)
+      if (req) {
+        req.status = 'completed'
+        req.completionDate = new Date().toISOString().split('T')[0]
+        Object.assign(req, repairData)
+        persist()
+        const assetsStore = useAssetsStore()
+        assetsStore.updateStatus(req.assetId, 'normal')
+      }
+      return true
+    } catch (e) {
+      console.error('complete error', e)
+      return false
+    }
   }
 
   function resetToDefault() {
@@ -267,5 +378,6 @@ export const useRequestsStore = defineStore('requests', () => {
     updateRepairDetails,
     complete,
     resetToDefault,
+    fetchById,
   }
 })
