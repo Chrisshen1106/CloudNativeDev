@@ -44,6 +44,8 @@ export default {
     password: 'Password (for demo)',
     passwordPlaceholder: 'Enter password (demo: 123456)',
     loginButton: 'Sign In',
+    registerButton: 'Sign Up',
+    registerTitle: 'Sign Up',
     roleHolder: 'Asset Holder',
     roleManager: 'Asset Manager',
     roleLabel: 'Role',

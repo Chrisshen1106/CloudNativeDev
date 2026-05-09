@@ -178,14 +178,33 @@ function removeAttachment(idx) {
   form.value.attachments.splice(idx, 1)
 }
 
-function handleSubmit() {
-  const newReq = requestsStore.add({
-    assetId: form.value.assetId,
-    requesterId: authStore.currentUser.id,
-    faultDescription: form.value.faultDescription,
-    attachments: form.value.attachments,
-  })
-  notifStore.add(t('request.submitSuccess'), 'success')
-  router.push(`/requests/${newReq.id}`)
+async function handleSubmit() {
+  try {
+    // 準備 API 請求資料
+    const payload = {
+      idEquipment: form.value.assetId,
+      issue_description: form.value.faultDescription,
+      attachments: form.value.attachments.map(att => att.data),
+    }
+    // 呼叫後端 API
+    const res = await fetch('/maintenance-api/form', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authStore.token ? { 'Authorization': `Bearer ${authStore.token}` } : {})
+      },
+      body: JSON.stringify(payload)
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err?.message || '申請失敗')
+    }
+    const data = await res.json()
+    notifStore.add(t('request.submitSuccess'), 'success')
+    // 跳轉到申請詳情頁或列表
+    router.push(`/requests`)
+  } catch (e) {
+    notifStore.add(e.message || '申請失敗', 'error')
+  }
 }
 </script>

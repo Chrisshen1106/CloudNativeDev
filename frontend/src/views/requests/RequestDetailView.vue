@@ -237,7 +237,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useAssetsStore } from '@/stores/assets'
 import { useRequestsStore } from '@/stores/requests'
-import { mockUsers } from '@/stores/auth'
+// import { mockUsers } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useI18n } from '@/composables/useI18n'
 import StatusBadge from '@/components/common/StatusBadge.vue'
@@ -251,8 +251,11 @@ const requestsStore = useRequestsStore()
 const notifStore = useNotificationsStore()
 const { t } = useI18n()
 
+
 const requestId = computed(() => route.params.id)
-const request = computed(() => requestsStore.getById(requestId.value))
+const request = ref(null)
+const loading = ref(true)
+const error = ref(null)
 
 const showApproveModal = ref(false)
 const showRejectModal  = ref(false)
@@ -267,8 +270,12 @@ const repairForm = ref({
   repairPersonnel: '',
 })
 
-onMounted(() => {
-  if (request.value) {
+
+onMounted(async () => {
+  loading.value = true
+  error.value = null
+  try {
+    request.value = await requestsStore.fetchById(requestId.value)
     repairForm.value = {
       repairDate: request.value.repairDate || '',
       repairContent: request.value.repairContent || '',
@@ -276,6 +283,10 @@ onMounted(() => {
       repairCost: request.value.repairCost || null,
       repairPersonnel: request.value.repairPersonnel || '',
     }
+  } catch (e) {
+    error.value = e.message || '載入失敗'
+  } finally {
+    loading.value = false
   }
 })
 
@@ -296,9 +307,9 @@ function handleSaveRepair() {
   notifStore.add(t('request.repairSaved'), 'success')
 }
 
-function handleComplete() {
+async function handleComplete() {
   requestsStore.updateRepairDetails(requestId.value, { ...repairForm.value })
-  requestsStore.complete(requestId.value)
+  await requestsStore.complete(requestId.value, { ...repairForm.value })
   showCompleteModal.value = false
   notifStore.add(t('request.completeSuccess'), 'success')
 }
@@ -311,9 +322,9 @@ function getAssetNumber(assetId) {
   return assetsStore.getById(assetId)?.assetNumber || ''
 }
 
-function getUserName(userId) {
-  return mockUsers.find((u) => u.id === userId)?.name || userId
-}
+// function getUserName(userId) {
+//   return mockUsers.find((u) => u.id === userId)?.name || userId
+// }
 
 function stepDotClass(status) {
   const map = {

@@ -1,3 +1,7 @@
+@dept_bp.route('/all', methods=['GET'])
+def get_all_departments():
+    departments = department_controller.getAllDepartments()
+    return jsonify(departments), 200
 from flask import Blueprint, request, jsonify
 from controllers.department import department_controller
 

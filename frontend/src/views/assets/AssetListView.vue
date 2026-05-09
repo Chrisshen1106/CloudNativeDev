@@ -124,7 +124,7 @@
 import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useAssetsStore } from '@/stores/assets'
-import { mockUsers } from '@/stores/auth'
+// import { mockUsers } from '@/stores/auth'
 import { useI18n } from '@/composables/useI18n'
 import StatusBadge from '@/components/common/StatusBadge.vue'
 import Pagination from '@/components/common/Pagination.vue'
@@ -174,9 +174,9 @@ function resetFilters() {
   currentPage.value = 1
 }
 
-function getUserName(ownerId) {
-  return mockUsers.find((u) => u.id === ownerId)?.name || ownerId
-}
+// function getUserName(ownerId) {
+//   return mockUsers.find((u) => u.id === ownerId)?.name || ownerId
+// }
 
 function categoryIcon(cat) {
   return { computer: '', phone: '', tablet: '' }[cat] || ''
