@@ -55,18 +55,6 @@ export const useRequestsStore = defineStore('requests', () => {
     return mapApiToRequest(data)
   }
 
-  async function fetchByRequesterId(requesterId) {
-    const res = await fetch(`${API_BASE}/forms/`, {
-      headers: {
-        'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
-      },
-    })
-    if (!res.ok) throw new Error('API error')
-    const data = await res.json()
-    requests.value = data.items.map(mapApiToRequest)
-    return requests.value
-  }
-
   async function reviewRequest(formId, status) {
     const res = await fetch(`${API_BASE}/api/review/${formId}`, {
       method: 'PUT',
