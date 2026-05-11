@@ -40,6 +40,18 @@ export const useAuthStore = defineStore('auth', () => {
       return { success: false, message: e.message }
     }
   }
+  async function signup(payload) {
+    const res = await fetch('/api/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err?.message || '註冊失敗')
+    }
+    return await res.json()
+  }
 
   function logout() {
     currentUser.value = null
