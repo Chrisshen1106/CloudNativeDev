@@ -3,7 +3,21 @@ import { defineStore } from 'pinia'
 import { useAssetsStore } from './assets'
 
 // API base url
-const API_BASE = '/maintenance-api'
+// 若要走 8002（maintenance），請設 '/maintenance-api'
+const API_BASE = 'http://localhost:8002'
+  // 送出維修申請
+  async function createRequest(payload) {
+    const res = await fetch(`${API_BASE}/api/form`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
+      },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) throw new Error('API error')
+    return await res.json()
+  }
 
 export const useRequestsStore = defineStore('requests', () => {
   // 所有資料都從 API 取得
@@ -42,7 +56,7 @@ export const useRequestsStore = defineStore('requests', () => {
   }
 
   async function fetchByRequesterId(requesterId) {
-    const res = await fetch(`${API_BASE}/api/forms/`, {
+    const res = await fetch(`${API_BASE}/forms/`, {
       headers: {
         'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
       },
@@ -51,6 +65,32 @@ export const useRequestsStore = defineStore('requests', () => {
     const data = await res.json()
     requests.value = data.items.map(mapApiToRequest)
     return requests.value
+  }
+
+  async function reviewRequest(formId, status) {
+    const res = await fetch(`${API_BASE}/api/review/${formId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
+      },
+      body: JSON.stringify({ status }),
+    })
+    if (!res.ok) throw new Error('API error')
+    return await res.json()
+  }
+
+  async function completeRequest(formId, payload) {
+    const res = await fetch(`${API_BASE}/api/complete/${formId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
+      },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) throw new Error('API error')
+    return await res.json()
   }
 
   function mapApiToRequest(item) {
@@ -62,7 +102,7 @@ export const useRequestsStore = defineStore('requests', () => {
       status: item.status,
       requestDate: item.requestDate,
       reviewerId: item.reviewer_id ? `U${item.reviewer_id}` : null,
-      reviewDate: null,
+      reviewDate: item.review_date,
       reviewNote: item.reviewNote,
       repairDate: item.repair_start_date,
       repairContent: item.repair_description,
@@ -92,5 +132,6 @@ export const useRequestsStore = defineStore('requests', () => {
     fetchByRequesterId,
     getByRequesterId,
     getUserName,
+    createRequest,
   }
 })
