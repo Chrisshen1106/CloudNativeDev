@@ -9,6 +9,7 @@
     </div>
 
     <!-- Stats cards -->
+    <!-- Stats cards 暫時隱藏數字，待 API 完成再補 -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <div v-for="stat in statCards" :key="stat.key" class="card p-5">
         <div class="flex items-start justify-between mb-3">
@@ -18,7 +19,8 @@
             :class="stat.tagClass"
           >{{ stat.tag }}</span>
         </div>
-        <p class="text-3xl font-bold text-gray-900 mb-1">{{ stat.value }}</p>
+        <!-- 數字暫時移除 -->
+        <!-- <p class="text-3xl font-bold text-gray-900 mb-1">{{ stat.value }}</p> -->
         <p class="text-sm text-gray-500">{{ stat.label }}</p>
       </div>
     </div>
@@ -75,13 +77,11 @@
         <div v-if="authStore.isManager" class="mt-6">
           <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">待處理事項</h3>
           <div class="space-y-2">
-            <div class="flex items-center justify-between text-sm">
+            <div class="flex items-center text-sm">
               <span class="text-gray-600"> 待審查申請</span>
-              <span class="font-bold text-blue-600">{{ pendingCount }}</span>
             </div>
-            <div class="flex items-center justify-between text-sm">
+            <div class="flex items-center text-sm">
               <span class="text-gray-600"> 維修中資產</span>
-              <span class="font-bold text-amber-600">{{ underRepairCount }}</span>
             </div>
           </div>
         </div>

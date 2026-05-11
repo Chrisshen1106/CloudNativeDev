@@ -174,9 +174,11 @@ function resetFilters() {
   currentPage.value = 1
 }
 
-// function getUserName(ownerId) {
-//   return mockUsers.find((u) => u.id === ownerId)?.name || ownerId
-// }
+
+function getUserName(ownerId) {
+  // 目前沒有 users 資料，直接回傳 ownerId
+  return ownerId
+}
 
 function categoryIcon(cat) {
   return { computer: '', phone: '', tablet: '' }[cat] || ''
