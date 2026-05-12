@@ -35,9 +35,9 @@ class UserController:
         except Exception as e:
             raise ValueError(f"Error getting user by email: {e}")
     
-    def getAllUsers(self) -> list[dict]:
+    def getAllUsers(self) -> list[UserModel]:
         users = self.model.query.all()
-        return self.schema(many=True).dump(users)
+        return users
     
     def deleteUserById(self, id: int) -> bool:
         try:
