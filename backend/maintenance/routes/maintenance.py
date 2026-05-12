@@ -37,7 +37,7 @@ def create_form():
     try:
         current_user = get_jwt_identity()
         data = request.get_json()
-        valided_data = maintenance_controller.schema(only=['idEquipment', 'issue_description']).load(data)
+        valided_data = maintenance_controller.schema(only=['idEquipment', 'issue_description', 'attachments']).load(data)
         form = maintenance_controller.createForm({**valided_data, 'applicant_id': current_user})
         response = maintenance_controller.schema(only=['idForm', 'status']).dump(form)
         return jsonify(response), 201
@@ -87,6 +87,33 @@ def complete_maintenance(form_id: int):
         data = maintenance_controller.schema(only=['repair_description', 'repair_solution', 'repair_cost', 'repair_vendor', 'repair_person']).load(request.get_json())        
         updated_form = maintenance_controller.updateFormById(form_id, data)
         updated_form = maintenance_controller.updateFormStatusById(form_id, 'completed')
+        response = maintenance_controller.schema(only=['idForm', 'status']).dump(updated_form)
+        return jsonify(response), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+# 刪除維修申請單
+@maintenance_bp.route('/form/<int:id>', methods=['DELETE'])
+@jwt_required()
+def delete_form(id: int):
+    try:
+        maintenance_controller.deleteFormById(id)
+        return jsonify({}), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+# 編輯維修單
+@maintenance_bp.route('/edit/form/<int:id>', methods=['PUT'])
+@jwt_required()
+def edit_form(id: int):
+    try:
+        data = request.get_json()
+        valided_data = maintenance_controller.schema(only=['issue_description', 'attachments']).load(data)
+        updated_form = maintenance_controller.updateFormById(id, valided_data)
         response = maintenance_controller.schema(only=['idForm', 'status']).dump(updated_form)
         return jsonify(response), 200
     except ValueError as e:
