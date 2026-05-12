@@ -105,3 +105,18 @@ def delete_form(id: int):
         return jsonify({'error': str(e)}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+# 編輯維修單
+@maintenance_bp.route('/edit/form/<int:id>', methods=['PUT'])
+@jwt_required()
+def edit_form(id: int):
+    try:
+        data = request.get_json()
+        valided_data = maintenance_controller.schema(only=['issue_description', 'attachments']).load(data)
+        updated_form = maintenance_controller.updateFormById(id, valided_data)
+        response = maintenance_controller.schema(only=['idForm', 'status']).dump(updated_form)
+        return jsonify(response), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
