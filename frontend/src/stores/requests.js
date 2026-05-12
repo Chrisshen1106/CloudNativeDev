@@ -7,16 +7,35 @@ import { useAssetsStore } from './assets'
 const API_BASE = 'http://localhost:8002'
   // 送出維修申請
   async function createRequest(payload) {
+    // 確保 attachments 欄位存在
+    const reqBody = {
+      ...payload,
+      attachments: payload.attachments !== undefined ? payload.attachments : '',
+    }
     const res = await fetch(`${API_BASE}/api/form`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(reqBody),
     })
     if (!res.ok) throw new Error('API error')
     return await res.json()
+  }
+  // 刪除維修單
+  async function deleteRequest(formId) {
+    const id = formId.replace(/[^\d]/g, '')
+    const res = await fetch(`${API_BASE}/api/form/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
+      },
+    })
+    if (res.status === 200) return {}
+    if (res.status === 404) throw new Error('Form not found')
+    const data = await res.json()
+    throw new Error(data.error || 'API error')
   }
 
 export const useRequestsStore = defineStore('requests', () => {
@@ -55,14 +74,15 @@ export const useRequestsStore = defineStore('requests', () => {
     return mapApiToRequest(data)
   }
 
-  async function reviewRequest(formId, status) {
+  async function reviewRequest(formId, { status, note }) {
+    const body = note ? { status, note } : { status }
     const res = await fetch(`${API_BASE}/api/review/${formId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
       },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify(body),
     })
     if (!res.ok) throw new Error('API error')
     return await res.json()
@@ -79,6 +99,23 @@ export const useRequestsStore = defineStore('requests', () => {
     })
     if (!res.ok) throw new Error('API error')
     return await res.json()
+  }
+
+  // 編輯維修單
+  async function editRequest(formId, payload) {
+    const id = formId.replace(/[^\d]/g, '')
+    const res = await fetch(`${API_BASE}/api/edit/form/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
+      },
+      body: JSON.stringify(payload),
+    })
+    if (res.status === 200) return await res.json()
+    if (res.status === 404) throw new Error('Form not found')
+    const data = await res.json()
+    throw new Error(data.error || 'API error')
   }
 
   function mapApiToRequest(item) {
@@ -117,9 +154,12 @@ export const useRequestsStore = defineStore('requests', () => {
     getById,
     fetchAll,
     fetchById,
-    fetchByRequesterId,
     getByRequesterId,
     getUserName,
     createRequest,
+    deleteRequest,
+    editRequest,
+    reviewRequest,
+    completeRequest,
   }
 })

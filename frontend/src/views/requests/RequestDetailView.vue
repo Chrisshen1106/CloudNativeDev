@@ -290,26 +290,26 @@ onMounted(async () => {
   }
 })
 
-function handleApprove(note) {
-  requestsStore.approve(requestId.value, authStore.currentUser.id, note)
+async function handleApprove(note) {
+  await requestsStore.reviewRequest(requestId.value, { status: 'approved', note })
   showApproveModal.value = false
   notifStore.add(t('request.approveSuccess'), 'success')
 }
 
-function handleReject(reason) {
-  requestsStore.reject(requestId.value, authStore.currentUser.id, reason)
+async function handleReject(reason) {
+  await requestsStore.reviewRequest(requestId.value, { status: 'rejected', note: reason })
   showRejectModal.value = false
   notifStore.add(t('request.rejectSuccess'), 'warning')
 }
 
-function handleSaveRepair() {
-  requestsStore.updateRepairDetails(requestId.value, { ...repairForm.value })
+async function handleSaveRepair() {
+  await requestsStore.editRequest(requestId.value, { ...repairForm.value })
   notifStore.add(t('request.repairSaved'), 'success')
 }
 
 async function handleComplete() {
-  requestsStore.updateRepairDetails(requestId.value, { ...repairForm.value })
-  await requestsStore.complete(requestId.value, { ...repairForm.value })
+  await requestsStore.editRequest(requestId.value, { ...repairForm.value })
+  await requestsStore.completeRequest(requestId.value, { ...repairForm.value })
   showCompleteModal.value = false
   notifStore.add(t('request.completeSuccess'), 'success')
 }
