@@ -93,3 +93,15 @@ def complete_maintenance(form_id: int):
         return jsonify({'error': str(e)}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+# 刪除維修申請單
+@maintenance_bp.route('/form/<int:id>', methods=['DELETE'])
+@jwt_required()
+def delete_form(id: int):
+    try:
+        maintenance_controller.deleteFormById(id)
+        return jsonify({}), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

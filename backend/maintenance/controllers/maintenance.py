@@ -62,5 +62,17 @@ class MaintenanceController:
         except Exception as e:
             db.session.rollback()
             raise e
+        
+    def deleteFormById(self, id: int) -> None:
+        try:
+            form = self.model.query.get(id)
+            if form:
+                db.session.delete(form)
+                db.session.commit()
+                return
+            raise ValueError("Form not found")
+        except Exception as e:
+            db.session.rollback()
+            raise e
 
 maintenance_controller = MaintenanceController()
