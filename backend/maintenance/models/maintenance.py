@@ -9,6 +9,7 @@ class MaintenanceSchema(Schema):
     reviewer_id = fields.Int(required=False)
 
     issue_description = fields.Str(required=False, validate=validate.Length(max=255))
+    attachments = fields.Str(required=False, validate=validate.Length(max=255))
     status = fields.Str(required=False, validate=validate.OneOf(['pending', 'approved', 'rejected', 'repairing', 'completed']))
     requestDate = fields.DateTime(dump_only=True)
     reviewNote = fields.Str(required=False, validate=validate.Length(max=255))
@@ -30,6 +31,7 @@ class MaintenanceModel(db.Model):
     reviewer_id = db.Column(db.Integer, nullable=True)
 
     issue_description = db.Column(db.String(255), nullable=True)
+    attachments = db.Column(db.String(255), nullable=True)
     status = db.Column(
         db.Enum('pending', 'approved', 'rejected', 'repairing', 'completed', name='status_enum'),
         default='pending',

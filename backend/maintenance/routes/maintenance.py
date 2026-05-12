@@ -37,7 +37,7 @@ def create_form():
     try:
         current_user = get_jwt_identity()
         data = request.get_json()
-        valided_data = maintenance_controller.schema(only=['idEquipment', 'issue_description']).load(data)
+        valided_data = maintenance_controller.schema(only=['idEquipment', 'issue_description', 'attachments']).load(data)
         form = maintenance_controller.createForm({**valided_data, 'applicant_id': current_user})
         response = maintenance_controller.schema(only=['idForm', 'status']).dump(form)
         return jsonify(response), 201
