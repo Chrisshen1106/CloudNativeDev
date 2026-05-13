@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  # 你負責的：資產管理微服務
+  asset-service:
+    build:
+      context: ./backend/asset-service
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/asset-service/.env
+    restart: always
+
+  # 同學未來負責的：報修單微服務 (這裡先預留打好地基)
+  # request-service:
+  #   build: 
+  #     context: ./backend/request-service
+  #   ports:
+  #     - "5001:5001"
+  #   environment:
+  #     # 同樣連線到 shared db (cloudnative)
+  #     - SQLALCHEMY_DATABASE_URI=mysql+pymysql://root:secure1234@host.docker.internal/cloudnative
+  #   restart: always
