@@ -33,10 +33,12 @@ JWT_SECRET_KEY=<shared secret key>
 ## Development mode
 ```shell
 # Windows (PowerShell)
-$env:PYTHONUTF8=1; uv run -m flask --app app run --port 8000
+uv run -m flask --app app run --port 8000
+($env:PYTHONUTF8=1; uv run -m flask --app app run --port 8000)
 
 # Linux / MacOS / Git Bash
-PYTHONUTF8=1 uv run -m flask --app app run --port 8000
+uv run -m flask --app app run --port 8000
+(PYTHONUTF8=1 uv run -m flask --app app run --port 8000)
 ```
 
 ## Production mode
