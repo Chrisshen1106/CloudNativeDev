@@ -6,12 +6,12 @@ services:
         env_file:
             - .env
     
-    # asset:
-    #     build: ./asset
-    #     ports:
-    #     - "8000:8000"
-    #     env_file:
-    #         - .env
+    asset:
+        build: ./asset-service
+        ports:
+        - "8000:8000"
+        env_file:
+            - .env
     
     maintenance:
         build: ./maintenance

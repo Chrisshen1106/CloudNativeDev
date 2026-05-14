@@ -1,6 +1,8 @@
 #!/bin/bash
 
-SERVICES=("asset:8000" "user:8001" "maintenance:8002")
+export PYTHONUTF8=1
+
+SERVICES=("asset-service:8000" "user:8001" "maintenance:8002")
 
 echo "Start all services"
 

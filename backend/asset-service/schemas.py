@@ -40,6 +40,10 @@ class EquipmentSchema(Schema):
     warranty_expiry = fields.Date(allow_none=True)
     status = fields.Str(validate=validate.OneOf(['in_use', 'repairing', 'scrapped']), missing='in_use')
     
+    # 新增的欄位
+    reviewNote = fields.Str(validate=validate.Length(max=255), allow_none=True)
+    requestDate = fields.DateTime(allow_none=True)
+    
     # created_at = fields.DateTime(dump_only=True)
     # updated_at = fields.DateTime(dump_only=True)
 
