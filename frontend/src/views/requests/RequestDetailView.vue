@@ -108,7 +108,7 @@
           <button class="btn-success flex-1" @click="handleApprove('')">
             {{ t('common.approve') }}
           </button>
-          <button class="btn-danger flex-1" @click="handleDeleteRequest">
+          <button class="btn-danger flex-1" @click="showRejectModal = true">
             {{ t('common.reject') }}
           </button>
         </div>
@@ -172,12 +172,19 @@
           </div>
         </div>
         <div class="flex gap-3 mt-5">
-          <button class="btn-secondary flex-1" @click="handleSaveRepair">
-             {{ t('request.saveRepairInfo') }}
-          </button>
-          <button class="btn-success flex-1" @click="showCompleteModal = true">
-             {{ t('request.markComplete') }}
-          </button>
+           <button class="btn-success flex-1" @click="handleSendRepairOnly">
+             送修
+           </button>
+        </div>
+      </div>
+
+      <!-- 維修中：只顯示維修完成按鈕 -->
+      <div v-if="authStore.isManager && request.status === 'repairing'" class="card p-5 border-2 border-green-100">
+        <h2 class="section-title text-green-700"> 維修中</h2>
+        <div class="flex gap-3 mt-5">
+           <button class="btn-success flex-1" @click="handleComplete">
+             維修完成
+           </button>
         </div>
       </div>
 
@@ -250,6 +257,15 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useAssetsStore } from '@/stores/assets'
 import { useRequestsStore } from '@/stores/requests'
+// --- 新增 handler for minimal repair ---
+
+async function handleSendRepairOnly() {
+  // 傳入 request.id（如 REQ-37），sendRepairOnly 會自動解析
+  if (!request.value?.id) return
+  await requestsStore.sendRepairOnly(request.value.id, repairForm.value)
+  notifStore.add('已送出維修', 'success')
+  router.push({ name: 'RequestList' })
+}
 // import { mockUsers } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useI18n } from '@/composables/useI18n'
@@ -322,22 +338,74 @@ async function handleApprove(note) {
 }
 
 async function handleReject(reason) {
-  await requestsStore.reviewRequest(requestId.value, { status: 'rejected', note: reason })
-  showRejectModal.value = false
-  notifStore.add(t('request.rejectSuccess'), 'warning')
+  // 只傳數字 id（去除 REQ- 前綴）
+  let id = request.value?.id
+  if (typeof id === 'string') {
+    id = id.replace(/[^\d]/g, '')
+  }
+  if (!id) {
+    notifStore.add('找不到申請單編號', 'error')
+    return
+  }
+  try {
+    await requestsStore.reviewRequest(id, { status: 'rejected', reviewNote: reason })
+    showRejectModal.value = false
+    notifStore.add(t('request.rejectSuccess'), 'warning')
+    router.push('/requests')
+  } catch (e) {
+    notifStore.add(e.message || '拒絕失敗', 'error')
+  }
 }
 
-async function handleSaveRepair() {
-  await requestsStore.editRequest(requestId.value, { ...repairForm.value })
-  notifStore.add(t('request.repairSaved'), 'success')
+
+// 送修
+async function handleRepair() {
+  try {
+    // 1. 送修申請
+    await requestsStore.submitRepairRequest({
+      idEquipment: request.value.assetId?.replace(/[^\d]/g, ''),
+      issue_description: repairForm.value.repairContent,
+      attachments: ''
+    })
+    // 2. 資產狀態設為 repairing
+    if (request.value.assetId) {
+      await assetsStore.setAssetStatusRepairing(request.value.assetId, localStorage.getItem('ams_token') || '')
+    }
+    // 3. 維修單狀態設為 repairing，帶維修資訊
+    const formId = (request.value.idForm || requestId.value).toString().replace(/[^\d]/g, '')
+    await fetch(`/maintenance-api/repair/${formId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': localStorage.getItem('ams_token') || ''
+      },
+      body: JSON.stringify({
+        repair_description: repairForm.value.repairContent,
+        repair_solution: repairForm.value.repairSolution,
+        repair_cost: repairForm.value.repairCost,
+        repair_vendor: repairForm.value.repairPersonnel,
+        repair_person: repairForm.value.repairPersonnel
+      })
+    })
+    notifStore.add('送修成功', 'success')
+    // 重新整理 request 狀態
+    request.value = await requestsStore.fetchById(requestId.value)
+  } catch (e) {
+    notifStore.add(e.message || '送修失敗', 'error')
+  }
 }
 
 async function handleComplete() {
   try {
+    // 完成維修單
     await requestsStore.completeRequest(requestId.value, { ...repairForm.value })
+    // 將資產狀態設為 in_use
+    const assetId = request.value.assetId
+    if (assetId) {
+      await assetsStore.setAssetStatusInUse(assetId, localStorage.getItem('ams_token') || '')
+    }
     showCompleteModal.value = false
     notifStore.add(t('request.completeSuccess'), 'success')
-    // 新增動畫與延遲跳轉
     notifStore.add('維修完成，將自動返回列表', 'success')
     setTimeout(() => {
       router.push('/requests')

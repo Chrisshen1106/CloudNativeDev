@@ -1,3 +1,4 @@
+// --- 請將 sendRepairOnly 放到 defineStore 內部，並統一用 API_BASE --- 
 // 編輯維修申請單
 async function editRepairRequest(formId, payload, token) {
   const id = String(formId).replace(/[^\d]/g, '')
@@ -22,12 +23,15 @@ import { useAuthStore } from './auth'
 const API_BASE = '/maintenance-api'
   // 送出維修申請
   async function createRequest(payload) {
-    // 確保 attachments 欄位存在
+    // 轉換欄位名稱，符合後端需求
     const reqBody = {
-      ...payload,
-      attachments: payload.attachments !== undefined ? payload.attachments : '',
+      idEquipment: payload.assetId,
+      issue_description: payload.faultDescription,
+      attachments: Array.isArray(payload.attachments)
+        ? payload.attachments.map(att => att.data).join(' ')
+        : '',
     }
-    const res = await fetch(`${API_BASE}/forms`, {
+    const res = await fetch(`${API_BASE}/form`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -35,39 +39,49 @@ const API_BASE = '/maintenance-api'
       },
       body: JSON.stringify(reqBody),
     })
-    if (!res.ok) throw new Error('API error')
-    return await res.json()
-  }
-  // 刪除維修單
-  async function deleteRequest(formId) {
-    const id = formId.replace(/[^\d]/g, '')
-    const res = await fetch(`${API_BASE}/form/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': localStorage.getItem('ams_token') || '',
-      },
-    })
-    if (res.status === 200) return {}
-    if (res.status === 404) throw new Error('Form not found')
-    const data = await res.json()
-    throw new Error(data.error || 'API error')
-  }
-
-  // 送出維修申請
-  async function submitRepairRequest({ idEquipment, issue_description, attachments = '' }, token) {
-    const res = await fetch('/maintenance-api/form', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': token || localStorage.getItem('ams_token') || '',
-      },
-      body: JSON.stringify({ idEquipment, issue_description, attachments }),
-    })
-    if (!res.ok) throw new Error('API error')
+    if (!res.ok) {
+      const err = await res.text()
+      throw new Error(err || 'API error')
+    }
     return await res.json()
   }
 
 export const useRequestsStore = defineStore('requests', () => {
+  // 送修（只更新申請單狀態，不處理資產）
+  // formId: 整數或 REQ-xxx 皆可
+  // repairForm: 可選，若無則只送 id
+  // token: 可選
+  async function sendRepairOnly(formId, repairForm = {}, token) {
+    let id = formId
+    if (typeof id === 'string') {
+      const match = id.match(/(\d+)/)
+      id = match ? match[1] : ''
+    }
+    if (!id) throw new Error('formId 不正確')
+    // 僅送後端需要的欄位，且 repair_cost 必為數字
+    const payload = {
+      repair_description: repairForm?.repairContent || '',
+      repair_solution: repairForm?.repairSolution || '',
+      repair_cost: typeof repairForm?.repairCost === 'number' && !isNaN(repairForm.repairCost)
+        ? repairForm.repairCost
+        : 0,
+      repair_vendor: repairForm?.repairPersonnel || '',
+      repair_person: repairForm?.repairPersonnel || ''
+    }
+    const res = await fetch(`${API_BASE}/repair/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token || localStorage.getItem('ams_token') || '',
+      },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      const err = await res.text()
+      throw new Error(err)
+    }
+    return await res.json()
+  }
   // 所有資料都從 API 取得
   const requests = ref([])
 
@@ -112,9 +126,10 @@ export const useRequestsStore = defineStore('requests', () => {
     const data = await res.json()
     return mapApiToRequest(data)
   }
-  //審核
-  async function reviewRequest(formId, { status, note }) {
-    const body = note ? { status, note } : { status }
+  // 審核維修申請（通過/拒絕皆用此 function）
+  async function reviewRequest(formId, { status, reviewNote }) {
+    // status: 'approved' 或 'rejected'
+    const body = reviewNote ? { status, reviewNote } : { status }
     const res = await fetch(`${API_BASE}/review/${formId}`, {
       method: 'PUT',
       headers: {
@@ -124,7 +139,17 @@ export const useRequestsStore = defineStore('requests', () => {
       body: JSON.stringify(body),
     })
     if (!res.ok) throw new Error('API error')
-    return await res.json()
+    const data = await res.json()
+    // 如果審核通過，呼叫 setAssetStatusRepairing
+    if (data.status === 'approved' && data.idEquipment) {
+      try {
+        const assetsStore = useAssetsStore()
+        await assetsStore.setAssetStatusRepairing(data.idEquipment, token)
+      } catch (e) {
+        console.error('自動設資產狀態為repairing失敗', e)
+      }
+    }
+    return data
   }
   //完成
   async function completeRequest(formId, payload) {
@@ -170,6 +195,29 @@ export const useRequestsStore = defineStore('requests', () => {
     throw new Error(data.error || 'API error')
   }
 
+  // 送出維修申請
+  async function submitRepairRequest({ idEquipment, issue_description, attachments = '', repair_cost = 0, repair_description = '', repair_solution = '', repair_vendor = '', repair_person = '' }, token) {
+    const res = await fetch(`${API_BASE}/repair/${idEquipment}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token || localStorage.getItem('ams_token') || '',
+      },
+      body: JSON.stringify({
+        idEquipment,
+        issue_description,
+        attachments,
+        repair_cost: repair_cost ?? 0, // 預設 0
+        repair_description,
+        repair_solution,
+        repair_vendor,
+        repair_person,
+      }),
+    })
+    if (!res.ok) throw new Error('API error')
+    return await res.json()
+  }
+
   function mapApiToRequest(item) {
     return {
       id: item.idForm ? `REQ-${item.idForm}` : '',
@@ -209,11 +257,11 @@ export const useRequestsStore = defineStore('requests', () => {
     getByRequesterId,
     getUserName,
     createRequest,
-    deleteRequest,
     editRequest,
     reviewRequest,
     completeRequest,
     submitRepairRequest,
     editRepairRequest,
+    sendRepairOnly,
   }
 })

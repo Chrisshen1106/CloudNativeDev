@@ -8,7 +8,7 @@
       <h1 class="page-title text-xl">{{ t('request.newRequest') }}</h1>
     </div>
 
-    <form @submit.prevent="handleSubmit" class="space-y-5">
+    <form @submit.prevent="createRequestSubmit" class="space-y-5">
       <!-- Asset selection -->
       <div class="card p-5">
         <h2 class="section-title"> {{ t('request.selectAsset') }}</h2>
@@ -183,6 +183,24 @@ function removeAttachment(idx) {
   form.value.attachments.splice(idx, 1)
 }
 
+// 新增：正確的 createRequestSubmit
+async function createRequestSubmit() {
+  try {
+    const payload = {
+      assetId: form.value.assetId,
+      faultDescription: form.value.faultDescription,
+      attachments: form.value.attachments,
+    }
+    // 呼叫 requestsStore.createRequest
+    await requestsStore.createRequest(payload)
+    notifStore.add(t('request.submitSuccess'), 'success')
+    router.push(`/requests`)
+  } catch (e) {
+    notifStore.add(e.message || '申請失敗', 'error')
+  }
+}
+
+// 保留舊的 handleSubmit
 async function handleSubmit() {
   try {
     const payload = {

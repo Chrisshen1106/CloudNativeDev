@@ -161,6 +161,7 @@ export default {
       under_repair: 'Under Repair',
       completed: 'Completed',
       rejected: 'Rejected',
+      approved: 'Approved',
     },
     workflow: {
       submitted: 'Request Submitted',

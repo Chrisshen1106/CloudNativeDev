@@ -60,6 +60,7 @@ export const useAssetsStore = defineStore('assets', () => {
     assets.value = data.items.map(item => ({
       id: item.assetNumber,
       assetNumber: item.assetNumber,
+      idEquipment: item.idEquipment || item.id || null, // 保留資料庫主鍵
       name: item.name || '',
       category: item.category || '',
       model: item.model || '',
@@ -134,5 +135,58 @@ export const useAssetsStore = defineStore('assets', () => {
     return data
   }
 
-  return { assets, getAll, getById, getByOwnerId, add, update, fetchUserAssets, getAssetDetail, createAsset, updateAsset }
+  // 設定資產狀態為 repairing
+  async function setAssetStatusRepairing(idOrAssetNumber, token) {
+    // 只要能轉成數字就直接呼叫 API，不查 assets.value
+    let id = idOrAssetNumber
+    if (typeof idOrAssetNumber === 'object' && idOrAssetNumber !== null && idOrAssetNumber.idEquipment) {
+      id = idOrAssetNumber.idEquipment
+    }
+    id = parseInt(id, 10)
+    if (isNaN(id)) throw new Error('資產 id 不正確')
+    const res = await fetch(`${API_BASE}/asset/status/repairing/${id}`, {
+      method: 'PUT',
+      headers: {
+        ...(token ? { 'Authorization': token } : {})
+      }
+    })
+    if (!res.ok) throw new Error('設為維修中失敗')
+    return await res.json()
+  }
+
+  async function setAssetStatusInUse(idOrAssetNumber, token) {
+    let id = idOrAssetNumber
+    if (typeof idOrAssetNumber === 'string' && !/^[0-9]+$/.test(idOrAssetNumber)) {
+      const found = assets.value.find(a => a.assetNumber === idOrAssetNumber || a.id === idOrAssetNumber)
+      if (found && found.idEquipment) id = found.idEquipment
+    }
+    // 只取數字
+    if (typeof id === 'string') {
+      const match = id.match(/(\d+)/)
+      if (match) id = match[1]
+    }
+    const res = await fetch(`${API_BASE}/asset/status/in_use/${id}`, {
+      method: 'PUT',
+      headers: {
+        ...(token ? { 'Authorization': token } : {})
+      }
+    })
+    if (!res.ok) throw new Error('設為使用中失敗')
+    return await res.json()
+  }
+
+  return {
+    assets,
+    getAll,
+    getById,
+    getByOwnerId,
+    add,
+    update,
+    fetchUserAssets,
+    getAssetDetail,
+    createAsset,
+    updateAsset,
+    setAssetStatusRepairing,
+    setAssetStatusInUse
+  }
 })
