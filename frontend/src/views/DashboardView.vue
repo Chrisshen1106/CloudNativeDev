@@ -133,7 +133,7 @@ const pendingCount = computed(() =>
 )
 
 const underRepairCount = computed(() =>
-  assetsStore.getAll().filter((a) => a.status === 'under_repair').length
+  assetsStore.getAll().filter((a) => a.status === 'repairing').length
 )
 
 const statCards = computed(() => {
@@ -146,7 +146,7 @@ const statCards = computed(() => {
         tag: '全部', tagClass: 'bg-gray-100 text-gray-600',
       },
       {
-        key: 'normal', icon: '', value: all.filter(a => a.status === 'normal').length,
+        key: 'in_use', icon: '', value: all.filter(a => a.status === 'in_use').length,
         label: t('dashboard.normalAssets'),
         tag: '正常', tagClass: 'bg-emerald-100 text-emerald-700',
       },
@@ -171,12 +171,12 @@ const statCards = computed(() => {
         tag: '我的', tagClass: 'bg-indigo-100 text-indigo-700',
       },
       {
-        key: 'normal', icon: '', value: mine.filter(a => a.status === 'normal').length,
+        key: 'in_use', icon: '', value: mine.filter(a => a.status === 'in_use').length,
         label: t('dashboard.myNormal'),
         tag: '正常', tagClass: 'bg-emerald-100 text-emerald-700',
       },
       {
-        key: 'repair', icon: '', value: mine.filter(a => a.status === 'under_repair').length,
+        key: 'repair', icon: '', value: mine.filter(a => a.status === 'repairing').length,
         label: t('dashboard.myUnderRepair'),
         tag: '維修中', tagClass: 'bg-amber-100 text-amber-700',
       },

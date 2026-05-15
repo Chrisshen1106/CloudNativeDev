@@ -106,8 +106,9 @@ export default {
       tablet: 'Tablet',
     },
     statuses: {
-      normal: 'In Use',
-      under_repair: 'Under Repair',
+      in_use: 'In Use',
+      repairing: 'Under Repair',
+      scrapped: 'Scrapped',
     },
     searchPlaceholder: 'Search asset name, number, model...',
     filterCategory: 'Category',

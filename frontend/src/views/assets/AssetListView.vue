@@ -38,8 +38,9 @@
         <!-- Status filter -->
         <select v-model="filterStatus" class="form-select w-36">
           <option value="">{{ t('asset.filterStatus') }}: {{ t('common.all') }}</option>
-          <option value="normal">{{ t('asset.statuses.normal') }}</option>
-          <option value="under_repair">{{ t('asset.statuses.under_repair') }}</option>
+          <option value="in_use">{{ t('asset.statuses.in_use') }}</option>
+          <option value="repairing">{{ t('asset.statuses.repairing') }}</option>
+          <option value="scrapped">{{ t('asset.statuses.scrapped') }}</option>
         </select>
         <!-- Reset -->
         <button

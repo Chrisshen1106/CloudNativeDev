@@ -31,8 +31,9 @@
           <div>
             <label class="form-label">{{ t('asset.status') }}</label>
             <select v-model="form.status" class="form-select">
-              <option value="normal">{{ t('asset.statuses.normal') }}</option>
-              <option value="under_repair">{{ t('asset.statuses.under_repair') }}</option>
+              <option value="in_use">{{ t('asset.statuses.in_use') }}</option>
+              <option value="repairing">{{ t('asset.statuses.repairing') }}</option>
+              <option value="scrapped">{{ t('asset.statuses.scrapped') }}</option>
             </select>
           </div>
           <div>
