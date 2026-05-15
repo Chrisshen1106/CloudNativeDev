@@ -34,24 +34,6 @@ FIELD_MAP = {
 @equipment_bp.route('/user', methods=['GET'])
 @jwt_required()
 def get_user_assets():
-    """
-    取得資產列表
-    ---
-    tags:
-      - Assets
-    parameters:
-      - name: page
-        in: query
-        type: integer
-        default: 1
-      - name: pageSize
-        in: query
-        type: integer
-        default: 20
-    responses:
-      200:
-        description: 成功取得資產列表
-    """
     user_id = int(get_jwt_identity())
     role = get_jwt().get('role')
 
@@ -86,24 +68,6 @@ def get_user_assets():
 @equipment_bp.route('/assets/<int:id>', methods=['GET'])
 @jwt_required()
 def get_asset(id):
-    """
-    取得資產詳情
-    ---
-    tags:
-      - Assets
-    parameters:
-      - name: id
-        in: path
-        type: integer
-        required: true
-    responses:
-      200:
-        description: 成功取得資產詳情
-      403:
-        description: 權限不足
-      404:
-        description: 找不到該資產
-    """
     user_id = int(get_jwt_identity())
     role = get_jwt().get('role')
 
@@ -152,61 +116,6 @@ def get_asset(id):
 @equipment_bp.route('/assets', methods=['POST'])
 @jwt_required()
 def create_asset():
-    """
-    新增資產（Manager）
-    ---
-    tags:
-      - Assets
-    parameters:
-      - in: body
-        name: body
-        required: true
-        schema:
-          type: object
-          required: [name]
-          properties:
-            name:
-              type: string
-            category:
-              type: string
-            status:
-              type: string
-              enum: [in_use, repairing, scrapped]
-            model:
-              type: string
-            specs:
-              type: string
-            serial_Number:
-              type: string
-            notes:
-              type: string
-            supplier:
-              type: string
-            purchase_price:
-              type: number
-            purchase_date:
-              type: string
-              format: date
-            activationDate:
-              type: string
-              format: date
-            warrantyExpiry:
-              type: string
-              format: date
-            location:
-              type: string
-            ownerId:
-              type: integer
-            department:
-              type: string
-    responses:
-      201:
-        description: 成功新增資產
-      400:
-        description: 未提供資料
-      403:
-        description: 僅管理員可新增資產
-    """
     if get_jwt().get('role') != 'admin':
         return jsonify({"message": "僅管理員可新增資產"}), 403
 
@@ -238,31 +147,6 @@ def create_asset():
 @equipment_bp.route('/assets/<int:id>', methods=['PUT'])
 @jwt_required()
 def update_asset(id):
-    """
-    編輯資產（Manager）
-    ---
-    tags:
-      - Assets
-    parameters:
-      - name: id
-        in: path
-        type: integer
-        required: true
-      - in: body
-        name: body
-        required: true
-        schema:
-          type: object
-    responses:
-      200:
-        description: 成功更新資產
-      400:
-        description: 未提供資料
-      403:
-        description: 僅管理員可編輯資產
-      404:
-        description: 找不到該資產
-    """
     if get_jwt().get('role') != 'admin':
         return jsonify({"message": "僅管理員可編輯資產"}), 403
 
@@ -288,24 +172,6 @@ def update_asset(id):
 @equipment_bp.route('/assets/<int:id>', methods=['DELETE'])
 @jwt_required()
 def delete_asset(id):
-    """
-    刪除資產（Manager）
-    ---
-    tags:
-      - Assets
-    parameters:
-      - name: id
-        in: path
-        type: integer
-        required: true
-    responses:
-      200:
-        description: 成功刪除資產
-      403:
-        description: 僅管理員可刪除資產
-      404:
-        description: 找不到該資產
-    """
     if get_jwt().get('role') != 'admin':
         return jsonify({"message": "僅管理員可刪除資產"}), 403
 
@@ -319,3 +185,39 @@ def delete_asset(id):
         return jsonify({"message": "刪除資產失敗", "error": str(e)}), 500
 
     return jsonify({"success": True}), 200
+
+
+@equipment_bp.route('/asset/status/repairing/<int:id>', methods=['PUT'])
+@jwt_required()
+def set_status_repairing(id):
+    if get_jwt().get('role') != 'admin':
+        return jsonify({"message": "僅管理員可修改資產狀態"}), 403
+
+    equipment = Equipment.query.filter_by(idEquipment=id).first_or_404(description="找不到該資產")
+    equipment.status = 'repairing'
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "更新失敗", "error": str(e)}), 500
+
+    return jsonify({}), 200
+
+
+@equipment_bp.route('/asset/status/in_use/<int:id>', methods=['PUT'])
+@jwt_required()
+def set_status_in_use(id):
+    if get_jwt().get('role') != 'admin':
+        return jsonify({"message": "僅管理員可修改資產狀態"}), 403
+
+    equipment = Equipment.query.filter_by(idEquipment=id).first_or_404(description="找不到該資產")
+    equipment.status = 'in_use'
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "更新失敗", "error": str(e)}), 500
+
+    return jsonify({}), 200

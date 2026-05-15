@@ -4,18 +4,11 @@ from flask_jwt_extended import JWTManager
 from models import db
 from equipment_routes import equipment_bp
 from dotenv import load_dotenv
-from flasgger import Swagger
 
 load_dotenv()
 
 def create_app():
     app = Flask(__name__)
-
-    app.config['SWAGGER'] = {
-        'title': '資產管理系統 (Asset Service) API',
-        'uiversion': 3
-    }
-    Swagger(app)
 
     database_uri = os.environ.get('SQLALCHEMY_DATABASE_URI')
     if not database_uri:
