@@ -11,5 +11,6 @@ dependencies = [
     "python-dotenv==1.0.1",
     "flasgger==0.9.7.1",
     "gunicorn==21.2.0",
-    "flask-jwt-extended==4.6.0"
+    "flask-jwt-extended==4.6.0",
+    "cryptography"
 ]
