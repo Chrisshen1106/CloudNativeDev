@@ -46,12 +46,15 @@
 
     <!-- Table -->
     <div class="card overflow-hidden">
+      <div v-if="error && filteredRequests.length === 0" class="mb-4 text-red-500 text-sm">
+        {{ error }}
+      </div>
       <div class="table-container">
         <table class="data-table">
           <thead>
             <tr>
               <th>{{ t('request.requestId') }}</th>
-              <th>{{ t('request.assetName') }}</th>
+              <th>{{ t('request.assetNumber') }}</th>
               <th v-if="authStore.isManager">{{ t('request.requester') }}</th>
               <th>{{ t('request.requestDate') }}</th>
               <th>{{ t('request.faultDescription') }}</th>
@@ -81,6 +84,13 @@
                 <RouterLink :to="`/requests/${req.id}`" class="btn-secondary btn-sm">
                   {{ t('common.detail') }}
                 </RouterLink>
+                <RouterLink
+                  v-if="['pending', 'Pending Review', '待審查'].includes(req.status) && req.requesterId === `U${authStore.currentUser?.id}` && authStore.currentUser?.role !== 'admin'"
+                  :to="`/requests/${req.id}/edit`"
+                  class="btn-primary btn-sm ml-2"
+                >
+                  編輯
+                </RouterLink>
               </td>
             </tr>
           </tbody>
@@ -101,17 +111,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useAssetsStore } from '@/stores/assets'
 import { useRequestsStore } from '@/stores/requests'
-// import { mockUsers } from '@/stores/auth'
 import { useI18n } from '@/composables/useI18n'
 import StatusBadge from '@/components/common/StatusBadge.vue'
 import Pagination from '@/components/common/Pagination.vue'
 
 const authStore = useAuthStore()
-const assetsStore = useAssetsStore()
 const requestsStore = useRequestsStore()
 const { t } = useI18n()
 
@@ -120,22 +127,18 @@ const filterStatus = ref('')
 const currentPage = ref(1)
 const pageSize = 10
 
-
-import { onMounted, watch } from 'vue'
-
 const sourceRequests = ref([])
 const loading = ref(false)
 const error = ref(null)
+
 
 async function loadRequests() {
   loading.value = true
   error.value = null
   try {
-    if (authStore.isManager) {
-      sourceRequests.value = await requestsStore.fetchAll()
-    } else {
-      sourceRequests.value = await requestsStore.fetchByRequesterId(authStore.currentUser?.id)
-    }
+    // fetchAll 會自動依權限過濾
+    await requestsStore.fetchAll(authStore.token)
+    sourceRequests.value = requestsStore.getAll()
   } catch (e) {
     error.value = e.message || '載入失敗'
   } finally {
@@ -144,7 +147,6 @@ async function loadRequests() {
 }
 
 onMounted(loadRequests)
-// 若登入帳號變動則重新載入
 watch(() => authStore.currentUser?.id, loadRequests)
 
 const filteredRequests = computed(() => {
@@ -157,7 +159,9 @@ const filteredRequests = computed(() => {
       getUserName(r.requesterId || '').toLowerCase().includes(q)
     )
   }
-  if (filterStatus.value) list = list.filter((r) => r.status === filterStatus.value)
+  if (filterStatus.value) {
+    list = list.filter((r) => r.status === filterStatus.value)
+  }
   return list
 })
 
@@ -169,14 +173,14 @@ const pagedRequests = computed(() => {
 function resetFilters() {
   searchQuery.value = ''
   filterStatus.value = ''
-  currentPage.value = 1
 }
 
 function getAssetName(assetId) {
-  return assetsStore.getById(assetId)?.name || assetId
+  // 可根據資產 id 顯示名稱
+  return assetId
 }
 
-// function getUserName(userId) {
-//   return mockUsers.find((u) => u.id === userId)?.name || userId
-// }
+function getUserName(userId) {
+  return userId
+}
 </script>

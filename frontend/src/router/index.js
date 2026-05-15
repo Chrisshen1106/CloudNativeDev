@@ -65,6 +65,12 @@ const router = createRouter({
           component: () => import('@/views/requests/RequestDetailView.vue'),
           meta: { title: '申請單詳情', titleEn: 'Request Detail' },
         },
+        {
+          path: 'requests/:id/edit',
+          name: 'RequestEdit',
+          component: () => import('@/views/requests/RequestEditView.vue'),
+          meta: { title: '編輯維修申請', titleEn: 'Edit Repair Request' },
+        },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
