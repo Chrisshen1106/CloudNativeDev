@@ -315,3 +315,39 @@ def delete_asset(id):
         return jsonify({"message": "刪除資產失敗", "error": str(e)}), 500
 
     return jsonify({"success": True}), 200
+
+
+@equipment_bp.route('/asset/status/repairing/<int:id>', methods=['PUT'])
+@jwt_required()
+def set_status_repairing(id):
+    if get_jwt().get('role') != 'admin':
+        return jsonify({"message": "僅管理員可修改資產狀態"}), 403
+
+    equipment = Equipment.query.filter_by(idEquipment=id).first_or_404(description="找不到該資產")
+    equipment.status = 'repairing'
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "更新失敗", "error": str(e)}), 500
+
+    return jsonify({}), 200
+
+
+@equipment_bp.route('/asset/status/in_use/<int:id>', methods=['PUT'])
+@jwt_required()
+def set_status_in_use(id):
+    if get_jwt().get('role') != 'admin':
+        return jsonify({"message": "僅管理員可修改資產狀態"}), 403
+
+    equipment = Equipment.query.filter_by(idEquipment=id).first_or_404(description="找不到該資產")
+    equipment.status = 'in_use'
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "更新失敗", "error": str(e)}), 500
+
+    return jsonify({}), 200
