@@ -35,6 +35,7 @@
           <option value="under_repair">{{ t('request.statuses.under_repair') }}</option>
           <option value="completed">{{ t('request.statuses.completed') }}</option>
           <option value="rejected">{{ t('request.statuses.rejected') }}</option>
+          <option value="approved">{{ t('request.statuses.approved') }}</option>
         </select>
         <button
           v-if="searchQuery || filterStatus"
@@ -160,7 +161,11 @@ const filteredRequests = computed(() => {
     )
   }
   if (filterStatus.value) {
-    list = list.filter((r) => r.status === filterStatus.value)
+    if (filterStatus.value === 'under_repair') {
+      list = list.filter((r) => r.status === 'under_repair' || r.status === 'repairing')
+    } else {
+      list = list.filter((r) => r.status === filterStatus.value)
+    }
   }
   return list
 })

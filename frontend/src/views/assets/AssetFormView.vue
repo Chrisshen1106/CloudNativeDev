@@ -10,7 +10,7 @@
       </h1>
     </div>
 
-    <form @submit.prevent="handleSubmit" class="space-y-5">
+    <form @submit.prevent="createRequestSubmit" class="space-y-5">
       <!-- Basic info -->
       <div class="card p-5">
         <h2 class="section-title">{{ t('asset.basicInfo') }}</h2>
@@ -113,6 +113,28 @@
         <button type="submit" class="btn-primary">
           {{ t('common.save') }}
         </button>
+        <button type="button" class="btn-primary" @click="handleSubmitEmployee" :disabled="employeeLoading">
+          {{ employeeLoading ? t('common.submitting') : '送出維修申請(員工)' }}
+        </button>
+      const employeeLoading = ref(false)
+      async function handleSubmitEmployee() {
+        employeeLoading.value = true
+        try {
+          // 只組維修申請需要的欄位
+          const payload = {
+            idEquipment: form.value.idEquipment || '',
+            issue_description: form.value.issue_description || '',
+            attachments: form.value.attachments || '',
+          }
+          await requestsStore.createRequest(payload)
+          notifStore.add('維修申請已送出', 'success')
+          // router.push('/requests') // 如需跳轉可開啟
+        } catch (e) {
+          notifStore.add(e.message || '維修申請失敗', 'error')
+        } finally {
+          employeeLoading.value = false
+        }
+      }
       </div>
     </form>
   </div>
@@ -186,25 +208,17 @@ onMounted(() => {
   }
 })
 
-async function handleSubmit() {
-  if (isEdit.value) {
-    try {
-      await assetsStore.updateAsset(route.params.id, { ...form.value }, authStore.token)
-      notifStore.add(t('asset.updateSuccess'), 'success')
-      router.push('/assets')
-    } catch (e) {
-      notifStore.add(e.message || '資產更新失敗', 'error')
+
+async function createRequestSubmit() {
+  try {
+    const payload = {
+      ...form.value,
+      attachments: form.value.attachments || '',
     }
-  } else {
-    try {
-      // 新增時 ownerId 也要同時帶成 idUser，確保後端正確歸屬
-      const payload = { ...form.value, idUser: form.value.ownerId }
-      await assetsStore.createAsset(payload, authStore.token)
-      notifStore.add(t('asset.saveSuccess'), 'success')
-      router.push('/assets')
-    } catch (e) {
-      notifStore.add(e.message || '新增失敗', 'error')
-    }
+    await requestsStore.createRequest(payload)
+    notifStore.add('維修申請已送出', 'success')
+    // router.push('/requests') // 如需跳轉可開啟
+  } catch (e) {
+    notifStore.add(e.message || '維修申請失敗', 'error')
   }
 }
-</script>

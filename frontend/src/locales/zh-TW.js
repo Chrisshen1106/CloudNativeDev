@@ -160,8 +160,10 @@ export default {
     statuses: {
       pending: '待審查',
       under_repair: '維修中',
+      repairing: '維修中',
       completed: '維修完成',
       rejected: '拒絕申請',
+      approved: '已審核',
     },
     workflow: {
       submitted: '申請提交',

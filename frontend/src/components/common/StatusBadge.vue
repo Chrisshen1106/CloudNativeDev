@@ -27,6 +27,7 @@ const config = {
   // request statuses
   pending:      { bg: 'bg-blue-50',    text: 'text-blue-700',    dot: 'bg-blue-500' },
   under_repair: { bg: 'bg-amber-50',   text: 'text-amber-700',   dot: 'bg-amber-500' },
+  repairing:    { bg: 'bg-amber-50',   text: 'text-amber-700',   dot: 'bg-amber-500' },
   completed:    { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
   rejected:     { bg: 'bg-red-50',     text: 'text-red-700',     dot: 'bg-red-500' },
 }
