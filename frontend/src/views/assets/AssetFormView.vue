@@ -91,16 +91,16 @@
           </div>
           <div>
             <label class="form-label">{{ t('asset.owner') }} <span class="text-red-500">*</span></label>
-            <select v-model="form.ownerId" class="form-select" required>
+            <select v-model="form.ownerId" class="form-select" required @change="handleUserChange">
               <option value="">-- 選擇負責人 --</option>
-              <option v-for="user in holderUsers" :key="user.id" :value="user.id">
-                {{ user.name }} ({{ user.department }})
+              <option v-for="user in holderUsers" :key="user.idUser || user.id" :value="user.idUser || user.id">
+                {{ user.name }} ({{ user.department || user.departmentName || '' }})
               </option>
             </select>
           </div>
           <div>
             <label class="form-label">{{ t('asset.department') }}</label>
-            <input v-model="form.department" type="text" class="form-input" placeholder="例：研發部" />
+            <input v-model="form.department" type="text" class="form-input" placeholder="例：研發部" readonly />
           </div>
         </div>
       </div>
@@ -119,10 +119,12 @@
 </template>
 
 <script setup>
+
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAssetsStore } from '@/stores/assets'
-// import { mockUsers } from '@/stores/auth'
+import { useRequestsStore } from '@/stores/requests'
+import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useI18n } from '@/composables/useI18n'
 
@@ -133,7 +135,31 @@ const notifStore = useNotificationsStore()
 const { t } = useI18n()
 
 const isEdit = computed(() => !!route.params.id)
-// const holderUsers = computed(() => mockUsers.filter((u) => u.role === 'holder'))
+const requestsStore = useRequestsStore()
+const authStore = useAuthStore()
+
+const holderUsers = ref([])
+// 當選擇負責人時自動帶出部門
+function handleUserChange() {
+  const user = holderUsers.value.find(u => (u.idUser || u.id) == form.value.ownerId)
+  form.value.department = user ? (user.department || user.departmentName || '') : ''
+}
+onMounted(async () => {
+  try {
+    const users = await authStore.fetchAllUsers()
+    holderUsers.value = users
+  } catch (e) {
+    holderUsers.value = []
+  }
+  if (isEdit.value) {
+    try {
+      const asset = await assetsStore.getAssetDetail(route.params.id, authStore.token)
+      if (asset) Object.assign(form.value, asset)
+    } catch (e) {
+      notifStore.add('取得資產詳情失敗', 'error')
+    }
+  }
+})
 
 const form = ref({
   name: '',
@@ -149,7 +175,7 @@ const form = ref({
   department: '',
   activationDate: '',
   warrantyExpiry: '',
-  status: 'normal',
+  status: '',
   notes: '',
 })
 
@@ -160,15 +186,25 @@ onMounted(() => {
   }
 })
 
-function handleSubmit() {
+async function handleSubmit() {
   if (isEdit.value) {
-    assetsStore.update(route.params.id, { ...form.value })
-    notifStore.add(t('asset.updateSuccess'), 'success')
-    router.push(`/assets/${route.params.id}`)
+    try {
+      await assetsStore.updateAsset(route.params.id, { ...form.value }, authStore.token)
+      notifStore.add(t('asset.updateSuccess'), 'success')
+      router.push('/assets')
+    } catch (e) {
+      notifStore.add(e.message || '資產更新失敗', 'error')
+    }
   } else {
-    const newAsset = assetsStore.add({ ...form.value })
-    notifStore.add(t('asset.saveSuccess'), 'success')
-    router.push(`/assets/${newAsset.id}`)
+    try {
+      // 新增時 ownerId 也要同時帶成 idUser，確保後端正確歸屬
+      const payload = { ...form.value, idUser: form.value.ownerId }
+      await assetsStore.createAsset(payload, authStore.token)
+      notifStore.add(t('asset.saveSuccess'), 'success')
+      router.push('/assets')
+    } catch (e) {
+      notifStore.add(e.message || '新增失敗', 'error')
+    }
   }
 }
 </script>

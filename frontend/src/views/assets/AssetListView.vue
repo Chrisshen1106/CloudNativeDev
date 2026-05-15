@@ -52,6 +52,9 @@
 
     <!-- Table -->
     <div class="card overflow-hidden">
+      <div v-if="errorMsg && filteredAssets.length === 0" class="mb-4 text-red-500 text-sm">
+        {{ errorMsg }}
+      </div>
       <div class="table-container">
         <table class="data-table">
           <thead>
@@ -91,10 +94,19 @@
               <td><StatusBadge :status="asset.status" type="asset" /></td>
               <td class="text-center">
                 <div class="flex items-center justify-center gap-2">
-                  <RouterLink
-                    :to="`/assets/${asset.id}`"
+                  <button
                     class="btn-secondary btn-sm"
-                  >{{ t('common.detail') }}</RouterLink>
+                    @click="openDetailModal(asset.idEquipment || asset.id)"
+                  >{{ t('common.detail') }}</button>
+                  <!-- 詳情 Modal 直接寫在這裡（每一列一個 Teleport） -->
+                  <Teleport to="body">
+                    <div v-if="showDetailModal && detailAssetId === (asset.idEquipment || asset.id)" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="closeDetailModal">
+                      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="closeDetailModal"></div>
+                      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8 animate-modal">
+                        <AssetDetailView v-if="detailAssetId" :id="String(detailAssetId)" modal @close="closeDetailModal" />
+                      </div>
+                    </div>
+                  </Teleport>
                   <RouterLink
                     v-if="authStore.isManager"
                     :to="`/assets/${asset.id}/edit`"
@@ -106,7 +118,6 @@
           </tbody>
         </table>
       </div>
-
       <!-- Pagination -->
       <div class="px-4 pb-4">
         <Pagination
@@ -121,7 +132,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import AssetDetailView from './AssetDetailView.vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useAssetsStore } from '@/stores/assets'
 // import { mockUsers } from '@/stores/auth'
@@ -129,21 +141,61 @@ import { useI18n } from '@/composables/useI18n'
 import StatusBadge from '@/components/common/StatusBadge.vue'
 import Pagination from '@/components/common/Pagination.vue'
 
+
 const authStore = useAuthStore()
 const assetsStore = useAssetsStore()
 const { t } = useI18n()
 
+const showDetailModal = ref(false)
+const detailAsset = ref(null)
+const detailLoading = ref(false)
+const detailError = ref('')
+
+const detailAssetId = ref(null)
+function openDetailModal(assetId) {
+  console.log('openDetailModal', assetId)
+  detailAssetId.value = assetId
+  showDetailModal.value = true
+}
+function closeDetailModal() {
+  showDetailModal.value = false
+}
+
+
+const errorMsg = ref('')
+async function fetchAssets() {
+  errorMsg.value = ''
+  console.log('authStore.token', authStore.token)
+  if (authStore.token) {
+    try {
+      await assetsStore.fetchUserAssets(authStore.token)
+      // 這裡加 log
+      console.log('authStore.currentUser', authStore.currentUser)
+      console.log('authStore.currentUser.sub', authStore.currentUser?.sub)
+      console.log('assetsStore.assets', assetsStore.assets)
+    } catch (e) {
+      errorMsg.value = e.message || '取得資產失敗'
+      console.error(e)
+    }
+  }
+}
+              
+onBeforeUnmount(() => {
+  window.removeEventListener('refresh-assets', fetchAssets)
+})
+onMounted(() => {
+  console.log('token:', authStore.token) // 應該要有 Bearer 開頭
+  fetchAssets()
+  window.addEventListener('refresh-assets', fetchAssets)
+})
 const searchQuery = ref('')
 const filterCategory = ref('')
 const filterStatus = ref('')
 const currentPage = ref(1)
 const pageSize = 10
 
-const sourceAssets = computed(() =>
-  authStore.isManager
-    ? assetsStore.getAll()
-    : assetsStore.getByOwnerId(authStore.currentUser?.id)
-)
+// user 直接顯示 API 回傳的所有資產，不再用 ownerId 過濾
+const sourceAssets = computed(() => assetsStore.getAll())
 
 const filteredAssets = computed(() => {
   let list = sourceAssets.value
@@ -172,6 +224,7 @@ function resetFilters() {
   filterCategory.value = ''
   filterStatus.value = ''
   currentPage.value = 1
+  fetchAssets(1)
 }
 
 

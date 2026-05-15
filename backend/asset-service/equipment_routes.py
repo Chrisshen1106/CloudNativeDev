@@ -62,7 +62,7 @@ def get_user_assets():
     if role != 'admin':
         query = query.filter_by(idUser=user_id)
 
-    pagination = query.order_by(Equipment.idEquipment.desc()).paginate(page=page, per_page=page_size)
+    equipments = query.order_by(Equipment.idEquipment.desc()).all()
 
     items = [
         {
@@ -72,15 +72,13 @@ def get_user_assets():
             "model": e.model,
             "location": e.location,
             "department": e.department,
-            "status": e.status,
+            "status": e.status, 
         }
-        for e in pagination.items
+        for e in equipments
     ]
 
     return jsonify({
-        "total": pagination.total,
-        "page": pagination.page,
-        "pageSize": pagination.per_page,
+        "total": len(items),
         "items": items,
     }), 200
 
@@ -216,10 +214,16 @@ def create_asset():
     if not data:
         return jsonify({"message": "未提供資料"}), 400
 
-    equipment = Equipment(idUser=int(get_jwt_identity()))
+
+    # 若有 ownerId，則 idUser 也設為 ownerId，確保資產歸屬正確
+    id_user = data.get('ownerId')
+    if id_user is not None:
+      equipment = Equipment(idUser=id_user)
+    else:
+      equipment = Equipment(idUser=int(get_jwt_identity()))
     for api_key, model_attr in FIELD_MAP.items():
-        if api_key in data:
-            setattr(equipment, model_attr, data[api_key])
+      if api_key in data:
+        setattr(equipment, model_attr, data[api_key])
 
     try:
         db.session.add(equipment)

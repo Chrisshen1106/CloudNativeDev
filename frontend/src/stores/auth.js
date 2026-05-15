@@ -21,17 +21,16 @@ export const useAuthStore = defineStore('auth', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       })
+      const data = await res.json()
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.message || '登入失敗')
+        throw new Error(data?.message || '登入失敗')
       }
-      const user = await res.json()
-      console.log('JWT token:', user.token) // 新增這一行
-      currentUser.value = user
-      token.value = user.token
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
-      localStorage.setItem(TOKEN_KEY, user.token)
-      return { success: true, user }
+      console.log('JWT token:', data.token)
+      currentUser.value = data
+      token.value = 'Bearer ' + data.token
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+      localStorage.setItem(TOKEN_KEY, 'Bearer ' + data.token)
+      return { success: true, user: data }
     } catch (e) {
       currentUser.value = null
       token.value = ''
@@ -60,5 +59,16 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem(TOKEN_KEY)
   }
 
-  return { currentUser, token, isLoggedIn, isManager, isHolder, login, logout }
+  // 取得所有使用者資料
+  async function fetchAllUsers() {
+    const res = await fetch('/api/users', {
+      headers: {
+        'Authorization': localStorage.getItem('ams_token') || '',
+      },
+    })
+    if (!res.ok) throw new Error('取得使用者資料失敗')
+    return await res.json()
+  }
+
+  return { currentUser, token, isLoggedIn, isManager, isHolder, login, logout, fetchAllUsers }
 })

@@ -12,6 +12,14 @@
       <StatusBadge v-if="request" :status="request.status" type="request" />
     </div>
 
+    <!-- 編輯按鈕：僅本人且狀態為 pending 可見，修正為直接比對 applicant_id 數字型別 -->
+    <!-- 僅非 admin 本人且狀態為 pending 可見編輯按鈕 -->
+    <div v-if="request && request.status === 'pending' && (request.applicant_id === authStore.currentUser?.id) && authStore.currentUser?.role !== 'admin'" class="flex justify-end mt-8">
+      <RouterLink :to="`/requests/${request.id}/edit`" class="btn-primary">
+        編輯
+      </RouterLink>
+    </div>
+
     <div v-if="!request" class="card p-12 text-center text-gray-400">
       <p class="text-4xl mb-2"></p>
       <p>找不到此申請單</p>
@@ -58,15 +66,10 @@
             <span class="detail-label">{{ t('request.requestId') }}</span>
             <span class="detail-value font-mono text-indigo-600 font-medium">{{ request.id }}</span>
           </div>
-          <div class="detail-row">
-            <span class="detail-label">資產名稱</span>
-            <RouterLink :to="`/assets/${request.assetId}`" class="detail-value text-indigo-600 hover:underline font-medium">
-              {{ getAssetName(request.assetId) }}
-            </RouterLink>
-          </div>
+          <!-- 資產編號欄位（直接顯示 id） -->
           <div class="detail-row">
             <span class="detail-label">資產編號</span>
-            <span class="detail-value font-mono text-gray-600 text-xs">{{ getAssetNumber(request.assetId) }}</span>
+            <span class="detail-value font-mono text-gray-600 text-xs">{{ request.assetId }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">{{ t('request.requester') }}</span>
@@ -102,10 +105,10 @@
         <h2 class="section-title text-blue-700"> 審查申請</h2>
         <p class="text-sm text-gray-600 mb-4">請審查此維修申請，確認是否同意送修。</p>
         <div class="flex gap-3">
-          <button class="btn-success flex-1" @click="showApproveModal = true">
+          <button class="btn-success flex-1" @click="handleApprove('')">
             {{ t('common.approve') }}
           </button>
-          <button class="btn-danger flex-1" @click="showRejectModal = true">
+          <button class="btn-danger flex-1" @click="handleDeleteRequest">
             {{ t('common.reject') }}
           </button>
         </div>
@@ -143,8 +146,8 @@
         </div>
       </div>
 
-      <!-- Manager Repair Form: under_repair -->
-      <div v-if="authStore.isManager && request.status === 'under_repair'" class="card p-5 border-2 border-amber-100">
+      <!-- Manager Repair Form: approved -->
+      <div v-if="authStore.isManager && request.status === 'approved'" class="card p-5 border-2 border-amber-100">
         <h2 class="section-title text-amber-700"> 填寫維修資訊</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -176,6 +179,16 @@
              {{ t('request.markComplete') }}
           </button>
         </div>
+      </div>
+
+      <!-- 資產狀態：正常使用 -->
+      <div v-if="request.status === 'normal'" class="card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div class="text-2xl"></div>
+          <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-emerald-100 text-emerald-700">正常</span>
+        </div>
+        <p class="text-3xl font-bold text-gray-900 mb-1">0</p>
+        <p class="text-sm text-gray-500">正常使用</p>
       </div>
     </div>
 
@@ -291,9 +304,21 @@ onMounted(async () => {
 })
 
 async function handleApprove(note) {
-  await requestsStore.reviewRequest(requestId.value, { status: 'approved', note })
-  showApproveModal.value = false
-  notifStore.add(t('request.approveSuccess'), 'success')
+  // 只傳數字 id
+  const id = request.value?.id?.replace(/[^\d]/g, '')
+  if (!id) {
+    notifStore.add('找不到申請單編號', 'error')
+    return
+  }
+  try {
+    await requestsStore.reviewRequest(id, { status: 'approved', note })
+    showApproveModal.value = false
+    notifStore.add(t('request.approveSuccess'), 'success')
+    // 可選：重新整理或跳轉
+    router.push('/requests')
+  } catch (e) {
+    notifStore.add(e.message || '審核失敗', 'error')
+  }
 }
 
 async function handleReject(reason) {
@@ -308,10 +333,34 @@ async function handleSaveRepair() {
 }
 
 async function handleComplete() {
-  await requestsStore.editRequest(requestId.value, { ...repairForm.value })
-  await requestsStore.completeRequest(requestId.value, { ...repairForm.value })
-  showCompleteModal.value = false
-  notifStore.add(t('request.completeSuccess'), 'success')
+  try {
+    await requestsStore.completeRequest(requestId.value, { ...repairForm.value })
+    showCompleteModal.value = false
+    notifStore.add(t('request.completeSuccess'), 'success')
+    // 新增動畫與延遲跳轉
+    notifStore.add('維修完成，將自動返回列表', 'success')
+    setTimeout(() => {
+      router.push('/requests')
+    }, 1500)
+  } catch (e) {
+    notifStore.add(e.message || '維修完成失敗', 'error')
+  }
+}
+
+async function handleDeleteRequest() {
+  // 只取數字部分傳給 deleteRequest
+  const id = request.value?.id?.replace(/[^\d]/g, '')
+  if (!id) {
+    notifStore.add('找不到申請單編號', 'error')
+    return
+  }
+  try {
+    await requestsStore.deleteRequest(id)
+    notifStore.add('維修單已刪除', 'success')
+    router.push('/requests')
+  } catch (e) {
+    notifStore.add(e.message || '刪除失敗', 'error')
+  }
 }
 
 function getAssetName(assetId) {
@@ -322,9 +371,10 @@ function getAssetNumber(assetId) {
   return assetsStore.getById(assetId)?.assetNumber || ''
 }
 
-// function getUserName(userId) {
-//   return mockUsers.find((u) => u.id === userId)?.name || userId
-// }
+function getUserName(userId) {
+  // 目前沒有 users 資料，直接回傳 userId
+  return userId
+}
 
 function stepDotClass(status) {
   const map = {

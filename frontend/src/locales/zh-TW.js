@@ -120,6 +120,7 @@ export default {
     titleMy: '我的維修申請',
     newRequest: '新增維修申請',
     requestId: '申請單號',
+    assetNumber: '資產編號',
     assetName: '資產名稱',
     requester: '申請人',
     requestDate: '申請日期',

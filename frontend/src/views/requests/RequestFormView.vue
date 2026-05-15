@@ -108,6 +108,7 @@
 </template>
 
 <script setup>
+
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -133,11 +134,15 @@ const form = ref({
 })
 
 // Holders only see their assets; managers see all
-const eligibleAssets = computed(() =>
-  authStore.isManager
-    ? assetsStore.getAll()
-    : assetsStore.getByOwnerId(authStore.currentUser?.id)
-)
+
+const eligibleAssets = ref([])
+
+onMounted(async () => {
+  // 取得個人資產
+  const token = localStorage.getItem('ams_token') || ''
+  const result = await assetsStore.fetchUserAssets(token)
+  eligibleAssets.value = result.items
+})
 
 const selectedAsset = computed(() =>
   form.value.assetId ? assetsStore.getById(form.value.assetId) : null
@@ -183,9 +188,9 @@ async function handleSubmit() {
     const payload = {
       idEquipment: form.value.assetId,
       issue_description: form.value.faultDescription,
-      attachments: form.value.attachments.map(att => att.data),
+      attachments: form.value.attachments.map(att => att.data).join(' '),
     }
-    await requestsStore.createRequest(payload)
+    await requestsStore.submitRepairRequest(payload)
     notifStore.add(t('request.submitSuccess'), 'success')
     router.push(`/requests`)
   } catch (e) {

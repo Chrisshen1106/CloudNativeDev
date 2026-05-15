@@ -1,10 +1,25 @@
+// 編輯維修申請單
+async function editRepairRequest(formId, payload, token) {
+  const id = String(formId).replace(/[^\d]/g, '')
+  const res = await fetch(`/maintenance-api/edit/form/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': token || localStorage.getItem('ams_token') || '',
+    },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error('API error')
+  return await res.json()
+}
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { useAssetsStore } from './assets'
+import { useAuthStore } from './auth'
 
 // API base url
 // 若要走 8002（maintenance），請設 '/maintenance-api'
-const API_BASE = 'http://localhost:8002'
+const API_BASE = '/maintenance-api'
   // 送出維修申請
   async function createRequest(payload) {
     // 確保 attachments 欄位存在
@@ -12,11 +27,11 @@ const API_BASE = 'http://localhost:8002'
       ...payload,
       attachments: payload.attachments !== undefined ? payload.attachments : '',
     }
-    const res = await fetch(`${API_BASE}/api/form`, {
+    const res = await fetch(`${API_BASE}/forms`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
+        'Authorization': localStorage.getItem('ams_token') || '',
       },
       body: JSON.stringify(reqBody),
     })
@@ -26,16 +41,30 @@ const API_BASE = 'http://localhost:8002'
   // 刪除維修單
   async function deleteRequest(formId) {
     const id = formId.replace(/[^\d]/g, '')
-    const res = await fetch(`${API_BASE}/api/form/${id}`, {
+    const res = await fetch(`${API_BASE}/form/${id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
+        'Authorization': localStorage.getItem('ams_token') || '',
       },
     })
     if (res.status === 200) return {}
     if (res.status === 404) throw new Error('Form not found')
     const data = await res.json()
     throw new Error(data.error || 'API error')
+  }
+
+  // 送出維修申請
+  async function submitRepairRequest({ idEquipment, issue_description, attachments = '' }, token) {
+    const res = await fetch('/maintenance-api/form', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token || localStorage.getItem('ams_token') || '',
+      },
+      body: JSON.stringify({ idEquipment, issue_description, attachments }),
+    })
+    if (!res.ok) throw new Error('API error')
+    return await res.json()
   }
 
 export const useRequestsStore = defineStore('requests', () => {
@@ -50,52 +79,75 @@ export const useRequestsStore = defineStore('requests', () => {
     return requests.value.find((r) => r.id === id) || null
   }
 
-  async function fetchAll() {
-    const res = await fetch(`${API_BASE}/api/forms/`, {
+  async function fetchAll(token) {
+    const auth = token || localStorage.getItem('ams_token') || ''
+    const res = await fetch(`${API_BASE}/forms`, {
       headers: {
-        'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
+        'Authorization': auth,
       },
     })
     if (!res.ok) throw new Error('API error')
     const data = await res.json()
-    requests.value = data.items.map(mapApiToRequest)
+    const authStore = useAuthStore()
+    const userId = authStore.currentUser?.id || null
+    let items = data.items.map(mapApiToRequest)
+    // 一般 user 只顯示自己的申請單
+    if (!authStore.isManager && userId) {
+      items = items.filter(item => item.requesterId === `U${userId}`)
+    }
+    requests.value = items
     return requests.value
   }
 
   async function fetchById(id) {
     const formId = id.replace(/[^\d]/g, '')
-    const res = await fetch(`${API_BASE}/api/form/${formId}`, {
+    // 統一從 localStorage.getItem('ams_token') 取得 Bearer ...
+    const token = localStorage.getItem('ams_token') || ''
+    const res = await fetch(`${API_BASE}/form/${formId}`, {
       headers: {
-        'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
+        'Authorization': token,
       },
     })
     if (!res.ok) throw new Error('API error')
     const data = await res.json()
     return mapApiToRequest(data)
   }
-
+  //審核
   async function reviewRequest(formId, { status, note }) {
     const body = note ? { status, note } : { status }
-    const res = await fetch(`${API_BASE}/api/review/${formId}`, {
+    const res = await fetch(`${API_BASE}/review/${formId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
+        'Authorization': localStorage.getItem('ams_token') || '',
       },
       body: JSON.stringify(body),
     })
     if (!res.ok) throw new Error('API error')
     return await res.json()
   }
-
+  //完成
   async function completeRequest(formId, payload) {
-    const res = await fetch(`${API_BASE}/api/complete/${formId}`, {
+    const id = formId.replace(/[^\d]/g, '')
+    // 將前端欄位轉換為後端 API 需要的格式
+    const apiPayload = {
+      repair_description: payload.repairContent,
+      repair_solution: payload.repairSolution,
+      repair_cost: payload.repairCost,
+      repair_vendor: payload.repairPersonnel,
+      repair_person: payload.repairPerson || '',
+    }
+    // 這裡加 log
+    console.log('completeRequest id', id)
+    console.log('completeRequest payload', apiPayload)
+
+    const res = await fetch(`${API_BASE}/complete/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
+        'Authorization': localStorage.getItem('ams_token') || '',
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(apiPayload),
     })
     if (!res.ok) throw new Error('API error')
     return await res.json()
@@ -104,11 +156,11 @@ export const useRequestsStore = defineStore('requests', () => {
   // 編輯維修單
   async function editRequest(formId, payload) {
     const id = formId.replace(/[^\d]/g, '')
-    const res = await fetch(`${API_BASE}/api/edit/form/${id}`, {
+    const res = await fetch(`${API_BASE}/edit/form/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined,
+        'Authorization': localStorage.getItem('ams_token') || '',
       },
       body: JSON.stringify(payload),
     })
@@ -161,5 +213,7 @@ export const useRequestsStore = defineStore('requests', () => {
     editRequest,
     reviewRequest,
     completeRequest,
+    submitRepairRequest,
+    editRepairRequest,
   }
 })

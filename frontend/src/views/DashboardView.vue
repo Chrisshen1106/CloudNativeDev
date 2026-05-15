@@ -19,8 +19,7 @@
             :class="stat.tagClass"
           >{{ stat.tag }}</span>
         </div>
-        <!-- 數字暫時移除 -->
-        <!-- <p class="text-3xl font-bold text-gray-900 mb-1">{{ stat.value }}</p> -->
+        <p class="text-3xl font-bold text-gray-900 mb-1">{{ stat.value }}</p>
         <p class="text-sm text-gray-500">{{ stat.label }}</p>
       </div>
     </div>
@@ -91,7 +90,27 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+const assetError = ref('')
+onMounted(async () => {
+  // 自動載入資產與申請單資料
+  if (authStore.token) {
+    try {
+      await assetsStore.fetchUserAssets(authStore.token)
+    } catch (e) {
+      // 不顯示錯誤訊息
+    }
+    try {
+      if (authStore.isManager) {
+        await requestsStore.fetchAll(authStore.token)
+      } else {
+        await requestsStore.fetchByRequesterId(authStore.currentUser?.id)
+      }
+    } catch (e) {
+      // 不顯示錯誤訊息
+    }
+  }
+})
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useAssetsStore } from '@/stores/assets'
@@ -105,19 +124,9 @@ const requestsStore = useRequestsStore()
 const router = useRouter()
 const { t, currentLocale } = useI18n()
 
-const userId = computed(() => authStore.currentUser?.id)
-
-const myAssets = computed(() =>
-  authStore.isManager
-    ? assetsStore.getAll()
-    : assetsStore.getByOwnerId(userId.value)
-)
-
-const myRequests = computed(() =>
-  authStore.isManager
-    ? requestsStore.getAll()
-    : requestsStore.getByRequesterId(userId.value)
-)
+// 直接顯示 API 回傳的資產，不再用 getByOwnerId
+const myAssets = computed(() => assetsStore.getAll())
+const myRequests = computed(() => requestsStore.getAll())
 
 const pendingCount = computed(() =>
   requestsStore.getAll().filter((r) => r.status === 'pending').length
