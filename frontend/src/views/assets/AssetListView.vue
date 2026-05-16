@@ -40,7 +40,7 @@
           <option value="">{{ t('asset.filterStatus') }}: {{ t('common.all') }}</option>
           <option value="in_use">{{ t('asset.statuses.in_use') }}</option>
           <option value="repairing">{{ t('asset.statuses.repairing') }}</option>
-          <option value="scrapped">{{ t('asset.statuses.scrapped') }}</option>
+
         </select>
         <!-- Reset -->
         <button
@@ -204,10 +204,10 @@ const filteredAssets = computed(() => {
   if (q) {
     list = list.filter((a) =>
       a.name.toLowerCase().includes(q) ||
-      a.assetNumber.toLowerCase().includes(q) ||
-      a.model.toLowerCase().includes(q) ||
-      a.location.toLowerCase().includes(q) ||
-      (getUserName(a.ownerId)).toLowerCase().includes(q)
+      (a.assetNumber ? a.assetNumber.toString().toLowerCase() : '').includes(q) ||
+      (a.model ? a.model.toString().toLowerCase() : '').includes(q) ||
+      (a.location ? a.location.toString().toLowerCase() : '').includes(q) ||
+      (getUserName(a.ownerId) ? getUserName(a.ownerId).toString().toLowerCase() : '').includes(q)
     )
   }
   if (filterCategory.value) list = list.filter((a) => a.category === filterCategory.value)

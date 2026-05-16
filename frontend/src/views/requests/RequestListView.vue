@@ -92,7 +92,21 @@
                 >
                   編輯
                 </RouterLink>
+                <button
+                  v-if="['pending', 'completed'].includes(req.status)"
+                  class="btn-danger btn-sm ml-2"
+                  @click="openDeleteConfirm(req.id)"
+                >刪除</button>
               </td>
+              <div v-if="showDeleteConfirm" style="position:fixed;top:30%;left:50%;transform:translate(-50%,0);z-index:1000;">
+                <div class="bg-white rounded shadow-lg p-6 w-80 border border-gray-200">
+                  <div class="mb-4 text-lg font-semibold text-gray-800">確認要刪除此筆維修訂單？</div>
+                  <div class="flex justify-end gap-3">
+                    <button class="btn-secondary" @click="showDeleteConfirm = false">取消</button>
+                    <button class="btn-danger" @click="handleDeleteRequest">確認刪除</button>
+                  </div>
+                </div>
+              </div>
             </tr>
           </tbody>
         </table>
@@ -146,7 +160,38 @@ async function loadRequests() {
     loading.value = false
   }
 }
+const showDeleteConfirm = ref(false)
+const deleteTargetId = ref(null)
 
+function openDeleteConfirm(id) {
+  deleteTargetId.value = id
+  showDeleteConfirm.value = true
+}
+
+async function handleDeleteRequest() {
+  try {
+    let id = deleteTargetId.value
+    if (typeof id === 'string') {
+      const match = id.match(/(\d+)/)
+      if (match) id = match[1]
+    }
+    const token = authStore.token || localStorage.getItem('ams_token') || ''
+    const res = await fetch(`/maintenance-api/form/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': token
+      }
+    })
+    if (!res.ok) throw new Error('刪除失敗')
+    showDeleteConfirm.value = false
+    deleteTargetId.value = null
+    await loadRequests()
+  } catch (e) {
+    showDeleteConfirm.value = false
+    deleteTargetId.value = null
+    // 可加通知：刪除失敗
+  }
+}
 onMounted(loadRequests)
 watch(() => authStore.currentUser?.id, loadRequests)
 
@@ -188,4 +233,5 @@ function getAssetName(assetId) {
 function getUserName(userId) {
   return userId
 }
+
 </script>

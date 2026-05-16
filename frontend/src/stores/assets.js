@@ -1,3 +1,25 @@
+  // 刪除資產
+  async function deleteAsset(id, token) {
+    // 只傳純數字 id
+    if (typeof id === 'string') {
+      const match = id.match(/(\d+)/)
+      if (match) id = match[1]
+    }
+    const res = await fetch(`${API_BASE}/assets/${id}`, {
+      method: 'DELETE',
+      headers: {
+        ...(token ? { 'Authorization': token } : {})
+      }
+    })
+    if (!res.ok) throw new Error('刪除資產失敗')
+    // 刪除本地 assets 資料
+    const idx = assets.value.findIndex(a => String(a.id).replace(/\D/g, '') === String(id))
+    if (idx !== -1) {
+      assets.value.splice(idx, 1)
+      persist()
+    }
+    return true
+  }
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
@@ -187,6 +209,7 @@ export const useAssetsStore = defineStore('assets', () => {
     createAsset,
     updateAsset,
     setAssetStatusRepairing,
-    setAssetStatusInUse
+    setAssetStatusInUse,
+    deleteAsset
   }
 })

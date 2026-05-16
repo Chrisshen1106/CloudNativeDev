@@ -107,7 +107,7 @@ export default {
     },
     statuses: {
       in_use: 'In Use',
-      repairing: 'Under Repair',
+      repairing: 'repairing',
       scrapped: 'Scrapped',
     },
     searchPlaceholder: 'Search asset name, number, model...',

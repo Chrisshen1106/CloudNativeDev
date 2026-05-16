@@ -10,7 +10,7 @@
       </h1>
     </div>
 
-    <form @submit.prevent="createRequestSubmit" class="space-y-5">
+    <form @submit.prevent="handleAssetSubmit" class="space-y-5">
       <!-- Basic info -->
       <div class="card p-5">
         <h2 class="section-title">{{ t('asset.basicInfo') }}</h2>
@@ -33,7 +33,7 @@
             <select v-model="form.status" class="form-select">
               <option value="in_use">{{ t('asset.statuses.in_use') }}</option>
               <option value="repairing">{{ t('asset.statuses.repairing') }}</option>
-              <option value="scrapped">{{ t('asset.statuses.scrapped') }}</option>
+
             </select>
           </div>
           <div>
@@ -114,28 +114,18 @@
         <button type="submit" class="btn-primary">
           {{ t('common.save') }}
         </button>
-        <button type="button" class="btn-primary" @click="handleSubmitEmployee" :disabled="employeeLoading">
-          {{ employeeLoading ? t('common.submitting') : '送出維修申請(員工)' }}
+        <button v-if="isEdit" type="button" class="btn-danger" @click="showDeleteConfirm = true">
+          刪除資產
         </button>
-      const employeeLoading = ref(false)
-      async function handleSubmitEmployee() {
-        employeeLoading.value = true
-        try {
-          // 只組維修申請需要的欄位
-          const payload = {
-            idEquipment: form.value.idEquipment || '',
-            issue_description: form.value.issue_description || '',
-            attachments: form.value.attachments || '',
-          }
-          await requestsStore.createRequest(payload)
-          notifStore.add('維修申請已送出', 'success')
-          // router.push('/requests') // 如需跳轉可開啟
-        } catch (e) {
-          notifStore.add(e.message || '維修申請失敗', 'error')
-        } finally {
-          employeeLoading.value = false
-        }
-      }
+      </div>
+      <div v-if="showDeleteConfirm" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+        <div class="bg-white rounded shadow-lg p-6 w-80">
+          <div class="mb-4 text-lg font-semibold text-gray-800">確認刪除？</div>
+          <div class="flex justify-end gap-3">
+            <button class="btn-secondary" @click="showDeleteConfirm = false">取消</button>
+            <button class="btn-danger" @click="handleDeleteAsset">確認刪除</button>
+          </div>
+        </div>
       </div>
     </form>
   </div>
@@ -210,16 +200,60 @@ onMounted(() => {
 })
 
 
-async function createRequestSubmit() {
+
+async function handleAssetSubmit() {
   try {
-    const payload = {
-      ...form.value,
-      attachments: form.value.attachments || '',
+    if (isEdit.value) {
+      // 編輯資產
+      await assetsStore.updateAsset(route.params.id, form.value, authStore.token)
+      notifStore.add('資產已更新', 'success')
+    } else {
+      // 新增資產
+      await assetsStore.createAsset(form.value, authStore.token)
+      notifStore.add('資產已新增', 'success')
     }
-    await requestsStore.createRequest(payload)
-    notifStore.add('維修申請已送出', 'success')
-    // router.push('/requests') // 如需跳轉可開啟
+    router.back()
   } catch (e) {
-    notifStore.add(e.message || '維修申請失敗', 'error')
+    notifStore.add(e.message || '儲存失敗', 'error')
   }
 }
+import { onUnmounted } from 'vue'
+    const showDeleteConfirm = ref(false)
+    onUnmounted(() => { showDeleteConfirm.value = false })
+    async function handleDeleteAsset() {
+      try {
+        let id = route.params.id
+        if (typeof id === 'string') {
+          const match = id.match(/(\d+)/)
+          if (match) id = match[1]
+        }
+        const res = await assetsStore.deleteAsset(id, authStore.token)
+        if (res && res.success !== false) {
+          // 取得所有與該資產相關的維修單
+          await requestsStore.fetchAll(authStore.token)
+          const assetIdStr = `A${id}`
+          const relatedRequests = requestsStore.getAll().filter(r => r.assetId === assetIdStr)
+          const token = authStore.token || localStorage.getItem('ams_token') || ''
+          for (const req of relatedRequests) {
+            let reqId = req.id
+            if (typeof reqId === 'string') {
+              const match = reqId.match(/(\d+)/)
+              if (match) reqId = match[1]
+            }
+            await fetch(`/maintenance-api/form/${reqId}`, {
+              method: 'DELETE',
+              headers: { 'Authorization': token }
+            })
+          }
+          notifStore.add('資產已刪除', 'success')
+          showDeleteConfirm.value = false
+          router.push('/assets').then(() => {
+            setTimeout(() => { window.location.reload() }, 100)
+          })
+          return
+        }
+      } catch (e) {
+        showDeleteConfirm.value = false
+      }
+    }
+</script>
