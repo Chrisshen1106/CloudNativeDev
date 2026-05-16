@@ -23,7 +23,9 @@ const label = computed(() => {
 
 const config = {
   // asset statuses
-  normal:       { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
+  in_use:       { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
+  repairing:    { bg: 'bg-amber-50',   text: 'text-amber-700',   dot: 'bg-amber-500' },
+  scrapped:     { bg: 'bg-gray-100',    text: 'text-gray-600',    dot: 'bg-gray-400' },
   // request statuses
   pending:      { bg: 'bg-blue-50',    text: 'text-blue-700',    dot: 'bg-blue-500' },
   under_repair: { bg: 'bg-amber-50',   text: 'text-amber-700',   dot: 'bg-amber-500' },

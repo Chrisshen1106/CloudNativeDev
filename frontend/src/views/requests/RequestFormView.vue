@@ -20,10 +20,10 @@
               v-for="asset in eligibleAssets"
               :key="asset.id"
               :value="asset.id"
-              :disabled="asset.status === 'under_repair'"
+              :disabled="asset.status === 'repairing'"
             >
               {{ asset.assetNumber }} — {{ asset.name }}
-              <template v-if="asset.status === 'under_repair'"> （維修中，不可申請）</template>
+              <template v-if="asset.status === 'repairing'"> （維修中，不可申請）</template>
             </option>
           </select>
           <p v-if="selectedAsset" class="mt-2 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
@@ -149,8 +149,8 @@ const selectedAsset = computed(() =>
 )
 
 function onAssetChange() {
-  // Clear if under_repair
-  if (selectedAsset.value?.status === 'under_repair') {
+  // Clear if repairing
+  if (selectedAsset.value?.status === 'repairing') {
     form.value.assetId = ''
   }
 }

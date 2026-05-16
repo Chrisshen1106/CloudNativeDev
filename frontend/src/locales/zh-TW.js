@@ -106,8 +106,9 @@ export default {
       tablet: '平板類',
     },
     statuses: {
-      normal: '正常使用',
-      under_repair: '維修中',
+      in_use: '正常使用',
+      repairing: '維修中',
+      scrapped: '已報廢',
     },
     searchPlaceholder: '搜尋資產名稱、編號、型號...',
     filterCategory: '分類篩選',
