@@ -46,6 +46,7 @@ class Equipment(db.Model):
     status = db.Column(db.Enum('in_use', 'repairing', 'scrapped'), nullable=False, server_default='in_use')
     idOwner = db.Column(db.Integer, nullable=True)
     notes = db.Column(db.String(255), nullable=True)
+    version = db.Column(db.Integer, nullable=False, default=0, server_default='0')
 
     # is_deleted = db.Column(db.Boolean, default=False)
     # created_at = db.Column(db.DateTime, default=datetime.utcnow)
