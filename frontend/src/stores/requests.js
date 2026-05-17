@@ -115,7 +115,6 @@ export const useRequestsStore = defineStore('requests', () => {
 
   async function fetchById(id) {
     const formId = String(id).replace(/[^\d]/g, '')
-    // 統一從 localStorage.getItem('ams_token') 取得 Bearer ...
     const token = localStorage.getItem('ams_token') || ''
     const res = await fetch(`${API_BASE}/form/${formId}`, {
       headers: {
@@ -124,7 +123,29 @@ export const useRequestsStore = defineStore('requests', () => {
     })
     if (!res.ok) throw new Error('API error')
     const data = await res.json()
-    return mapApiToRequest(data)
+    // 新增 log，檢查 API 回傳內容
+    console.log('fetchById API 回傳', data)
+    // 直接回傳 API 所有欄位（snake_case），並加上 camelCase 對應
+    return {
+      ...data,
+      id: data.idForm ? `REQ-${data.idForm}` : '',
+      assetId: data.idEquipment ? `A${data.idEquipment}` : '',
+      requesterId: data.applicant_id ? `U${data.applicant_id}` : '',
+      faultDescription: data.issue_description,
+      status: data.status,
+      requestDate: data.requestDate,
+      reviewerId: data.reviewer_id ? `U${data.reviewer_id}` : null,
+      reviewDate: data.review_date,
+      reviewNote: data.reviewNote,
+      repairDate: data.repair_start_date,
+      repairContent: data.repair_description,
+      repairSolution: data.repair_solution,
+      repairCost: data.repair_cost,
+      repairPersonnel: data.repair_person,
+      completionDate: data.repair_end_date,
+      attachments: data.attachments || [],
+      reviewerName: data.reviewerName || '',
+    }
   }
   // 審核維修申請（通過/拒絕皆用此 function）
   async function reviewRequest(formId, { status, reviewNote }) {

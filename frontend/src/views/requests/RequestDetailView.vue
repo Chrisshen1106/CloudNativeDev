@@ -97,6 +97,10 @@
               />
             </div>
           </div>
+          <div class="detail-row">
+            <span class="detail-label">維修資訊</span>
+            <span class="detail-value">{{ request.repair_solution || request.repairSolution || '無' }}</span>
+          </div>
         </div>
       </div>
 
