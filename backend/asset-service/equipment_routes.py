@@ -90,6 +90,8 @@ def get_asset(id):
             "repairDate": form.repair_start_date.isoformat() if form.repair_start_date else None,
             "repairCost": float(form.repair_cost) if form.repair_cost is not None else None,
             "completionDate": form.repair_end_date.isoformat() if form.repair_end_date else None,
+            "repair_solution": form.repair_solution,
+            "repair_description": form.repair_description,
         })
 
     return jsonify({

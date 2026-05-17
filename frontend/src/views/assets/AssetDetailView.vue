@@ -65,7 +65,6 @@ function getShortReqId(req) {
   let id = req.idForm || req.id || ''
   if (typeof id === 'number') id = `REQ-${String(id).padStart(3, '0')}`
   else if (/REQ-\d{4}-(\d+)/.test(id)) {
-    // 取末三碼
     const match = id.match(/REQ-\d{4}-(\d+)/)
     if (match) id = `REQ-${match[1].padStart(3, '0')}`
   } else if (/REQ-(\d+)/.test(id)) {
@@ -151,13 +150,14 @@ function categoryIcon(cat) {
             class="rounded-xl border border-gray-100 bg-gray-50 p-4 hover:bg-indigo-100 transition-colors cursor-pointer"
             @click="goToRequestDetail(req)"
           >
+            <!-- <pre>{{ JSON.stringify(req, null, 2) }}</pre> -->
             <div class="flex flex-wrap gap-4 items-center mb-2">
               <span class="font-mono text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">{{ getShortReqId(req) }}</span>
               <span class="text-xs text-gray-500">審查人：{{ req.reviewerName || req.reviewer_id }}</span>
               <span class="text-xs text-gray-500">費用：NT$ {{ (req.repairCost ?? req.repair_cost ?? '').toLocaleString() }}</span>
             </div>
             <div class="mb-1 text-sm text-gray-700"><b>問題：</b>{{ req.faultDescription || req.issue_description }}</div>
-            <div class="mb-1 text-sm text-gray-700"><b>維修說明：</b>{{ req.repairSolution || '無' }}</div>
+            <div class="mb-1 text-sm text-gray-700"><b>維修說明：</b>{{ req.repairSolution || req.repair_solution || req.repairContent || req.repair_description || '無' }}</div>
           </div>
         </div>
       </div>

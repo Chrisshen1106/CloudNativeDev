@@ -30,7 +30,7 @@
                 <div>申請單號：{{ h.idForm }}</div>
                 <div>描述：{{ h.issueDescription }}</div>
                 <div>審核人：{{ h.reviewerName }}</div>
-                <div>維修說明：{{ h.repairDescription }}</div>
+                <div>維修說明：{{ h.repair_solution || h.repairDescription || '無' }}</div>
                 <div>維修費用：{{ h.repairCost }}</div>
                 <div>維修起訖：{{ h.repairStartDate }} ~ {{ h.repairEndDate }}</div>
               </li>
