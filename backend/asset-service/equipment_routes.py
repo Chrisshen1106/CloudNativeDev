@@ -93,22 +93,7 @@ def get_asset(id):
         })
 
     return jsonify({
-        "assetNumber": format_asset_number(equipment),
-        "name": equipment.name,
-        "category": equipment.category,
-        "model": equipment.model,
-        "specs": equipment.spec,
-        "serialNumber": equipment.serial_number,
-        "supplier": equipment.supplier,
-        "purchaseDate": equipment.purchase_date.isoformat() if equipment.purchase_date else None,
-        "purchasePrice": float(equipment.purchase_price) if equipment.purchase_price is not None else None,
-        "location": equipment.location,
-        "ownerId": equipment.idOwner,
-        "department": equipment.department,
-        "activationDate": equipment.start_date.isoformat() if equipment.start_date else None,
-        "warrantyExpiry": equipment.warranty_expiry.isoformat() if equipment.warranty_expiry else None,
-        "status": equipment.status,
-        "notes": equipment.notes,
+        **_equipment_to_dict(equipment),
         "maintenanceHistory": history,
     }), 200
 
@@ -144,6 +129,27 @@ def create_asset():
     return jsonify({"id": equipment.idEquipment}), 201
 
 
+def _equipment_to_dict(equipment):
+    return {
+        "name": equipment.name,
+        "category": equipment.category,
+        "status": equipment.status,
+        "model": equipment.model,
+        "specs": equipment.spec,
+        "serial_Number": equipment.serial_number,
+        "notes": equipment.notes,
+        "supplier": equipment.supplier,
+        "purchase_price": float(equipment.purchase_price) if equipment.purchase_price is not None else None,
+        "purchase_date": equipment.purchase_date.isoformat() if equipment.purchase_date else None,
+        "activationDate": equipment.start_date.isoformat() if equipment.start_date else None,
+        "warrantyExpiry": equipment.warranty_expiry.isoformat() if equipment.warranty_expiry else None,
+        "location": equipment.location,
+        "ownerId": equipment.idOwner,
+        "department": equipment.department,
+        "version": equipment.version,
+    }
+
+
 @equipment_bp.route('/assets/<int:id>', methods=['PUT'])
 @jwt_required()
 def update_asset(id):
@@ -156,9 +162,18 @@ def update_asset(id):
     if not data:
         return jsonify({"message": "未提供資料"}), 400
 
+    client_version = data.get('version')
+    if client_version is None:
+        return jsonify({"message": "缺少 version 欄位"}), 400
+
+    if client_version != equipment.version:
+        return jsonify({"success": False, "content": _equipment_to_dict(equipment)}), 409
+
     for api_key, model_attr in FIELD_MAP.items():
         if api_key in data:
             setattr(equipment, model_attr, data[api_key])
+
+    equipment.version += 1
 
     try:
         db.session.commit()

@@ -14,3 +14,9 @@ dependencies = [
     "flask-jwt-extended==4.6.0",
     "cryptography"
 ]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest",
+    "pytest-flask",
+]
