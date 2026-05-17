@@ -114,7 +114,7 @@ export const useRequestsStore = defineStore('requests', () => {
   }
 
   async function fetchById(id) {
-    const formId = id.replace(/[^\d]/g, '')
+    const formId = String(id).replace(/[^\d]/g, '')
     // 統一從 localStorage.getItem('ams_token') 取得 Bearer ...
     const token = localStorage.getItem('ams_token') || ''
     const res = await fetch(`${API_BASE}/form/${formId}`, {
@@ -129,12 +129,22 @@ export const useRequestsStore = defineStore('requests', () => {
   // 審核維修申請（通過/拒絕皆用此 function）
   async function reviewRequest(formId, { status, reviewNote }) {
     // status: 'approved' 或 'rejected'
+    const authStore = useAuthStore()
+    let reviewer_id = authStore.currentUser?.idUser || authStore.currentUser?.id
+    if (typeof reviewer_id === 'string') {
+      const match = reviewer_id.match(/(\d+)/)
+      reviewer_id = match ? Number(match[1]) : undefined
+    }
+    if (typeof reviewer_id !== 'number' || isNaN(reviewer_id)) reviewer_id = undefined
     const body = reviewNote ? { status, reviewNote } : { status }
+    if (typeof reviewer_id === 'number') body.reviewer_id = reviewer_id
+    console.log('reviewRequest body:', body)
+    const token = localStorage.getItem('ams_token') || ''
     const res = await fetch(`${API_BASE}/review/${formId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': localStorage.getItem('ams_token') || '',
+        'Authorization': token,
       },
       body: JSON.stringify(body),
     })
@@ -149,6 +159,7 @@ export const useRequestsStore = defineStore('requests', () => {
         console.error('自動設資產狀態為repairing失敗', e)
       }
     }
+    console.log('reviewRequest response data:', data)
     return data
   }
   //完成

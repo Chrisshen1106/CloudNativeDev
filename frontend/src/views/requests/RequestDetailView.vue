@@ -328,6 +328,11 @@ async function handleApprove(note) {
   }
   try {
     await requestsStore.reviewRequest(id, { status: 'approved', note })
+    // 取得資產 id，去除非數字字元
+    const assetId = request.value?.assetId?.replace(/[^\d]/g, '')
+    if (assetId) {
+      await assetsStore.setAssetStatusRepairing(assetId, localStorage.getItem('ams_token') || '')
+    }
     showApproveModal.value = false
     notifStore.add(t('request.approveSuccess'), 'success')
     // 可選：重新整理或跳轉
@@ -503,7 +508,21 @@ const timelineSteps = computed(() => {
     note: req.reviewNote,
   })
 
-  if (req.status === 'under_repair') {
+  // 修正：approved 狀態也要顯示維修中（空心灰色）
+  if (req.status === 'approved') {
+    steps.push({
+      label: t('request.workflow.repairing'),
+      date: null,
+      desc: '',
+      status: 'pending', // 空心灰色
+      icon: '',
+      note: null,
+    })
+    return steps
+  }
+
+
+  if (req.status === 'under_repair' || req.status === 'repairing') {
     steps.push({
       label: t('request.workflow.repairing'),
       date: req.repairDate || null,
@@ -512,7 +531,19 @@ const timelineSteps = computed(() => {
       icon: '',
       note: null,
     })
-  } else if (req.status === 'completed') {
+    // 顯示第四個空心灰色點點
+    steps.push({
+      label: t('request.workflow.completed'),
+      date: null,
+      desc: '',
+      status: 'pending', // 空心灰色
+      icon: '',
+      note: null,
+    })
+    return steps
+  }
+
+  if (req.status === 'completed') {
     steps.push({
       label: t('request.workflow.repairing'),
       date: req.repairDate,
@@ -529,6 +560,7 @@ const timelineSteps = computed(() => {
       icon: '',
       note: null,
     })
+    return steps
   }
 
   return steps

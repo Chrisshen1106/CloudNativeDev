@@ -54,9 +54,12 @@ class MaintenanceController:
         try:
             form = self.model.query.get(id)
             if form:
+                print('updateFormById data:', data)
                 for key, value in data.items():
+                    print(f'setting {key} = {value}')
                     setattr(form, key, value)
                 db.session.commit()
+                print('after commit, reviewer_id:', getattr(form, 'reviewer_id', None))
                 return form
             raise ValueError("Form not found")
         except Exception as e:

@@ -61,8 +61,9 @@ const router = createRouter({
         },
         {
           path: 'requests/:id',
-          name: 'RequestDetail',
+          name: 'request-detail',
           component: () => import('@/views/requests/RequestDetailView.vue'),
+          props: true,
           meta: { title: '申請單詳情', titleEn: 'Request Detail' },
         },
         {

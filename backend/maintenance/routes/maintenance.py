@@ -67,9 +67,11 @@ def review_form(form_id: int):
         if claims.get('role') != 'admin':
             return jsonify({'error': 'Admin privileges required'}), 403
         data = request.get_json()
-        valided_data = maintenance_controller.schema(only=['status', 'reviewNote']).load(data)
+        print('review_form data:', data)
+        valided_data = maintenance_controller.schema(only=['status', 'reviewNote', 'reviewer_id']).load(data)
+        print('review_form valided_data:', valided_data)
         updated_form = maintenance_controller.updateFormById(form_id, valided_data)
-        response = maintenance_controller.schema(only=['idForm', 'idEquipment', 'status']).dump(updated_form)
+        response = maintenance_controller.schema(only=['idForm', 'idEquipment', 'status', 'reviewer_id']).dump(updated_form)
         return jsonify(response), 200
     except ValueError as e:
         return jsonify({'error': str(e)}), 404
