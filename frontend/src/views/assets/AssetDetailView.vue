@@ -3,8 +3,25 @@ import { computed, ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useAssetsStore } from '@/stores/assets'
+import { useRequestsStore } from '@/stores/requests'
 import { useI18n } from '@/composables/useI18n'
 import StatusBadge from '@/components/common/StatusBadge.vue'
+const requestsStore = useRequestsStore()
+// 點擊維修紀錄跳轉詳情
+async function goToRequestDetail(req) {
+  // 只取數字部分，並轉成 int
+  let formId = req.idForm || req.id || ''
+  let num = 0
+  if (typeof formId === 'number') num = formId
+  else {
+    const match = String(formId).match(/(\d+)$/)
+    if (match) num = parseInt(match[1], 10)
+  }
+  // 呼叫 requestsStore.fetchById 並跳轉
+  await requestsStore.fetchById(num)
+  router.push({ name: 'request-detail', params: { id: num } })
+}
+
 
 const props = defineProps({
   id: [String, Number],
@@ -41,6 +58,21 @@ async function fetchAssetDetail() {
 // 根據 ID 取得名稱的邏輯（可依實際需求調整）
 function getUserName(ownerId) {
   return ownerId ? `User (${ownerId})` : '未指派'
+}
+
+function getShortReqId(req) {
+  // 支援 REQ-2026-004 或 REQ-004 或數字
+  let id = req.idForm || req.id || ''
+  if (typeof id === 'number') id = `REQ-${String(id).padStart(3, '0')}`
+  else if (/REQ-\d{4}-(\d+)/.test(id)) {
+    // 取末三碼
+    const match = id.match(/REQ-\d{4}-(\d+)/)
+    if (match) id = `REQ-${match[1].padStart(3, '0')}`
+  } else if (/REQ-(\d+)/.test(id)) {
+    const match = id.match(/REQ-(\d+)/)
+    if (match) id = `REQ-${match[1].padStart(3, '0')}`
+  }
+  return id
 }
 
 onMounted(fetchAssetDetail)
@@ -115,18 +147,17 @@ function categoryIcon(cat) {
         <div v-else class="space-y-3">
           <div
             v-for="req in relatedRequests"
-            :key="req.idForm"
-            class="rounded-xl border border-gray-100 bg-gray-50 p-4 hover:bg-indigo-50 transition-colors"
+            :key="req.idForm || req.id"
+            class="rounded-xl border border-gray-100 bg-gray-50 p-4 hover:bg-indigo-100 transition-colors cursor-pointer"
+            @click="goToRequestDetail(req)"
           >
             <div class="flex flex-wrap gap-4 items-center mb-2">
-              <span class="font-mono text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">{{ req.idForm }}</span>
+              <span class="font-mono text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">{{ getShortReqId(req) }}</span>
               <span class="text-xs text-gray-500">審查人：{{ req.reviewerName || req.reviewer_id }}</span>
-              <span class="text-xs text-gray-500">開始：{{ req.repair_start_date }}</span>
-              <span class="text-xs text-gray-500">結束：{{ req.repair_end_date }}</span>
-              <span class="text-xs text-gray-500">費用：NT$ {{ req.repair_cost?.toLocaleString() }}</span>
+              <span class="text-xs text-gray-500">費用：NT$ {{ (req.repairCost ?? req.repair_cost ?? '').toLocaleString() }}</span>
             </div>
-            <div class="mb-1 text-sm text-gray-700"><b>問題：</b>{{ req.issue_description }}</div>
-            <div class="mb-1 text-sm text-gray-700"><b>維修說明：</b>{{ req.repair_description }}</div>
+            <div class="mb-1 text-sm text-gray-700"><b>問題：</b>{{ req.faultDescription || req.issue_description }}</div>
+            <div class="mb-1 text-sm text-gray-700"><b>維修說明：</b>{{ req.repairSolution || '無' }}</div>
           </div>
         </div>
       </div>

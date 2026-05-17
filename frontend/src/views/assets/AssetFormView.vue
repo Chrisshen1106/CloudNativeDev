@@ -101,7 +101,7 @@
           </div>
           <div>
             <label class="form-label">{{ t('asset.department') }}</label>
-            <input v-model="form.department" type="text" class="form-input" placeholder="例：研發部" readonly />
+            <input v-model="form.department" type="text" class="form-input" placeholder="例：研發部" />
           </div>
         </div>
       </div>
@@ -114,9 +114,11 @@
         <button type="submit" class="btn-primary">
           {{ t('common.save') }}
         </button>
+        <!--
         <button v-if="isEdit" type="button" class="btn-danger" @click="showDeleteConfirm = true">
           刪除資產
         </button>
+        -->
       </div>
       <div v-if="showDeleteConfirm" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
         <div class="bg-white rounded shadow-lg p-6 w-80">
@@ -205,11 +207,29 @@ async function handleAssetSubmit() {
   try {
     if (isEdit.value) {
       // 編輯資產
-      await assetsStore.updateAsset(route.params.id, form.value, authStore.token)
+      const payload = {
+        ...form.value,
+        serial_Number: form.value.serialNumber,
+        purchase_price: form.value.purchasePrice,
+        purchase_date: form.value.purchaseDate,
+      }
+      delete payload.serialNumber
+      delete payload.purchasePrice
+      delete payload.purchaseDate
+      await assetsStore.updateAsset(route.params.id, payload, authStore.token)
       notifStore.add('資產已更新', 'success')
     } else {
       // 新增資產
-      await assetsStore.createAsset(form.value, authStore.token)
+      const payload = {
+        ...form.value,
+        serial_Number: form.value.serialNumber,
+        purchase_price: form.value.purchasePrice,
+        purchase_date: form.value.purchaseDate,
+      }
+      delete payload.serialNumber
+      delete payload.purchasePrice
+      delete payload.purchaseDate
+      await assetsStore.createAsset(payload, authStore.token)
       notifStore.add('資產已新增', 'success')
     }
     router.back()
