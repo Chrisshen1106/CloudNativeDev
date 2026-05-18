@@ -47,18 +47,24 @@ def get_user_assets():
 
     equipments = query.order_by(Equipment.idEquipment.desc()).all()
 
-    items = [
-        {
+    items = []
+    for e in equipments:
+        user_department = None
+        if e.idUser:
+            user = User.query.filter_by(idUser=e.idUser).first()
+            if user and user.dept:
+                user_department = user.dept.name
+        items.append({
             "assetNumber": format_asset_number(e),
             "name": e.name,
             "category": e.category,
             "model": e.model,
             "location": e.location,
             "department": e.department,
-            "status": e.status, 
-        }
-        for e in equipments
-    ]
+            "status": e.status,
+            "idUser": e.idUser,
+            "userDepartment": user_department,
+        })
 
     return jsonify({
         "total": len(items),

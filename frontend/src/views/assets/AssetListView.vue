@@ -66,7 +66,7 @@
               <th>{{ t('asset.model') }}</th>
               <th>{{ t('asset.location') }}</th>
               <th v-if="authStore.isManager">{{ t('asset.idUser') }}</th>
-              <th>{{ t('asset.department') }}</th>
+              <th>{{ t('asset.userDepartment') }}</th>
               <th>{{ t('asset.status') }}</th>
               <th class="text-center">{{ t('common.actions') }}</th>
             </tr>
@@ -93,10 +93,10 @@
               <td v-if="authStore.isManager" class="text-gray-600">
                 <div class="text-xs text-gray-400">{{ asset.idUser }}</div>
               </td>
-              <td class="text-gray-600 text-xs">{{ asset.department }}</td>
+              <td class="text-gray-600 text-xs">{{ asset.userDepartment }}</td>
               <td><StatusBadge :status="asset.status" type="asset" /></td>
               <td class="text-center">
-                <div class="flex items-center justify-center gap-2">
+                <div class="flex items-center justify-start gap-2">
                   <button
                     class="btn-secondary btn-sm"
                     @click="openDetailModal(asset.idEquipment || asset.id)"
