@@ -114,7 +114,7 @@
           </div>
           <div>
             <label class="form-label">使用部門</label>
-            <input v-model="form.usageDepartment" type="text" class="form-input" placeholder="例：研發部" />
+            <input v-model="form.userDepartment" type="text" class="form-input" placeholder="例：研發部" />
           </div>
         </div>
       </div>
@@ -175,7 +175,7 @@ function handleUserChange() {
 // 當選擇 idUser 時自動帶出使用部門
 function handleIdUserChange() {
   const user = holderUsers.value.find(u => (u.idUser || u.id) == form.value.idUser)
-  form.value.usageDepartment = user ? (user.department || user.departmentName || '') : ''
+  form.value.userDepartment = user ? (user.department || user.departmentName || '') : ''
 }
 onMounted(async () => {
   try {
@@ -210,7 +210,7 @@ onMounted(async () => {
 const form = ref({
   idEquipment: '', // 資產主鍵
   assetNumber: '', // 資產編號
-  id,
+  id: '', // 資產ID
   name: '',
   category: '',
   model: '',

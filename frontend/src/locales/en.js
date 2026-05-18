@@ -91,6 +91,7 @@ export default {
     owner: 'Owner',
     idUser: 'User ID',
     department: 'Department',
+    userDepartment: 'Using Dept.',
     activationDate: 'Activation Date',
     warrantyExpiry: 'Warranty Expiry',
     status: 'Status',
