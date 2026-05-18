@@ -29,6 +29,7 @@ FIELD_MAP = {
     'ownerId':        'idOwner',
     'idUser':         'idUser',
     'department':     'department',
+    'userDepartment': 'userDepartment',
 }
 
 
@@ -113,20 +114,21 @@ def create_asset():
     if get_jwt().get('role') != 'admin':
         return jsonify({"message": "僅管理員可新增資產"}), 403
 
+
     data = request.get_json()
     if not data:
         return jsonify({"message": "未提供資料"}), 400
 
+    # 若有 idUser，優先設為 idUser，否則 fallback ownerId 或 isOwner
+    id_user = data.get('idUser') or data.get('ownerId') or data.get('isOwner')
+    if id_user is not None:
+        equipment = Equipment(idUser=int(id_user))
+    else:
+        equipment = Equipment(idUser=int(get_jwt_identity()))
 
-        # 若有 idUser，優先設為 idUser，否則 fallback ownerId 或 isOwner
-        id_user = data.get('idUser') or data.get('ownerId') or data.get('isOwner')
-        if id_user is not None:
-            equipment = Equipment(idUser=int(id_user))
-        else:
-            equipment = Equipment(idUser=int(get_jwt_identity()))
     for api_key, model_attr in FIELD_MAP.items():
-      if api_key in data:
-        setattr(equipment, model_attr, data[api_key])
+        if api_key in data:
+            setattr(equipment, model_attr, data[api_key])
 
     try:
         db.session.add(equipment)
@@ -156,7 +158,7 @@ def _equipment_to_dict(equipment):
         "ownerId": equipment.idOwner,
         "isOwner": str(equipment.idUser) if equipment.idUser is not None else None,
         "idUser": equipment.idUser,
-        "userDepartment": equipment.owner.dept.name if equipment.owner and equipment.owner.dept else None,
+        "userDepartment": equipment.userDepartment,
         "department": equipment.department,
         "version": equipment.version,
     }
