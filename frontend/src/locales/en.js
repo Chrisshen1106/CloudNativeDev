@@ -89,6 +89,7 @@ export default {
     purchasePrice: 'Purchase Price',
     location: 'Location',
     owner: 'Owner',
+    idUser: 'User ID',
     department: 'Department',
     activationDate: 'Activation Date',
     warrantyExpiry: 'Warranty Expiry',
