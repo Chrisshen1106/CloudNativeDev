@@ -41,6 +41,7 @@ class Equipment(db.Model):
     purchase_price = db.Column(db.Numeric(10, 2))
     location = db.Column(db.String(100))
     department = db.Column(db.String(100))
+    userDepartment = db.Column(db.String(100))
     start_date = db.Column(db.Date)
     warranty_expiry = db.Column(db.Date)
     status = db.Column(db.Enum('in_use', 'repairing', 'scrapped'), nullable=False, server_default='in_use')

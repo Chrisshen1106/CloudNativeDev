@@ -36,6 +36,7 @@ class EquipmentSchema(Schema):
     purchase_price = fields.Decimal(as_string=True, allow_none=True)
     location = fields.Str(validate=validate.Length(max=100), allow_none=True)
     department = fields.Str(validate=validate.Length(max=100), allow_none=True)
+    userDepartment = fields.Str(validate=validate.Length(max=100), allow_none=True)
     start_date = fields.Date(allow_none=True)
     warranty_expiry = fields.Date(allow_none=True)
     status = fields.Str(validate=validate.OneOf(['in_use', 'repairing', 'scrapped']), missing='in_use')

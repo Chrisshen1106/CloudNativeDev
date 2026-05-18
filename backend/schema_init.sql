@@ -27,6 +27,7 @@ CREATE TABLE Equipment(
     purchase_price DECIMAL(10,2),
     location VARCHAR(100),
     department VARCHAR(100),
+    userDepartment VARCHAR(100),
     start_date DATE,
     warranty_expiry DATE,
     status ENUM('in_use','repairing','scrapped'),
