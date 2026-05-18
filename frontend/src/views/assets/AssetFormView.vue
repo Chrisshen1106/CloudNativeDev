@@ -169,7 +169,13 @@ onMounted(async () => {
   if (isEdit.value) {
     try {
       const asset = await assetsStore.getAssetDetail(route.params.id, authStore.token)
-      if (asset) Object.assign(form.value, asset)
+      if (asset) {
+        Object.assign(form.value, asset)
+        // 修正底線命名欄位對應
+        form.value.serialNumber = asset.serial_Number ?? asset.serialNumber ?? ''
+        form.value.purchasePrice = asset.purchase_price ?? asset.purchasePrice ?? null
+        form.value.purchaseDate = asset.purchase_date ?? asset.purchaseDate ?? ''
+      }
     } catch (e) {
       notifStore.add('取得資產詳情失敗', 'error')
     }
@@ -181,10 +187,10 @@ const form = ref({
   category: '',
   model: '',
   specs: '',
-  serialNumber: '',
+  serial_Number: '',
   supplier: '',
-  purchaseDate: '',
-  purchasePrice: null,
+  purchase_date: '',
+  purchase_price: null,
   location: '',
   ownerId: '',
   department: '',
@@ -197,7 +203,13 @@ const form = ref({
 onMounted(() => {
   if (isEdit.value) {
     const asset = assetsStore.getById(route.params.id)
-    if (asset) Object.assign(form.value, asset)
+    if (asset) {
+      Object.assign(form.value, asset)
+      // 修正底線命名欄位對應
+      form.value.serialNumber = asset.serial_Number ?? asset.serialNumber ?? ''
+      form.value.purchasePrice = asset.purchase_price ?? asset.purchasePrice ?? null
+      form.value.purchaseDate = asset.purchase_date ?? asset.purchaseDate ?? ''
+    }
   }
 })
 
@@ -209,9 +221,9 @@ async function handleAssetSubmit() {
       // 編輯資產
       const payload = {
         ...form.value,
-        serial_Number: form.value.serialNumber,
-        purchase_price: form.value.purchasePrice,
-        purchase_date: form.value.purchaseDate,
+        serial_Number: form.value.serialNumber ?? form.value.serial_Number ?? '',
+        purchase_price: form.value.purchasePrice ?? form.value.purchase_price ?? null,
+        purchase_date: form.value.purchaseDate ?? form.value.purchase_date ?? '',
       }
       delete payload.serialNumber
       delete payload.purchasePrice
