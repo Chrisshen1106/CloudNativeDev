@@ -208,6 +208,9 @@ onMounted(async () => {
 })
 
 const form = ref({
+  idEquipment: '', // 資產主鍵
+  assetNumber: '', // 資產編號
+  id,
   name: '',
   category: '',
   model: '',

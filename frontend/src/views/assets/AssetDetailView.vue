@@ -41,18 +41,33 @@ const asset = ref(null)
 const loading = ref(false)
 const errorMsg = ref('')
 
+
+const users = ref([])
 async function fetchAssetDetail() {
   if (!assetId.value) return
   loading.value = true
   errorMsg.value = ''
   try {
     asset.value = await assetsStore.getAssetDetail(assetId.value, authStore.token)
+    // 只有 admin/manager 才撈全部使用者
+    if (authStore.currentUser?.role === 'admin' || authStore.currentUser?.role === 'manager') {
+      users.value = await authStore.fetchAllUsers()
+    } else {
+      users.value = []
+    }
   } catch (e) {
     errorMsg.value = e.message || '取得資產詳情失敗'
     asset.value = null
+    users.value = []
   } finally {
     loading.value = false
   }
+}
+
+function getUserDepartment(idUser) {
+  // 統一只用 users 查找部門，users 沒資料時顯示空字串
+  const user = users.value.find(u => String(u.idUser || u.id) === String(idUser))
+  return user ? (user.department || user.departmentName || '') : ''
 }
 
 // 根據 ID 取得名稱的邏輯（可依實際需求調整）
@@ -114,17 +129,29 @@ function categoryIcon(cat) {
       <!-- debug 資產物件區塊已移除 -->
       <!-- 資產資訊卡片 -->
       <div class="bg-white rounded-2xl shadow p-8 space-y-2 divide-y divide-gray-100">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 pb-4">
+          <!-- 新增：最上方顯示使用者與使用部門，與下方資訊欄對齊 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 mb-2">
+            <div class="flex items-center mb-2">
+              <span class="w-28 text-gray-500">使用者</span>
+              <span>{{ getUserName(asset?.idUser) }}</span>
+            </div>
+            <div class="flex items-center mb-2">
+              <span class="w-28 text-gray-500">使用部門</span>
+              <span>{{ asset?.userDepartment }}</span>
+            </div>
+          </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 pb-4 mt-0">
           <div class="flex items-center mb-2">
             <span class="w-28 text-gray-500">資產編號</span>
-            <span class="font-mono text-indigo-600">{{ asset?.assetNumber ?? '無' }}</span>
+            <span class="font-mono text-indigo-600">{{ asset?.idEquipment || asset?.assetNumber || asset?.id }}</span>
           </div>
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">狀態</span><StatusBadge :status="asset?.status" type="asset" /></div>
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">分類</span><span>{{ asset?.category }}</span></div>
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">型號</span><span>{{ asset?.model }}</span></div>
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">規格</span><span>{{ asset?.specs }}</span></div>
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">序號</span><span class="font-mono">{{ asset?.serial_Number ?? asset?.serialNumber }}</span></div>
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">使用部門</span><span>{{ asset?.department }}</span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">負責部門</span><span>{{ asset?.department }}</span></div>
+          
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">負責人</span><span>{{ getUserName(asset?.ownerId) }}</span></div>
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">存放地點</span><span>{{ asset?.location }}</span></div>
         </div>

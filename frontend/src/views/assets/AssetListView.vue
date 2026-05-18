@@ -65,7 +65,7 @@
               <th>{{ t('asset.category') }}</th>
               <th>{{ t('asset.model') }}</th>
               <th>{{ t('asset.location') }}</th>
-              <th v-if="authStore.isManager">{{ t('asset.owner') }}</th>
+              <th v-if="authStore.isManager">{{ t('asset.idUser') }}</th>
               <th>{{ t('asset.department') }}</th>
               <th>{{ t('asset.status') }}</th>
               <th class="text-center">{{ t('common.actions') }}</th>
@@ -92,7 +92,6 @@
               <td class="text-gray-600 text-xs">{{ asset.location }}</td>
               <td v-if="authStore.isManager" class="text-gray-600">
                 <div class="text-xs text-gray-400">{{ asset.idUser }}</div>
-                <div>{{ getUserName(asset.idUser) }}</div>
               </td>
               <td class="text-gray-600 text-xs">{{ asset.department }}</td>
               <td><StatusBadge :status="asset.status" type="asset" /></td>

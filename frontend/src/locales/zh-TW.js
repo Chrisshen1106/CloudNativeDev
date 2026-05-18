@@ -89,6 +89,7 @@ export default {
     purchasePrice: '採購金額',
     location: '存放地點',
     owner: '負責人',
+    idUser: '使用者ID',
     department: '使用部門',
     activationDate: '啟用日期',
     warrantyExpiry: '保固期限',

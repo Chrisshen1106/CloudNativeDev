@@ -116,6 +116,10 @@ export const useAssetsStore = defineStore('assets', () => {
     })
     if (!res.ok) throw new Error('取得資產詳情失敗')
     const data = await res.json()
+    // 確保回傳物件有 idEquipment 欄位（數字主鍵）
+    if (data && !data.idEquipment) {
+      data.idEquipment = id
+    }
     return data
   }
   

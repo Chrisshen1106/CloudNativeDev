@@ -150,6 +150,7 @@ def _equipment_to_dict(equipment):
         "ownerId": equipment.idOwner,
         "isOwner": str(equipment.idUser) if equipment.idUser is not None else None,
         "idUser": equipment.idUser,
+        "userDepartment": equipment.owner.dept.name if equipment.owner and equipment.owner.dept else None,
         "department": equipment.department,
         "version": equipment.version,
     }
