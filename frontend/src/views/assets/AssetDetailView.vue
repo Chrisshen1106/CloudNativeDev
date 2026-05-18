@@ -123,15 +123,15 @@ function categoryIcon(cat) {
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">分類</span><span>{{ asset?.category }}</span></div>
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">型號</span><span>{{ asset?.model }}</span></div>
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">規格</span><span>{{ asset?.specs }}</span></div>
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">序號</span><span class="font-mono">{{ asset?.serialNumber }}</span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">序號</span><span class="font-mono">{{ asset?.serial_Number }}</span></div>
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">使用部門</span><span>{{ asset?.department }}</span></div>
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">負責人</span><span>{{ getUserName(asset?.ownerId) }}</span></div>
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">存放地點</span><span>{{ asset?.location }}</span></div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 pt-4 pb-4">
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">供應商</span><span>{{ asset?.supplier }}</span></div>
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">購買日期</span><span>{{ asset?.purchaseDate }}</span></div>
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">購買金額</span><span class="font-medium text-green-700">NT$ {{ asset?.purchasePrice?.toLocaleString() }}</span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">購買日期</span><span>{{ asset?.purchase_date }}</span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">購買金額</span><span class="font-medium text-green-700">NT$ {{ asset?.purchase_price?.toLocaleString() }}</span></div>
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">啟用日期</span><span>{{ asset?.activationDate }}</span></div>
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">保固期限</span><span :class="isWarrantyExpired ? 'text-red-600 font-medium' : ''">{{ asset?.warrantyExpiry }}<span v-if="isWarrantyExpired" class="text-xs text-red-500 ml-1">（已過期）</span></span></div>
         </div>
