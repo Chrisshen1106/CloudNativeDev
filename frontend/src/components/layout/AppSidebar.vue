@@ -145,8 +145,14 @@ const navItems = computed(() => {
 })
 
 function isActive(to) {
+  // 僅完全符合才亮起，除了 dashboard 允許 /dashboard 開頭
   if (to === '/dashboard') return route.path === '/dashboard'
-  return route.path.startsWith(to)
+  // 僅 /assets 完全符合 /assets，/assets/new 只亮 /assets/new
+  if (to === '/assets' || to === '/requests') {
+    return route.path === to
+  }
+  // 其他（如 /assets/new, /requests/new）完全符合才亮
+  return route.path === to
 }
 
 function handleLogout() {
