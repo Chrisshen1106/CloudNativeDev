@@ -100,8 +100,21 @@
             </select>
           </div>
           <div>
-            <label class="form-label">{{ t('asset.department') }}</label>
+            <label class="form-label">idUser <span class="text-red-500">*</span></label>
+            <select v-model="form.idUser" class="form-select" required @change="handleIdUserChange">
+              <option value="">-- 選擇 idUser --</option>
+              <option v-for="user in holderUsers" :key="user.idUser || user.id" :value="user.idUser || user.id">
+                {{ user.idUser || user.id }} - {{ user.name }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">負責部門</label>
             <input v-model="form.department" type="text" class="form-input" placeholder="例：研發部" />
+          </div>
+          <div>
+            <label class="form-label">使用部門</label>
+            <input v-model="form.usageDepartment" type="text" class="form-input" placeholder="例：研發部" />
           </div>
         </div>
       </div>
@@ -159,6 +172,11 @@ function handleUserChange() {
   const user = holderUsers.value.find(u => (u.idUser || u.id) == form.value.ownerId)
   form.value.department = user ? (user.department || user.departmentName || '') : ''
 }
+// 當選擇 idUser 時自動帶出使用部門
+function handleIdUserChange() {
+  const user = holderUsers.value.find(u => (u.idUser || u.id) == form.value.idUser)
+  form.value.usageDepartment = user ? (user.department || user.departmentName || '') : ''
+}
 onMounted(async () => {
   try {
     const users = await authStore.fetchAllUsers()
@@ -170,6 +188,13 @@ onMounted(async () => {
     try {
       const asset = await assetsStore.getAssetDetail(route.params.id, authStore.token)
       if (asset) {
+        // idOwner (string) 轉 int 給 idUser
+        if (asset.idOwner && !asset.idUser) {
+          form.value.idUser = parseInt(asset.idOwner, 10)
+        } else if (asset.idUser) {
+          form.value.idUser = asset.idUser
+        }
+        // 其餘欄位
         Object.assign(form.value, asset)
         // 修正底線命名欄位對應
         form.value.serialNumber = asset.serial_Number ?? asset.serialNumber ?? ''
@@ -193,6 +218,7 @@ const form = ref({
   purchase_price: null,
   location: '',
   ownerId: '',
+  idUser: '',
   department: '',
   activationDate: '',
   warrantyExpiry: '',
@@ -204,6 +230,12 @@ onMounted(() => {
   if (isEdit.value) {
     const asset = assetsStore.getById(route.params.id)
     if (asset) {
+      // idOwner (string) 轉 int 給 idUser
+      if (asset.idOwner && !asset.idUser) {
+        form.value.idUser = parseInt(asset.idOwner, 10)
+      } else if (asset.idUser) {
+        form.value.idUser = asset.idUser
+      }
       Object.assign(form.value, asset)
       // 修正底線命名欄位對應
       form.value.serialNumber = asset.serial_Number ?? asset.serialNumber ?? ''
@@ -217,30 +249,23 @@ onMounted(() => {
 
 async function handleAssetSubmit() {
   try {
+    // idUser (int) 轉 string 給 isOwner
+    let payload = {
+      ...form.value,
+      serial_Number: form.value.serialNumber ?? form.value.serial_Number ?? '',
+      purchase_price: form.value.purchasePrice ?? form.value.purchase_price ?? null,
+      purchase_date: form.value.purchaseDate ?? form.value.purchase_date ?? '',
+    }
+    if (payload.idUser) {
+      payload.isOwner = String(payload.idUser)
+    }
+    delete payload.serialNumber
+    delete payload.purchasePrice
+    delete payload.purchaseDate
     if (isEdit.value) {
-      // 編輯資產
-      const payload = {
-        ...form.value,
-        serial_Number: form.value.serialNumber ?? form.value.serial_Number ?? '',
-        purchase_price: form.value.purchasePrice ?? form.value.purchase_price ?? null,
-        purchase_date: form.value.purchaseDate ?? form.value.purchase_date ?? '',
-      }
-      delete payload.serialNumber
-      delete payload.purchasePrice
-      delete payload.purchaseDate
       await assetsStore.updateAsset(route.params.id, payload, authStore.token)
       notifStore.add('資產已更新', 'success')
     } else {
-      // 新增資產
-      const payload = {
-        ...form.value,
-        serial_Number: form.value.serialNumber,
-        purchase_price: form.value.purchasePrice,
-        purchase_date: form.value.purchaseDate,
-      }
-      delete payload.serialNumber
-      delete payload.purchasePrice
-      delete payload.purchaseDate
       await assetsStore.createAsset(payload, authStore.token)
       notifStore.add('資產已新增', 'success')
     }

@@ -27,6 +27,7 @@ FIELD_MAP = {
     'warrantyExpiry': 'warranty_expiry',
     'location':       'location',
     'ownerId':        'idOwner',
+    'idUser':         'idUser',
     'department':     'department',
 }
 
@@ -111,12 +112,12 @@ def create_asset():
         return jsonify({"message": "未提供資料"}), 400
 
 
-    # 若有 ownerId，則 idUser 也設為 ownerId，確保資產歸屬正確
-    id_user = data.get('ownerId')
-    if id_user is not None:
-      equipment = Equipment(idUser=id_user)
-    else:
-      equipment = Equipment(idUser=int(get_jwt_identity()))
+        # 若有 idUser，優先設為 idUser，否則 fallback ownerId 或 isOwner
+        id_user = data.get('idUser') or data.get('ownerId') or data.get('isOwner')
+        if id_user is not None:
+            equipment = Equipment(idUser=int(id_user))
+        else:
+            equipment = Equipment(idUser=int(get_jwt_identity()))
     for api_key, model_attr in FIELD_MAP.items():
       if api_key in data:
         setattr(equipment, model_attr, data[api_key])
@@ -147,6 +148,8 @@ def _equipment_to_dict(equipment):
         "warrantyExpiry": equipment.warranty_expiry.isoformat() if equipment.warranty_expiry else None,
         "location": equipment.location,
         "ownerId": equipment.idOwner,
+        "isOwner": str(equipment.idUser) if equipment.idUser is not None else None,
+        "idUser": equipment.idUser,
         "department": equipment.department,
         "version": equipment.version,
     }
@@ -173,7 +176,15 @@ def update_asset(id):
 
     for api_key, model_attr in FIELD_MAP.items():
         if api_key in data:
-            setattr(equipment, model_attr, data[api_key])
+            # isOwner 轉 int 存 idUser
+            if api_key == 'isOwner':
+                setattr(equipment, model_attr, int(data[api_key]))
+            else:
+                setattr(equipment, model_attr, data[api_key])
+
+    # 若有 idUser，直接設置
+    if 'idUser' in data:
+        equipment.idUser = int(data['idUser'])
 
     equipment.version += 1
 
