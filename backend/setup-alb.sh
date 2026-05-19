@@ -9,6 +9,7 @@ AWS_ACCOUNT_ID="794934876006"
 POLICY_NAME="AWSLoadBalancerControllerIAMPolicy"
 POLICY_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:policy/${POLICY_NAME}"
 INGRESS_FILE="k8s/ingress.yaml"  
+ENV_FILE=".env"
 
 echo "===================================================="
 echo "🛠️  開始初始化 AWS EKS ALB 負載平衡器環境..."
@@ -29,6 +30,22 @@ fi
 if ! command -v helm &> /dev/null; then
     echo "❌ 錯誤：本地電腦尚未安裝 helm，請先執行 'brew install helm' 進行安裝！"
     exit 1
+fi
+
+# ------------------------------------------------------------------------------
+# 防呆檢查 3：從本地 .env 檔案讀取 CF_TOKEN
+# ------------------------------------------------------------------------------
+if [ -f "$ENV_FILE" ]; then
+    # 讀取 .env 並排除註解行，自動匯入變數
+    export $(grep -v '^#' "$ENV_FILE" | xargs)
+fi
+
+if [ -z "$CF_TOKEN" ]; then
+    echo "❌ 錯誤：在 ${ENV_FILE} 中找不到 CF_TOKEN，或檔案不存在！"
+    echo "💡 請確保當目錄下有 ${ENV_FILE} 且內容包含：CF_TOKEN=你的代碼"
+    exit 1
+else
+    echo "✅ 成功從 ${ENV_FILE} 讀取 CF_TOKEN"
 fi
 
 # ------------------------------------------------------------------------------
@@ -178,6 +195,7 @@ if [ -z "$CF_TOKEN" ]; then
 fi
 
 # 建立 Cloudflare Secret 讓 K8s 有權限修改 DNS
+# （此處直接帶入從 .env 讀取到的變數 $CF_TOKEN）
 kubectl create secret generic cloudflare-api-key \
     --from-literal=apiKey=${CF_TOKEN} \
     -n kube-system --dry-run=client -o yaml | kubectl apply -f -
