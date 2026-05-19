@@ -4,15 +4,13 @@ metadata:
   name: cloud-native-ingress
   namespace: default
   annotations:
-    # 💡 告訴 EKS 使用 AWS ALB Controller 來實作這個 Ingress
     kubernetes.io/ingress.class: alb
-    # 💡 讓這個 ALB 直接面向公網（Internet-facing）
     alb.ingress.kubernetes.io/scheme: internet-facing
-    # 💡 指定 Target 類型為 ip（直接路由到 Pod 的 IP，效能最好）
     alb.ingress.kubernetes.io/target-type: ip
 spec:
   rules:
-    - http:
+    - host: angrysquirrel.qzz.io
+      http:
         paths:
           # --------------------------------------------------
           # 1. User Service 路由

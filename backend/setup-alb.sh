@@ -143,3 +143,59 @@ echo "🎉 恭喜！ALB 環境已全部部署完畢！"
 echo "🔍 請執行以下指令來追蹤你的公網 ALB 網址（Address）："
 echo "   kubectl get ingress -w"
 echo "===================================================="
+
+# ------------------------------------------------------------------------------
+# 5.0 建立 external-dns 的 K8s ServiceAccount 與基礎 AWS 角色 (防呆)
+# ------------------------------------------------------------------------------
+eksctl delete iamserviceaccount --cluster=${CLUSTER_NAME} --region=${AWS_REGION} --namespace=kube-system --name=external-dns > /dev/null 2>&1
+
+eksctl create iamserviceaccount \
+    --cluster=${CLUSTER_NAME} \
+    --namespace=kube-system \
+    --name=external-dns \
+    --attach-policy-arn=arn:aws:iam::aws:policy/AmazonRoute53ReadOnlyAccess \
+    --approve \
+    --region=${AWS_REGION}
+
+# ==============================================================================
+# 5. 自動安裝 external-dns 連動 Cloudflare（從 .env 讀取 Token）
+# ==============================================================================
+echo "🌐 5. 正在安裝 external-dns..."
+
+# 🔍 檢查 .env 檔案是否存在
+if [ ! -f ".env" ]; then
+    echo "❌ 錯誤：找不到 .env 檔案，請先在同級目錄下建立它！"
+    exit 1
+fi
+
+# 📥 讀取 .env 變數到環境中
+export $(cat .env | xargs)
+
+# 🔍 確認是否成功讀取到 CF_TOKEN
+if [ -z "$CF_TOKEN" ]; then
+    echo "❌ 錯誤：.env 檔案中未設定 CF_TOKEN 變數！"
+    exit 1
+fi
+
+# 建立 Cloudflare Secret 讓 K8s 有權限修改 DNS
+kubectl create secret generic cloudflare-api-key \
+    --from-literal=apiKey=${CF_TOKEN} \
+    -n kube-system --dry-run=client -o yaml | kubectl apply -f -
+
+# 使用 Helm 安裝 external-dns
+helm repo add external-dns https://kubernetes-sigs.github.io/external-dns/
+helm repo update external-dns
+
+helm upgrade --install external-dns external-dns/external-dns \
+    -n kube-system \
+    --set provider=cloudflare \
+    --set env[0].name=CF_API_TOKEN \
+    --set env[0].valueFrom.secretKeyRef.name=cloudflare-api-key \
+    --set env[0].valueFrom.secretKeyRef.key=apiKey \
+    --set policy=sync \
+    --set txtOwnerId=${CLUSTER_NAME} \
+    --set domainFilter[0]=angrysquirrel.qzz.io \
+    --set serviceAccount.create=false \
+    --set serviceAccount.name=external-dns
+
+echo "✅ external-dns 部署完成，將會自動同步 Ingress 網域！"
