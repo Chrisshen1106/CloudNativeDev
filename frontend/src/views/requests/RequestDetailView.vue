@@ -16,7 +16,7 @@
     <!-- 僅非 admin 本人且狀態為 pending 可見編輯按鈕 -->
     <div v-if="request && request.status === 'pending' && (request.applicant_id === authStore.currentUser?.id) && authStore.currentUser?.role !== 'admin'" class="flex justify-end mt-8">
       <RouterLink :to="`/requests/${request.id}/edit`" class="btn-primary">
-        編輯
+        {{ t('common.edit') }}
       </RouterLink>
     </div>
 
@@ -121,7 +121,7 @@
 
       <!-- Review result (approved/rejected) -->
       <div v-if="request.reviewDate" class="card p-5">
-        <h2 class="section-title"> 審查結果</h2>
+        <h2 class="section-title">{{ t('request.reviewResult') }}</h2>
         <div class="divide-y divide-gray-50">
           <div class="detail-row">
             <span class="detail-label">{{ t('request.reviewer') }}</span>
@@ -197,10 +197,10 @@
       <div v-if="request.status === 'normal'" class="card p-5">
         <div class="flex items-start justify-between mb-3">
           <div class="text-2xl"></div>
-          <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-emerald-100 text-emerald-700">正常</span>
+          <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-emerald-100 text-emerald-700">{{ t('dashboard.tagNormal') }}</span>
         </div>
         <p class="text-3xl font-bold text-gray-900 mb-1">0</p>
-        <p class="text-sm text-gray-500">正常使用</p>
+        <p class="text-sm text-gray-500">{{ t('asset.statuses.in_use') }}</p>
       </div>
     </div>
 
@@ -212,8 +212,8 @@
       :confirm-text="t('common.approve')"
       variant="success"
       show-input
-      :input-label="t('request.reviewNote') + '（選填）'"
-      :input-placeholder="'填寫審查備註（非必填）'"
+      :input-label="t('request.reviewNoteOptional')"
+      :input-placeholder="t('request.reviewNoteOptionalPlaceholder')"
       @confirm="handleApprove"
       @cancel="showApproveModal = false"
     />
@@ -304,6 +304,20 @@ const repairForm = ref({
   repairPersonnel: '',
 })
 
+function todayDateInputValue() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function toDateInputValue(value) {
+  if (!value) return todayDateInputValue()
+  if (typeof value === 'string') return value.slice(0, 10)
+  return todayDateInputValue()
+}
+
 
 onMounted(async () => {
   loading.value = true
@@ -311,14 +325,14 @@ onMounted(async () => {
   try {
     request.value = await requestsStore.fetchById(requestId.value)
     repairForm.value = {
-      repairDate: request.value.repairDate || '',
+      repairDate: toDateInputValue(request.value.repairDate),
       repairContent: request.value.repairContent || '',
       repairSolution: request.value.repairSolution || '',
       repairCost: request.value.repairCost || null,
       repairPersonnel: request.value.repairPersonnel || '',
     }
   } catch (e) {
-    error.value = e.message || '載入失敗'
+    error.value = e.message || t('request.loadFailed')
   } finally {
     loading.value = false
   }
@@ -343,7 +357,7 @@ async function handleApprove(note) {
     // 可選：重新整理或跳轉
     router.push('/requests')
   } catch (e) {
-    notifStore.add(e.message || '審核失敗', 'error')
+    notifStore.add(e.message || t('request.approveFailed'), 'error')
   }
 }
 
@@ -354,7 +368,7 @@ async function handleReject(reason) {
     id = id.replace(/[^\d]/g, '')
   }
   if (!id) {
-    notifStore.add('找不到申請單編號', 'error')
+    notifStore.add(t('request.notFoundId'), 'error')
     return
   }
   try {
@@ -363,7 +377,7 @@ async function handleReject(reason) {
     notifStore.add(t('request.rejectSuccess'), 'warning')
     router.push('/requests')
   } catch (e) {
-    notifStore.add(e.message || '拒絕失敗', 'error')
+    notifStore.add(e.message || t('request.rejectFailed'), 'error')
   }
 }
 
@@ -401,7 +415,7 @@ async function handleRepair() {
     // 重新整理 request 狀態
     request.value = await requestsStore.fetchById(requestId.value)
   } catch (e) {
-    notifStore.add(e.message || '送修失敗', 'error')
+    notifStore.add(e.message || t('request.sendRepairFailed'), 'error')
   }
 }
 
@@ -421,7 +435,7 @@ async function handleComplete() {
       router.push('/requests')
     }, 1500)
   } catch (e) {
-    notifStore.add(e.message || '維修完成失敗', 'error')
+    notifStore.add(e.message || t('request.completeFailed'), 'error')
   }
 }
 
@@ -429,7 +443,7 @@ async function handleDeleteRequest() {
   // 只取數字部分傳給 deleteRequest
   const id = request.value?.id?.replace(/[^\d]/g, '')
   if (!id) {
-    notifStore.add('找不到申請單編號', 'error')
+    notifStore.add(t('request.notFoundId'), 'error')
     return
   }
   try {
@@ -437,7 +451,7 @@ async function handleDeleteRequest() {
     notifStore.add(t('request.deleted'), 'success')
     router.push('/requests')
   } catch (e) {
-    notifStore.add(e.message || '刪除失敗', 'error')
+    notifStore.add(e.message || t('request.deleteFailed'), 'error')
   }
 }
 

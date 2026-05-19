@@ -5,18 +5,18 @@
 
       <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden animate-modal">
         <div class="px-6 py-5 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900">資料已被其他人更新</h3>
+          <h3 class="text-lg font-semibold text-gray-900">{{ t('conflict.title') }}</h3>
           <p class="mt-1 text-sm text-gray-600">
-            請比較你目前要儲存的內容與資料庫最新內容。左側可直接修改，重新提交時會使用最新版本號。
+            {{ t('conflict.description') }}
           </p>
         </div>
 
         <div class="overflow-auto max-h-[calc(90vh-150px)]">
           <div class="min-w-[760px]">
             <div class="grid grid-cols-[180px_1fr_1fr] gap-0 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase">
-              <div class="px-4 py-3">欄位</div>
-              <div class="px-4 py-3 border-l border-gray-200">我的內容</div>
-              <div class="px-4 py-3 border-l border-gray-200">資料庫最新內容</div>
+              <div class="px-4 py-3">{{ t('common.field') }}</div>
+              <div class="px-4 py-3 border-l border-gray-200">{{ t('common.myContent') }}</div>
+              <div class="px-4 py-3 border-l border-gray-200">{{ t('common.latestContent') }}</div>
             </div>
 
             <div
@@ -72,7 +72,7 @@
             <div class="grid grid-cols-[180px_1fr_1fr] gap-0 bg-gray-50">
               <div class="px-4 py-3 text-sm font-medium text-gray-700">version</div>
               <div class="px-4 py-3 border-l border-gray-200 text-sm text-gray-500">
-                將改用最新版本重送
+                {{ t('conflict.useLatestVersion') }}
               </div>
               <div class="px-4 py-3 border-l border-gray-200 text-sm font-mono text-gray-700">
                 {{ latestContent?.version ?? '-' }}
@@ -83,10 +83,10 @@
 
         <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-white">
           <button type="button" class="btn-secondary" @click="$emit('cancel')">
-            取消本次編輯
+            {{ t('conflict.cancelEdit') }}
           </button>
           <button type="button" class="btn-warning" @click="submit">
-            用我的內容重新提交
+            {{ t('conflict.resubmitMine') }}
           </button>
         </div>
       </div>
@@ -95,7 +95,8 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useI18n } from '@/composables/useI18n'
 
 const props = defineProps({
   myContent: { type: Object, required: true },
@@ -104,38 +105,39 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['submit', 'cancel'])
+const { t } = useI18n()
 
-const fields = [
-  { key: 'name', label: '資產名稱' },
-  { key: 'category', label: '分類', control: 'select', placeholder: '-- 選擇分類 --' },
-  { key: 'status', label: '狀態', control: 'select', placeholder: '-- 選擇狀態 --' },
-  { key: 'model', label: '型號' },
-  { key: 'specs', label: '規格' },
-  { key: 'serial_Number', label: '序號' },
-  { key: 'notes', label: '備註', multiline: true },
-  { key: 'supplier', label: '供應商' },
-  { key: 'purchase_price', label: '採購金額', type: 'number' },
-  { key: 'purchase_date', label: '採購日期', type: 'date' },
-  { key: 'activationDate', label: '啟用日期', type: 'date' },
-  { key: 'warrantyExpiry', label: '保固期限', type: 'date' },
-  { key: 'location', label: '存放地點' },
-  { key: 'ownerId', label: '負責人', control: 'select', placeholder: '-- 選擇負責人 --' },
-  { key: 'idUser', label: '使用者ID', control: 'select', placeholder: '-- 選擇 idUser --' },
-  { key: 'department', label: '部門' },
-  { key: 'userDepartment', label: '使用部門' },
-]
+const fields = computed(() => [
+  { key: 'name', label: t('asset.name') },
+  { key: 'category', label: t('asset.category'), control: 'select', placeholder: t('assetForm.categoryPlaceholder') },
+  { key: 'status', label: t('asset.status'), control: 'select', placeholder: t('assetForm.statusPlaceholder') },
+  { key: 'model', label: t('asset.model') },
+  { key: 'specs', label: t('asset.specs') },
+  { key: 'serial_Number', label: t('asset.serialNumber') },
+  { key: 'notes', label: t('asset.notes'), multiline: true },
+  { key: 'supplier', label: t('asset.supplier') },
+  { key: 'purchase_price', label: t('asset.purchasePrice'), type: 'number' },
+  { key: 'purchase_date', label: t('asset.purchaseDate'), type: 'date' },
+  { key: 'activationDate', label: t('asset.activationDate'), type: 'date' },
+  { key: 'warrantyExpiry', label: t('asset.warrantyExpiry'), type: 'date' },
+  { key: 'location', label: t('asset.location') },
+  { key: 'ownerId', label: t('asset.owner'), control: 'select', placeholder: t('assetForm.ownerPlaceholder') },
+  { key: 'idUser', label: t('asset.idUser'), control: 'select', placeholder: t('conflict.selectIdUser') },
+  { key: 'department', label: t('asset.department') },
+  { key: 'userDepartment', label: t('asset.userDepartment') },
+])
 
-const categoryOptions = [
-  { value: 'computer', label: '電腦類' },
-  { value: 'phone', label: '手機類' },
-  { value: 'tablet', label: '平板類' },
-]
+const categoryOptions = computed(() => [
+  { value: 'computer', label: t('asset.categories.computer') },
+  { value: 'phone', label: t('asset.categories.phone') },
+  { value: 'tablet', label: t('asset.categories.tablet') },
+])
 
-const statusOptions = [
-  { value: 'in_use', label: '正常使用' },
-  { value: 'repairing', label: '維修中' },
-  { value: 'scrapped', label: '已報廢' },
-]
+const statusOptions = computed(() => [
+  { value: 'in_use', label: t('asset.statuses.in_use') },
+  { value: 'repairing', label: t('asset.statuses.repairing') },
+  { value: 'scrapped', label: t('asset.statuses.scrapped') },
+])
 
 const draft = ref({})
 
@@ -185,8 +187,8 @@ function appendCurrentOption(options, key) {
 }
 
 function getOptions(field) {
-  if (field.key === 'category') return appendCurrentOption(categoryOptions, field.key)
-  if (field.key === 'status') return appendCurrentOption(statusOptions, field.key)
+  if (field.key === 'category') return appendCurrentOption(categoryOptions.value, field.key)
+  if (field.key === 'status') return appendCurrentOption(statusOptions.value, field.key)
   if (field.key === 'ownerId') {
     const options = props.holderUsers.map((user) => ({
       value: userId(user),

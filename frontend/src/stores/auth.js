@@ -1,10 +1,12 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import { useI18n } from '@/composables/useI18n'
 
 const STORAGE_KEY = 'ams_current_user'
 const TOKEN_KEY = 'ams_token'
 
 export const useAuthStore = defineStore('auth', () => {
+  const { t } = useI18n()
   const currentUser = ref(
     JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
   )
@@ -23,7 +25,7 @@ export const useAuthStore = defineStore('auth', () => {
       })
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data?.message || '登入失敗')
+        throw new Error(data?.message || t('login.loginFailed'))
       }
       console.log('JWT token:', data.token)
       currentUser.value = data
@@ -47,7 +49,7 @@ export const useAuthStore = defineStore('auth', () => {
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      throw new Error(err?.message || '註冊失敗')
+      throw new Error(err?.message || t('login.registerFailed'))
     }
     return await res.json()
   }
@@ -66,7 +68,7 @@ export const useAuthStore = defineStore('auth', () => {
         'Authorization': localStorage.getItem('ams_token') || '',
       },
     })
-    if (!res.ok) throw new Error('取得使用者資料失敗')
+    if (!res.ok) throw new Error(t('login.fetchUsersFailed'))
     return await res.json()
   }
 

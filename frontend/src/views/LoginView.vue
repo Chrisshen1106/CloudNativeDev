@@ -73,7 +73,7 @@
           class="w-full btn-secondary py-3 text-base font-semibold rounded-xl mt-3"
           @click="showRegister = true"
         >
-          {{ t('login.registerButton') || '註冊帳號' }}
+          {{ t('login.registerButton') }}
         </button>
 
         <!-- Error -->
@@ -89,7 +89,7 @@
         <div v-if="showRegister" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative">
             <button class="absolute top-3 right-3 text-gray-400 hover:text-gray-600" @click="showRegister = false">✕</button>
-            <h2 class="text-xl font-bold mb-4">{{ t('login.registerTitle') || '註冊新帳號' }}</h2>
+            <h2 class="text-xl font-bold mb-4">{{ t('login.registerTitle') }}</h2>
             <div class="mb-3">
               <label class="form-label">{{ t('login.name') }}</label>
               <input v-model="regName" type="text" class="form-input" :placeholder="t('login.namePlaceholder')" />
@@ -119,7 +119,7 @@
               </select>
             </div>
             <button class="w-full btn-primary py-3 text-base font-semibold rounded-xl mt-2" :disabled="regLoading" @click="handleRegister">
-              {{ regLoading ? '註冊中...' : (t('login.registerButton') || '註冊') }}
+              {{ regLoading ? t('login.registering') : t('login.registerButton') }}
             </button>
             <Transition name="fade-down">
               <p v-if="regError" class="mt-3 text-center text-sm text-red-600">{{ regError }}</p>
@@ -162,14 +162,14 @@ function openRegister() {
 async function handleLogin() {
   errorMsg.value = ''
   if (!email.value || !password.value) {
-    errorMsg.value = '請輸入帳號與密碼'
+    errorMsg.value = t('login.loginRequired')
     return
   }
   const { success, message } = await authStore.login({ email: email.value, password: password.value })
   if (success) {
     router.push('/dashboard')
   } else {
-    errorMsg.value = message || '登入失敗'
+    errorMsg.value = message || t('login.loginFailed')
   }
 }
 
@@ -178,7 +178,7 @@ async function handleRegister() {
   regLoading.value = true
   try {
     if (!regName.value || !regEmail.value || !regPassword.value || !regDepartment.value || !regRole.value) {
-      regError.value = '請填寫所有欄位'
+      regError.value = t('login.requiredFields')
       regLoading.value = false
       return
     }
@@ -195,7 +195,7 @@ async function handleRegister() {
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      throw new Error(err?.message || '註冊失敗')
+      throw new Error(err?.message || t('login.registerFailed'))
     }
     // 註冊成功自動填入登入表單
     const user = await res.json()

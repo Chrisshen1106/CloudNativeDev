@@ -177,7 +177,7 @@ async function fetchAssets() {
       console.log('authStore.currentUser.sub', authStore.currentUser?.sub)
       console.log('assetsStore.assets', assetsStore.assets)
     } catch (e) {
-      errorMsg.value = e.message || '取得資產失敗'
+      errorMsg.value = e.message || t('asset.detailLoadFailed')
       console.error(e)
     }
   }

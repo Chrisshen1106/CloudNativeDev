@@ -17,12 +17,12 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="sm:col-span-2">
             <label class="form-label">{{ t('asset.name') }} <span class="text-red-500">*</span></label>
-            <input v-model="form.name" type="text" class="form-input" required :placeholder="t('assetForm.namePlaceholder') || '例：MacBook Pro 16'" />
+            <input v-model="form.name" type="text" class="form-input" required :placeholder="t('assetForm.namePlaceholder')" />
           </div>
           <div>
             <label class="form-label">{{ t('asset.category') }} <span class="text-red-500">*</span></label>
             <select v-model="form.category" class="form-select" required>
-              <option value="">-- {{ t('assetForm.categoryPlaceholder') || '選擇分類' }} --</option>
+              <option value="">-- {{ t('assetForm.categoryPlaceholder') }} --</option>
               <option value="computer">{{ t('asset.categories.computer') }}</option>
               <option value="phone">{{ t('asset.categories.phone') }}</option>
               <option value="tablet">{{ t('asset.categories.tablet') }}</option>
@@ -31,7 +31,7 @@
           <div>
             <label class="form-label">{{ t('asset.status') }}</label>
             <select v-model="form.status" class="form-select">
-              <option value="">{{ t('assetForm.statusPlaceholder') || '選擇狀態' }}</option>
+              <option value="">{{ t('assetForm.statusPlaceholder') }}</option>
               <option value="in_use">{{ t('asset.statuses.in_use') }}</option>
               <option value="repairing">{{ t('asset.statuses.repairing') }}</option>
 
@@ -39,19 +39,19 @@
           </div>
           <div>
             <label class="form-label">{{ t('asset.model') }} <span class="text-red-500">*</span></label>
-            <input v-model="form.model" type="text" class="form-input" required :placeholder="t('assetForm.modelPlaceholder') || '例：MacBook Pro M3 Max'" />
+            <input v-model="form.model" type="text" class="form-input" required :placeholder="t('assetForm.modelPlaceholder')" />
           </div>
           <div>
             <label class="form-label">{{ t('asset.specs') }}</label>
-            <input v-model="form.specs" type="text" class="form-input" :placeholder="t('assetForm.specsPlaceholder') || '例：48GB RAM, 1TB SSD'" />
+            <input v-model="form.specs" type="text" class="form-input" :placeholder="t('assetForm.specsPlaceholder')" />
           </div>
           <div>
             <label class="form-label">{{ t('asset.serialNumber') }}</label>
-            <input v-model="form.serialNumber" type="text" class="form-input" :placeholder="t('assetForm.serialNumberPlaceholder') || '設備序號'" />
+            <input v-model="form.serialNumber" type="text" class="form-input" :placeholder="t('assetForm.serialNumberPlaceholder')" />
           </div>
           <div class="sm:col-span-2">
             <label class="form-label">{{ t('asset.notes') }}</label>
-            <textarea v-model="form.notes" rows="2" class="form-textarea" :placeholder="t('assetForm.notesPlaceholder') || '備註...'" ></textarea>
+            <textarea v-model="form.notes" rows="2" class="form-textarea" :placeholder="t('assetForm.notesPlaceholder')" ></textarea>
           </div>
         </div>
       </div>
@@ -62,11 +62,18 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="form-label">{{ t('asset.supplier') }}</label>
-            <input v-model="form.supplier" type="text" class="form-input" :placeholder="t('assetForm.supplierPlaceholder') || '供應商名稱'" />
+            <input v-model="form.supplier" type="text" class="form-input" :placeholder="t('assetForm.supplierPlaceholder')" />
           </div>
           <div>
             <label class="form-label">{{ t('asset.purchasePrice') }} (NT$)</label>
-            <input v-model.number="form.purchasePrice" type="number" class="form-input" min="0" placeholder="0" />
+            <input
+              v-model.number="form.purchasePrice"
+              type="number"
+              class="form-input"
+              min="0"
+              placeholder="0"
+              @wheel.prevent="blurNumberInput"
+            />
           </div>
           <div>
             <label class="form-label">{{ t('asset.purchaseDate') }}</label>
@@ -89,12 +96,12 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="sm:col-span-2">
             <label class="form-label">{{ t('asset.location') }} <span class="text-red-500">*</span></label>
-            <input v-model="form.location" type="text" class="form-input" required :placeholder="t('assetForm.locationPlaceholder') || '例：台北總部 3F-A302'" />
+            <input v-model="form.location" type="text" class="form-input" required :placeholder="t('assetForm.locationPlaceholder')" />
           </div>
           <div>
             <label class="form-label">{{ t('asset.owner') }} <span class="text-red-500">*</span></label>
             <select v-model="form.ownerId" class="form-select" required @change="handleUserChange">
-              <option value="">-- {{ t('assetForm.ownerPlaceholder') || '選擇負責人' }} --</option>
+              <option value="">-- {{ t('assetForm.ownerPlaceholder') }} --</option>
               <option v-for="user in holderUsers" :key="user.idUser || user.id" :value="user.idUser || user.id">
                 {{ user.name }} ({{ user.department || user.departmentName || '' }})
               </option>
@@ -111,11 +118,11 @@
           </div>
           <div>
             <label class="form-label">{{ t('assetForm.department') }}</label>
-            <input v-model="form.department" type="text" class="form-input" :placeholder="t('assetForm.departmentPlaceholder') || '例：研發部'" />
+            <input v-model="form.department" type="text" class="form-input" :placeholder="t('assetForm.departmentPlaceholder')" />
           </div>
           <div>
             <label class="form-label">{{ t('assetForm.userDepartment') }}</label>
-            <input v-model="form.userDepartment" type="text" class="form-input" :placeholder="t('assetForm.userDepartmentPlaceholder') || '例：研發部'" />
+            <input v-model="form.userDepartment" type="text" class="form-input" :placeholder="t('assetForm.userDepartmentPlaceholder')" />
           </div>
         </div>
       </div>
@@ -128,18 +135,13 @@
         <button type="submit" class="btn-primary" :disabled="isSaving">
           {{ t('common.save') }}
         </button>
-        <!--
-        <button v-if="isEdit" type="button" class="btn-danger" @click="showDeleteConfirm = true">
-          刪除資產
-        </button>
-        -->
       </div>
       <div v-if="showDeleteConfirm" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
         <div class="bg-white rounded shadow-lg p-6 w-80">
-          <div class="mb-4 text-lg font-semibold text-gray-800">確認刪除？</div>
+          <div class="mb-4 text-lg font-semibold text-gray-800">{{ t('asset.deleteConfirmTitle') }}</div>
           <div class="flex justify-end gap-3">
-            <button class="btn-secondary" @click="showDeleteConfirm = false">取消</button>
-            <button class="btn-danger" @click="handleDeleteAsset">確認刪除</button>
+            <button class="btn-secondary" @click="showDeleteConfirm = false">{{ t('common.cancel') }}</button>
+            <button class="btn-danger" @click="handleDeleteAsset">{{ t('common.delete') }}</button>
           </div>
         </div>
       </div>
@@ -190,6 +192,11 @@ function handleIdUserChange() {
   const user = holderUsers.value.find(u => (u.idUser || u.id) == form.value.idUser)
   form.value.userDepartment = user ? (user.department || user.departmentName || '') : ''
 }
+
+function blurNumberInput(event) {
+  event.currentTarget.blur()
+}
+
 onMounted(async () => {
   try {
     const users = await authStore.fetchAllUsers()
@@ -215,7 +222,7 @@ onMounted(async () => {
         form.value.purchaseDate = asset.purchase_date ?? asset.purchaseDate ?? ''
       }
     } catch (e) {
-      notifStore.add('取得資產詳情失敗', 'error')
+      notifStore.add(t('asset.detailLoadFailed'), 'error')
     }
   }
 })
@@ -288,10 +295,10 @@ async function handleAssetSubmit() {
     isSaving.value = true
     if (isEdit.value) {
       await assetsStore.updateAsset(route.params.id, payload, authStore.token)
-      notifStore.add('資產已更新', 'success')
+      notifStore.add(t('asset.updated'), 'success')
     } else {
       await assetsStore.createAsset(payload, authStore.token)
-      notifStore.add('資產已新增', 'success')
+      notifStore.add(t('asset.created'), 'success')
     }
     router.back()
   } catch (e) {
@@ -300,10 +307,10 @@ async function handleAssetSubmit() {
         myContent: payload,
         latestContent: e.latestAsset || {},
       }
-      notifStore.add('資料已被其他人更新，請確認衝突內容', 'error')
+      notifStore.add(t('asset.conflictChanged'), 'error')
       return
     }
-    notifStore.add(e.message || '儲存失敗', 'error')
+    notifStore.add(e.message || t('asset.saveFailed'), 'error')
   } finally {
     isSaving.value = false
   }
@@ -314,7 +321,7 @@ async function handleConflictSubmit(resolvedPayload) {
     isSaving.value = true
     const payload = buildAssetPayload(resolvedPayload)
     await assetsStore.updateAsset(route.params.id, payload, authStore.token)
-    notifStore.add('資產已更新', 'success')
+    notifStore.add(t('asset.updated'), 'success')
     assetConflict.value = null
     router.back()
   } catch (e) {
@@ -323,10 +330,10 @@ async function handleConflictSubmit(resolvedPayload) {
         myContent: buildAssetPayload(resolvedPayload),
         latestContent: e.latestAsset || {},
       }
-      notifStore.add('資料再次被更新，請重新確認衝突內容', 'error')
+      notifStore.add(t('asset.conflictChangedAgain'), 'error')
       return
     }
-    notifStore.add(e.message || '重新提交失敗', 'error')
+    notifStore.add(e.message || t('asset.resubmitFailed'), 'error')
   } finally {
     isSaving.value = false
   }
@@ -365,7 +372,7 @@ import { onUnmounted } from 'vue'
               headers: { 'Authorization': token }
             })
           }
-          notifStore.add('資產已刪除', 'success')
+          notifStore.add(t('asset.deleted'), 'success')
           showDeleteConfirm.value = false
           router.push('/assets').then(() => {
             setTimeout(() => { window.location.reload() }, 100)
