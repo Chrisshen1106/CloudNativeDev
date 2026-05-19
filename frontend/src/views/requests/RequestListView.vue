@@ -102,10 +102,10 @@
               </td>
               <div v-if="showDeleteConfirm" style="position:fixed;top:30%;left:50%;transform:translate(-50%,0);z-index:1000;">
                 <div class="bg-white rounded shadow-lg p-6 w-80 border border-gray-200">
-                  <div class="mb-4 text-lg font-semibold text-gray-800">確認要刪除此筆維修訂單？</div>
+                  <div class="mb-4 text-lg font-semibold text-gray-800">{{ t('request.deleteConfirmMsg') }}</div>
                   <div class="flex justify-end gap-3">
-                    <button class="btn-secondary" @click="showDeleteConfirm = false">取消</button>
-                    <button class="btn-danger" @click="handleDeleteRequest">確認刪除</button>
+                    <button class="btn-secondary" @click="showDeleteConfirm = false">{{ t('common.cancel') }}</button>
+                    <button class="btn-danger" @click="handleDeleteRequest">{{ t('request.confirmDelete') }}</button>
                   </div>
                 </div>
               </div>
