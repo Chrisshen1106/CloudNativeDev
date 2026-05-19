@@ -26,6 +26,15 @@ import { defineStore } from 'pinia'
 const STORAGE_KEY = 'ams_assets'
 const API_BASE = '/user-api'
 
+export class AssetConflictError extends Error {
+  constructor(latestAsset) {
+    super('資產已被其他人更新')
+    this.name = 'AssetConflictError'
+    this.status = 409
+    this.latestAsset = latestAsset || {}
+  }
+}
+
 export const useAssetsStore = defineStore('assets', () => {
   const assets = ref([])
 
@@ -143,7 +152,14 @@ export const useAssetsStore = defineStore('assets', () => {
       },
       body: JSON.stringify(assetData)
     })
-    if (!res.ok) throw new Error('資產更新失敗')
+    if (res.status === 409) {
+      const conflict = await res.json().catch(() => ({}))
+      throw new AssetConflictError(conflict.content || conflict)
+    }
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data.message || '資產更新失敗')
+    }
     return await res.json()
   }
 
