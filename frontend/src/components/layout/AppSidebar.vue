@@ -108,7 +108,7 @@
             <path d="M21 12H9" />
           </svg>
         </span>
-        <span>登出</span>
+        <span>{{ t('nav.logout') }}</span>
       </button>
     </div>
   </nav>
@@ -146,6 +146,10 @@ const navItems = computed(() => {
 
 function isActive(to) {
   if (to === '/dashboard') return route.path === '/dashboard'
+  // 僅當前路徑完全等於 to 時才高亮
+  if (to === '/assets' || to === '/requests') return route.path === to
+  // 新增資產、新增申請頁面只在完全符合時高亮
+  if (to === '/assets/new' || to === '/requests/new') return route.path === to
   return route.path.startsWith(to)
 }
 

@@ -106,7 +106,7 @@ function categoryIcon(cat) {
 </script>
 
 <template>
-    <div :class="modal ? 'max-w-2xl' : 'max-w-3xl mx-auto'"
+    <div :class="modal ? 'max-w-3xl' : 'max-w-4xl mx-auto'"
       class="p-6 md:p-8"
       style="max-height:90vh; min-height:200px; overflow-y:auto; box-sizing:border-box;">
     <div class="flex justify-between items-center mb-8">
@@ -120,7 +120,7 @@ function categoryIcon(cat) {
       <button v-if="modal" @click="$emit('close')" class="text-gray-400 hover:text-red-500 text-2xl px-2 py-1 rounded-full focus:outline-none">×</button>
     </div>
     <div v-if="loading" class="flex justify-center p-10">
-      <span class="text-gray-500 italic">載入資料中...</span>
+      <span class="text-gray-500 italic">{{ t('assetDetail.loading') }}</span>
     </div>
     <div v-else-if="errorMsg" class="bg-red-50 text-red-600 p-4 rounded-lg text-center">
       {{ errorMsg }}
@@ -132,43 +132,43 @@ function categoryIcon(cat) {
           <!-- 新增：最上方顯示使用者與使用部門，與下方資訊欄對齊 -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 mb-2">
             <div class="flex items-center mb-2">
-              <span class="w-28 text-gray-500">使用者</span>
+              <span class="w-28 text-gray-500">{{ t('assetDetail.user') }}</span>
               <span>{{ getUserName(asset?.idUser) }}</span>
             </div>
             <div class="flex items-center mb-2">
-              <span class="w-28 text-gray-500">使用部門</span>
+              <span class="w-28 text-gray-500">{{ t('assetDetail.userDepartment') }}</span>
               <span>{{ asset?.userDepartment }}</span>
             </div>
           </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 pb-4 mt-0">
           <div class="flex items-center mb-2">
-            <span class="w-28 text-gray-500">資產編號</span>
+            <span class="w-28 text-gray-500">{{ t('assetDetail.assetNumber') }}</span>
             <span class="font-mono text-indigo-600">{{ asset?.idEquipment || asset?.assetNumber || asset?.id }}</span>
           </div>
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">狀態</span><StatusBadge :status="asset?.status" type="asset" /></div>
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">分類</span><span>{{ asset?.category }}</span></div>
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">型號</span><span>{{ asset?.model }}</span></div>
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">規格</span><span>{{ asset?.specs }}</span></div>
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">序號</span><span class="font-mono">{{ asset?.serial_Number ?? asset?.serialNumber }}</span></div>
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">負責部門</span><span>{{ asset?.department }}</span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.status') }}</span><StatusBadge :status="asset?.status" type="asset" /></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.category') }}</span><span>{{ asset?.category }}</span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.model') }}</span><span>{{ asset?.model }}</span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.specs') }}</span><span>{{ asset?.specs }}</span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.serialNumber') }}</span><span class="font-mono">{{ asset?.serial_Number ?? asset?.serialNumber }}</span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.department') }}</span><span>{{ asset?.department }}</span></div>
           
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">負責人</span><span>{{ getUserName(asset?.ownerId) }}</span></div>
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">存放地點</span><span>{{ asset?.location }}</span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.owner') }}</span><span>{{ getUserName(asset?.ownerId) }}</span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.location') }}</span><span>{{ asset?.location }}</span></div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 pt-4 pb-4">
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">供應商</span><span>{{ asset?.supplier }}</span></div>
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">購買日期</span><span>{{ asset?.purchase_date ?? asset?.purchaseDate }}</span></div>
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">購買金額</span><span class="font-medium text-green-700">NT$ {{ (asset?.purchase_price ?? asset?.purchasePrice)?.toLocaleString() }}</span></div>
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">啟用日期</span><span>{{ asset?.activationDate }}</span></div>
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">保固期限</span><span :class="isWarrantyExpired ? 'text-red-600 font-medium' : ''">{{ asset?.warrantyExpiry }}<span v-if="isWarrantyExpired" class="text-xs text-red-500 ml-1">（已過期）</span></span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.supplier') }}</span><span>{{ asset?.supplier }}</span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.purchaseDate') }}</span><span>{{ asset?.purchase_date ?? asset?.purchaseDate }}</span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.purchasePrice') }}</span><span class="font-medium text-green-700">NT$ {{ (asset?.purchase_price ?? asset?.purchasePrice)?.toLocaleString() }}</span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.activationDate') }}</span><span>{{ asset?.activationDate }}</span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.warrantyExpiry') }}</span><span :class="isWarrantyExpired ? 'text-red-600 font-medium' : ''">{{ asset?.warrantyExpiry }}<span v-if="isWarrantyExpired" class="text-xs text-red-500 ml-1">（已過期）</span></span></div>
         </div>
         <div v-if="asset?.notes" class="pt-4"><span class="w-28 text-gray-500 inline-block">備註</span><span class="text-gray-600 text-sm">{{ asset?.notes }}</span></div>
       </div>
       <!-- 維修紀錄 -->
       <div class="bg-white rounded-2xl shadow p-8">
-        <h2 class="text-lg font-bold mb-4 border-b pb-2 text-indigo-600">維修/申請紀錄</h2>
+        <h2 class="text-lg font-bold mb-4 border-b pb-2 text-indigo-600">{{ t('assetDetail.maintenanceRecords') }}</h2>
         <div v-if="relatedRequests.length === 0" class="text-sm text-gray-400 text-center py-6">
-          無維修紀錄
+          {{ t('assetDetail.noMaintenanceRecord') }}
         </div>
         <div v-else class="space-y-3">
           <div

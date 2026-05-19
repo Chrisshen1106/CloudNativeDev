@@ -36,14 +36,13 @@
       <div class="bg-white rounded-2xl shadow-2xl p-8">
 
         <!-- Email -->
-        <!-- Email -->
         <div class="mb-4">
-          <label class="form-label">電子信箱</label>
+          <label class="form-label">{{ t('login.email') }}</label>
           <input
             v-model="email"
             type="email"
             class="form-input"
-            placeholder="請輸入電子信箱"
+            :placeholder="t('login.emailPlaceholder')"
             @keyup.enter="handleLogin"
           />
         </div>
@@ -55,7 +54,7 @@
             v-model="password"
             type="password"
             class="form-input"
-            placeholder="請輸入密碼"
+            :placeholder="t('login.passwordPlaceholder')"
             @keyup.enter="handleLogin"
           />
         </div>
@@ -92,31 +91,31 @@
             <button class="absolute top-3 right-3 text-gray-400 hover:text-gray-600" @click="showRegister = false">✕</button>
             <h2 class="text-xl font-bold mb-4">{{ t('login.registerTitle') || '註冊新帳號' }}</h2>
             <div class="mb-3">
-              <label class="form-label">姓名</label>
-              <input v-model="regName" type="text" class="form-input" placeholder="請輸入姓名" />
+              <label class="form-label">{{ t('login.name') }}</label>
+              <input v-model="regName" type="text" class="form-input" :placeholder="t('login.namePlaceholder')" />
             </div>
             <div class="mb-3">
-              <label class="form-label">Email</label>
-              <input v-model="regEmail" type="email" class="form-input" placeholder="請輸入 Email" />
+              <label class="form-label">{{ t('login.email') }}</label>
+              <input v-model="regEmail" type="email" class="form-input" :placeholder="t('login.emailPlaceholder')" />
             </div>
             <div class="mb-3">
-              <label class="form-label">密碼</label>
-              <input v-model="regPassword" type="password" class="form-input" placeholder="請輸入密碼" />
+              <label class="form-label">{{ t('login.password') }}</label>
+              <input v-model="regPassword" type="password" class="form-input" :placeholder="t('login.passwordPlaceholder')" />
             </div>
             <div class="mb-3">
-              <label class="form-label">部門</label>
+              <label class="form-label">{{ t('login.department') }}</label>
               <select v-model="regDepartment" class="form-input">
-                <option value="" disabled>請選擇部門</option>
-                <option value="1">研發部</option>
-                <option value="2">人資部</option>
-                <option value="3">財務部</option>
+                <option value="" disabled>{{ t('login.departmentPlaceholder') }}</option>
+                <option value="1">{{ t('login.departmentRAndD') }}</option>
+                <option value="2">{{ t('login.departmentHR') }}</option>
+                <option value="3">{{ t('login.departmentFinance') }}</option>
               </select>
             </div>
             <div class="mb-3">
-              <label class="form-label">角色</label>
+              <label class="form-label">{{ t('login.role') }}</label>
               <select v-model="regRole" class="form-input">
-                <option value="user">一般使用者</option>
-                <option value="admin">管理員</option>
+                <option value="user">{{ t('login.roleUser') }}</option>
+                <option value="admin">{{ t('login.roleAdmin') }}</option>
               </select>
             </div>
             <button class="w-full btn-primary py-3 text-base font-semibold rounded-xl mt-2" :disabled="regLoading" @click="handleRegister">

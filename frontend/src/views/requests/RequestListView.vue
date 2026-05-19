@@ -82,7 +82,7 @@
               </td>
               <td><StatusBadge :status="req.status" type="request" /></td>
               <td class="text-center whitespace-nowrap pl-4">
-                <div class="flex items-center gap-x-0">
+                <div class="flex items-center gap-2 justify-start">
                   <RouterLink :to="`/requests/${req.id}`" class="btn-secondary btn-sm">
                     {{ t('common.detail') }}
                   </RouterLink>
