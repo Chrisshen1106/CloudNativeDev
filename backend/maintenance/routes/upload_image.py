@@ -16,7 +16,11 @@ def create_upload_url():
     """
     user_id = get_jwt_identity()
 
-    data = image_controller.schema(only=["fileName", "contentType"]).load(request.get_json())    
+    try:
+        data = image_controller.schema(only=["fileName", "contentType"]).load(request.get_json())    
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+
     fileName = data.get("fileName")
     contentType = data.get("contentType")
 
@@ -30,6 +34,11 @@ def create_upload_url():
     ext = bucket_manager.ALLOWED_CONTENT_TYPES[contentType]
     object_key = f"users/{user_id}/images/{image_id}.{ext}"
     
+    try:
+        upload_url = bucket_manager.generate_upload_url(object_key, contentType)
+    except ClientError as e:
+        return jsonify({"error": "failed to create upload url"}), 500
+    
     new_image = {
         "image_id": image_id,
         "user_id": user_id,
@@ -40,11 +49,6 @@ def create_upload_url():
     }
     new_image = image_controller.schema().load(new_image)
     image_controller.createImage(new_image)
-    
-    try:
-        upload_url = bucket_manager.generate_upload_url(object_key, contentType)
-    except ClientError as e:
-        return jsonify({"error": "failed to create upload url"}), 500
 
     return jsonify({
         "imageId": image_id,
@@ -58,7 +62,7 @@ def create_read_url(image_id: str):
     """
     取得 S3 presigned GET URL
     """
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
 
     if not image_id:
         return jsonify({"error": "imageId is required"}), 400
