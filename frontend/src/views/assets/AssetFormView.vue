@@ -17,12 +17,12 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="sm:col-span-2">
             <label class="form-label">{{ t('asset.name') }} <span class="text-red-500">*</span></label>
-            <input v-model="form.name" type="text" class="form-input" required :placeholder="`例：MacBook Pro 16`" />
+            <input v-model="form.name" type="text" class="form-input" required :placeholder="t('assetForm.namePlaceholder') || '例：MacBook Pro 16'" />
           </div>
           <div>
             <label class="form-label">{{ t('asset.category') }} <span class="text-red-500">*</span></label>
             <select v-model="form.category" class="form-select" required>
-              <option value="">-- 選擇分類 --</option>
+              <option value="">-- {{ t('assetForm.categoryPlaceholder') || '選擇分類' }} --</option>
               <option value="computer">{{ t('asset.categories.computer') }}</option>
               <option value="phone">{{ t('asset.categories.phone') }}</option>
               <option value="tablet">{{ t('asset.categories.tablet') }}</option>
@@ -31,6 +31,7 @@
           <div>
             <label class="form-label">{{ t('asset.status') }}</label>
             <select v-model="form.status" class="form-select">
+              <option value="">{{ t('assetForm.statusPlaceholder') || '選擇狀態' }}</option>
               <option value="in_use">{{ t('asset.statuses.in_use') }}</option>
               <option value="repairing">{{ t('asset.statuses.repairing') }}</option>
 
@@ -38,19 +39,19 @@
           </div>
           <div>
             <label class="form-label">{{ t('asset.model') }} <span class="text-red-500">*</span></label>
-            <input v-model="form.model" type="text" class="form-input" required :placeholder="`例：MacBook Pro M3 Max`" />
+            <input v-model="form.model" type="text" class="form-input" required :placeholder="t('assetForm.modelPlaceholder') || '例：MacBook Pro M3 Max'" />
           </div>
           <div>
             <label class="form-label">{{ t('asset.specs') }}</label>
-            <input v-model="form.specs" type="text" class="form-input" placeholder="例：48GB RAM, 1TB SSD" />
+            <input v-model="form.specs" type="text" class="form-input" :placeholder="t('assetForm.specsPlaceholder') || '例：48GB RAM, 1TB SSD'" />
           </div>
           <div>
             <label class="form-label">{{ t('asset.serialNumber') }}</label>
-            <input v-model="form.serialNumber" type="text" class="form-input" placeholder="設備序號" />
+            <input v-model="form.serialNumber" type="text" class="form-input" :placeholder="t('assetForm.serialNumberPlaceholder') || '設備序號'" />
           </div>
           <div class="sm:col-span-2">
             <label class="form-label">{{ t('asset.notes') }}</label>
-            <textarea v-model="form.notes" rows="2" class="form-textarea" placeholder="備註..."></textarea>
+            <textarea v-model="form.notes" rows="2" class="form-textarea" :placeholder="t('assetForm.notesPlaceholder') || '備註...'" ></textarea>
           </div>
         </div>
       </div>
@@ -61,7 +62,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="form-label">{{ t('asset.supplier') }}</label>
-            <input v-model="form.supplier" type="text" class="form-input" placeholder="供應商名稱" />
+            <input v-model="form.supplier" type="text" class="form-input" :placeholder="t('assetForm.supplierPlaceholder') || '供應商名稱'" />
           </div>
           <div>
             <label class="form-label">{{ t('asset.purchasePrice') }} (NT$)</label>
@@ -88,33 +89,33 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="sm:col-span-2">
             <label class="form-label">{{ t('asset.location') }} <span class="text-red-500">*</span></label>
-            <input v-model="form.location" type="text" class="form-input" required placeholder="例：台北總部 3F-A302" />
+            <input v-model="form.location" type="text" class="form-input" required :placeholder="t('assetForm.locationPlaceholder') || '例：台北總部 3F-A302'" />
           </div>
           <div>
             <label class="form-label">{{ t('asset.owner') }} <span class="text-red-500">*</span></label>
             <select v-model="form.ownerId" class="form-select" required @change="handleUserChange">
-              <option value="">-- 選擇負責人 --</option>
+              <option value="">-- {{ t('assetForm.ownerPlaceholder') || '選擇負責人' }} --</option>
               <option v-for="user in holderUsers" :key="user.idUser || user.id" :value="user.idUser || user.id">
                 {{ user.name }} ({{ user.department || user.departmentName || '' }})
               </option>
             </select>
           </div>
           <div>
-            <label class="form-label">idUser <span class="text-red-500">*</span></label>
+            <label class="form-label">{{ t('assetForm.user') }} <span class="text-red-500">*</span></label>
             <select v-model="form.idUser" class="form-select" required @change="handleIdUserChange">
-              <option value="">-- 選擇 idUser --</option>
+              <option value="">-- {{ t('assetForm.user') }} --</option>
               <option v-for="user in holderUsers" :key="user.idUser || user.id" :value="user.idUser || user.id">
                 {{ user.idUser || user.id }} - {{ user.name }}
               </option>
             </select>
           </div>
           <div>
-            <label class="form-label">負責部門</label>
-            <input v-model="form.department" type="text" class="form-input" placeholder="例：研發部" />
+            <label class="form-label">{{ t('assetForm.department') }}</label>
+            <input v-model="form.department" type="text" class="form-input" :placeholder="t('assetForm.departmentPlaceholder') || '例：研發部'" />
           </div>
           <div>
-            <label class="form-label">使用部門</label>
-            <input v-model="form.userDepartment" type="text" class="form-input" placeholder="例：研發部" />
+            <label class="form-label">{{ t('assetForm.userDepartment') }}</label>
+            <input v-model="form.userDepartment" type="text" class="form-input" :placeholder="t('assetForm.userDepartmentPlaceholder') || '例：研發部'" />
           </div>
         </div>
       </div>

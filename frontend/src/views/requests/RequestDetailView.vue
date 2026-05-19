@@ -22,7 +22,7 @@
 
     <div v-if="!request" class="card p-12 text-center text-gray-400">
       <p class="text-4xl mb-2"></p>
-      <p>找不到此申請單</p>
+      <p>{{ t('request.notFound') }}</p>
     </div>
 
     <div v-else class="space-y-5">
@@ -46,9 +46,10 @@
                     {{ step.label }}
                   </span>
                   <span v-if="step.date" class="text-xs text-gray-400">{{ step.date }}</span>
-                  <span v-if="step.status === 'pending'" class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">等待中</span>
+                  <span v-if="step.status === 'pending'" class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{{ t('request.pending') }}</span>
                 </div>
                 <p v-if="step.desc" class="text-xs text-gray-500 mt-0.5">{{ step.desc }}</p>
+                <p v-if="step.status === 'pending' && !step.desc" class="text-xs text-gray-500 mt-0.5">{{ t('request.reviewingDesc') }}</p>
                 <p v-if="step.note" class="text-xs mt-1 px-2 py-1 rounded bg-amber-50 text-amber-700 border border-amber-100">
                    {{ step.note }}
                 </p>
@@ -60,7 +61,7 @@
 
       <!-- Request info -->
       <div class="card p-5">
-        <h2 class="section-title"> 申請資訊</h2>
+        <h2 class="section-title">{{ t('request.info') }}</h2>
         <div class="divide-y divide-gray-50">
           <div class="detail-row">
             <span class="detail-label">{{ t('request.requestId') }}</span>
@@ -68,7 +69,7 @@
           </div>
           <!-- 資產編號欄位（直接顯示 id） -->
           <div class="detail-row">
-            <span class="detail-label">資產編號</span>
+            <span class="detail-label">{{ t('request.assetNumber') }}</span>
             <span class="detail-value font-mono text-gray-600 text-xs">{{ request.assetId }}</span>
           </div>
           <div class="detail-row">
@@ -98,16 +99,16 @@
             </div>
           </div>
           <div class="detail-row">
-            <span class="detail-label">維修資訊</span>
-            <span class="detail-value">{{ request.repair_solution || request.repairSolution || '無' }}</span>
+            <span class="detail-label">{{ t('request.repairInfo') }}</span>
+            <span class="detail-value">{{ request.repair_solution || request.repairSolution || t('request.none') }}</span>
           </div>
         </div>
       </div>
 
       <!-- Manager Actions: Pending review -->
       <div v-if="authStore.isManager && request.status === 'pending'" class="card p-5 border-2 border-blue-100">
-        <h2 class="section-title text-blue-700"> 審查申請</h2>
-        <p class="text-sm text-gray-600 mb-4">請審查此維修申請，確認是否同意送修。</p>
+        <h2 class="section-title text-blue-700">{{ t('request.reviewTitle') }}</h2>
+        <p class="text-sm text-gray-600 mb-4">{{ t('request.reviewDesc') }}</p>
         <div class="flex gap-3">
           <button class="btn-success flex-1" @click="handleApprove('')">
             {{ t('common.approve') }}
@@ -152,7 +153,7 @@
 
       <!-- Manager Repair Form: approved -->
       <div v-if="authStore.isManager && request.status === 'approved'" class="card p-5 border-2 border-amber-100">
-        <h2 class="section-title text-amber-700"> 填寫維修資訊</h2>
+        <h2 class="section-title text-amber-700">{{ t('request.fillRepairInfo') }}</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="form-label">{{ t('request.repairDate') }}</label>
@@ -160,15 +161,15 @@
           </div>
           <div>
             <label class="form-label">{{ t('request.repairPersonnel') }}</label>
-            <input v-model="repairForm.repairPersonnel" type="text" class="form-input" placeholder="維修人員或廠商名稱" />
+            <input v-model="repairForm.repairPersonnel" type="text" class="form-input" :placeholder="t('request.repairPersonnelPlaceholder')" />
           </div>
           <div class="sm:col-span-2">
             <label class="form-label">{{ t('request.repairContent') }}</label>
-            <textarea v-model="repairForm.repairContent" rows="2" class="form-textarea" placeholder="詳細說明故障原因..."></textarea>
+            <textarea v-model="repairForm.repairContent" rows="2" class="form-textarea" :placeholder="t('request.repairContentPlaceholder')"></textarea>
           </div>
           <div class="sm:col-span-2">
             <label class="form-label">{{ t('request.repairSolution') }}</label>
-            <textarea v-model="repairForm.repairSolution" rows="2" class="form-textarea" placeholder="說明維修方案及處理方式..."></textarea>
+            <textarea v-model="repairForm.repairSolution" rows="2" class="form-textarea" :placeholder="t('request.repairSolutionPlaceholder')"></textarea>
           </div>
           <div>
             <label class="form-label">{{ t('request.repairCost') }} (NT$)</label>
@@ -177,17 +178,17 @@
         </div>
         <div class="flex gap-3 mt-5">
            <button class="btn-success flex-1" @click="handleSendRepairOnly">
-             送修
+             {{ t('request.sendRepair') }}
            </button>
         </div>
       </div>
 
       <!-- 維修中：只顯示維修完成按鈕 -->
       <div v-if="authStore.isManager && request.status === 'repairing'" class="card p-5 border-2 border-green-100">
-        <h2 class="section-title text-green-700"> 維修中</h2>
+        <h2 class="section-title text-green-700">{{ t('request.repairing') }}</h2>
         <div class="flex gap-3 mt-5">
            <button class="btn-success flex-1" @click="handleComplete">
-             維修完成
+             {{ t('request.markComplete') }}
            </button>
         </div>
       </div>
@@ -267,7 +268,7 @@ async function handleSendRepairOnly() {
   // 傳入 request.id（如 REQ-37），sendRepairOnly 會自動解析
   if (!request.value?.id) return
   await requestsStore.sendRepairOnly(request.value.id, repairForm.value)
-  notifStore.add('已送出維修', 'success')
+  notifStore.add(t('request.sendRepairOnlySuccess'), 'success')
   router.push({ name: 'RequestList' })
 }
 // import { mockUsers } from '@/stores/auth'
@@ -327,7 +328,7 @@ async function handleApprove(note) {
   // 只傳數字 id
   const id = request.value?.id?.replace(/[^\d]/g, '')
   if (!id) {
-    notifStore.add('找不到申請單編號', 'error')
+    notifStore.add(t('request.notFoundId'), 'error')
     return
   }
   try {
@@ -396,7 +397,7 @@ async function handleRepair() {
         repair_person: repairForm.value.repairPersonnel
       })
     })
-    notifStore.add('送修成功', 'success')
+    notifStore.add(t('request.sendRepairSuccess'), 'success')
     // 重新整理 request 狀態
     request.value = await requestsStore.fetchById(requestId.value)
   } catch (e) {
@@ -415,7 +416,7 @@ async function handleComplete() {
     }
     showCompleteModal.value = false
     notifStore.add(t('request.completeSuccess'), 'success')
-    notifStore.add('維修完成，將自動返回列表', 'success')
+    notifStore.add(t('request.completeReturnList'), 'success')
     setTimeout(() => {
       router.push('/requests')
     }, 1500)
@@ -433,7 +434,7 @@ async function handleDeleteRequest() {
   }
   try {
     await requestsStore.deleteRequest(id)
-    notifStore.add('維修單已刪除', 'success')
+    notifStore.add(t('request.deleted'), 'success')
     router.push('/requests')
   } catch (e) {
     notifStore.add(e.message || '刪除失敗', 'error')
@@ -471,7 +472,7 @@ const timelineSteps = computed(() => {
     {
       label: t('request.workflow.submitted'),
       date: req.requestDate,
-      desc: `申請人：${getUserName(req.requesterId)}`,
+      desc: `${t('request.requesterLabel')}：${getUserName(req.requesterId)}`,
       status: 'done',
       icon: '',
       note: null,
@@ -482,7 +483,7 @@ const timelineSteps = computed(() => {
     steps.push({
       label: t('request.workflow.reviewing'),
       date: null,
-      desc: '等待管理人員審查',
+      desc: t('request.reviewingDesc'),
       status: 'pending',
       icon: '',
       note: null,
@@ -494,7 +495,7 @@ const timelineSteps = computed(() => {
     steps.push({
       label: t('request.workflow.rejected'),
       date: req.reviewDate,
-      desc: `審查人員：${getUserName(req.reviewerId)}`,
+      desc: `${t('request.reviewerLabel')}：${getUserName(req.reviewerId)}`,
       status: 'rejected',
       icon: '',
       note: req.reviewNote,
@@ -506,7 +507,7 @@ const timelineSteps = computed(() => {
   steps.push({
     label: t('request.workflow.approved'),
     date: req.reviewDate,
-    desc: `審查人員：${getUserName(req.reviewerId)}`,
+    desc: `${t('request.reviewerLabel')}：${getUserName(req.reviewerId)}`,
     status: 'done',
     icon: '',
     note: req.reviewNote,
@@ -530,7 +531,7 @@ const timelineSteps = computed(() => {
     steps.push({
       label: t('request.workflow.repairing'),
       date: req.repairDate || null,
-      desc: req.repairPersonnel ? `維修人員：${req.repairPersonnel}` : '維修進行中',
+      desc: req.repairPersonnel ? `${t('request.repairPersonnelLabel')}：${req.repairPersonnel}` : t('request.repairing'),
       status: 'current',
       icon: '',
       note: null,
@@ -551,7 +552,7 @@ const timelineSteps = computed(() => {
     steps.push({
       label: t('request.workflow.repairing'),
       date: req.repairDate,
-      desc: `維修人員：${req.repairPersonnel}`,
+      desc: `${t('request.repairPersonnelLabel')}：${req.repairPersonnel}`,
       status: 'done',
       icon: '',
       note: null,
@@ -559,7 +560,7 @@ const timelineSteps = computed(() => {
     steps.push({
       label: t('request.workflow.completed'),
       date: req.completionDate,
-      desc: '維修已完成，資產恢復正常使用',
+      desc: t('request.repairCompleted'),
       status: 'done',
       icon: '',
       note: null,
