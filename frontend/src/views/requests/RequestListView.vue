@@ -97,7 +97,7 @@
                     v-if="['pending', 'completed'].includes(req.status)"
                     class="btn-danger btn-sm"
                     @click="openDeleteConfirm(req.id)"
-                  >刪除</button>
+                  >{{ t('common.delete') }}</button>
                 </div>
               </td>
               <div v-if="showDeleteConfirm" style="position:fixed;top:30%;left:50%;transform:translate(-50%,0);z-index:1000;">
