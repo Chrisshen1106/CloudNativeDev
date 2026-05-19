@@ -1,6 +1,7 @@
 // --- 請將 sendRepairOnly 放到 defineStore 內部，並統一用 API_BASE --- 
 // 編輯維修申請單
 async function editRepairRequest(formId, payload, token) {
+  const { t } = useI18n()
   const id = String(formId).replace(/[^\d]/g, '')
   const res = await fetch(`/maintenance-api/edit/form/${id}`, {
     method: 'PUT',
@@ -10,19 +11,21 @@ async function editRepairRequest(formId, payload, token) {
     },
     body: JSON.stringify(payload),
   })
-  if (!res.ok) throw new Error('API error')
+  if (!res.ok) throw new Error(t('common.apiError'))
   return await res.json()
 }
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { useAssetsStore } from './assets'
 import { useAuthStore } from './auth'
+import { useI18n } from '@/composables/useI18n'
 
 // API base url
 // 若要走 8002（maintenance），請設 '/maintenance-api'
 const API_BASE = '/maintenance-api'
   // 送出維修申請
   async function createRequest(payload) {
+    const { t } = useI18n()
     // 轉換欄位名稱，符合後端需求
     const reqBody = {
       idEquipment: payload.assetId,
@@ -41,12 +44,13 @@ const API_BASE = '/maintenance-api'
     })
     if (!res.ok) {
       const err = await res.text()
-      throw new Error(err || 'API error')
+      throw new Error(err || t('common.apiError'))
     }
     return await res.json()
   }
 
 export const useRequestsStore = defineStore('requests', () => {
+  const { t } = useI18n()
   // 送修（只更新申請單狀態，不處理資產）
   // formId: 整數或 REQ-xxx 皆可
   // repairForm: 可選，若無則只送 id
@@ -57,7 +61,7 @@ export const useRequestsStore = defineStore('requests', () => {
       const match = id.match(/(\d+)/)
       id = match ? match[1] : ''
     }
-    if (!id) throw new Error('formId 不正確')
+    if (!id) throw new Error(t('request.invalidFormId'))
     // 僅送後端需要的欄位，且 repair_cost 必為數字
     const payload = {
       repair_description: repairForm?.repairContent || '',
@@ -100,7 +104,7 @@ export const useRequestsStore = defineStore('requests', () => {
         'Authorization': auth,
       },
     })
-    if (!res.ok) throw new Error('API error')
+    if (!res.ok) throw new Error(t('common.apiError'))
     const data = await res.json()
     const authStore = useAuthStore()
     const userId = authStore.currentUser?.id || null
@@ -121,7 +125,7 @@ export const useRequestsStore = defineStore('requests', () => {
         'Authorization': token,
       },
     })
-    if (!res.ok) throw new Error('API error')
+    if (!res.ok) throw new Error(t('common.apiError'))
     const data = await res.json()
     // 新增 log，檢查 API 回傳內容
     console.log('fetchById API 回傳', data)
@@ -169,7 +173,7 @@ export const useRequestsStore = defineStore('requests', () => {
       },
       body: JSON.stringify(body),
     })
-    if (!res.ok) throw new Error('API error')
+    if (!res.ok) throw new Error(t('common.apiError'))
     const data = await res.json()
     // 如果審核通過，呼叫 setAssetStatusRepairing
     if (data.status === 'approved' && data.idEquipment) {
@@ -206,7 +210,7 @@ export const useRequestsStore = defineStore('requests', () => {
       },
       body: JSON.stringify(apiPayload),
     })
-    if (!res.ok) throw new Error('API error')
+    if (!res.ok) throw new Error(t('common.apiError'))
     return await res.json()
   }
 
@@ -222,9 +226,9 @@ export const useRequestsStore = defineStore('requests', () => {
       body: JSON.stringify(payload),
     })
     if (res.status === 200) return await res.json()
-    if (res.status === 404) throw new Error('Form not found')
+    if (res.status === 404) throw new Error(t('request.notFound'))
     const data = await res.json()
-    throw new Error(data.error || 'API error')
+    throw new Error(data.error || t('common.apiError'))
   }
 
   // 送出維修申請
@@ -246,7 +250,7 @@ export const useRequestsStore = defineStore('requests', () => {
         repair_person,
       }),
     })
-    if (!res.ok) throw new Error('API error')
+    if (!res.ok) throw new Error(t('common.apiError'))
     return await res.json()
   }
 

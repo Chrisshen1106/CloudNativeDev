@@ -1,9 +1,7 @@
 <template>
   <div v-if="totalPages > 1" class="flex items-center justify-between pt-4">
     <p class="text-sm text-gray-500">
-      共 <span class="font-medium text-gray-700">{{ total }}</span> 筆，
-      第 <span class="font-medium text-gray-700">{{ currentPage }}</span> /
-      <span class="font-medium text-gray-700">{{ totalPages }}</span> 頁
+      {{ t('pagination.summary', { total, current: currentPage, totalPages }) }}
     </p>
     <div class="flex items-center gap-1">
       <button
@@ -34,12 +32,13 @@
     </div>
   </div>
   <div v-else-if="total > 0" class="pt-4">
-    <p class="text-sm text-gray-500">共 <span class="font-medium text-gray-700">{{ total }}</span> 筆</p>
+    <p class="text-sm text-gray-500">{{ t('pagination.totalOnly', { total }) }}</p>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from '@/composables/useI18n'
 
 const props = defineProps({
   total: { type: Number, required: true },
@@ -48,6 +47,7 @@ const props = defineProps({
 })
 
 defineEmits(['pageChange'])
+const { t } = useI18n()
 
 const totalPages = computed(() => Math.ceil(props.total / props.pageSize))
 

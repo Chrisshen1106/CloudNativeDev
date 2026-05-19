@@ -56,7 +56,7 @@ async function fetchAssetDetail() {
       users.value = []
     }
   } catch (e) {
-    errorMsg.value = e.message || '取得資產詳情失敗'
+    errorMsg.value = e.message || t('asset.detailLoadFailed')
     asset.value = null
     users.value = []
   } finally {
@@ -72,7 +72,7 @@ function getUserDepartment(idUser) {
 
 // 根據 ID 取得名稱的邏輯（可依實際需求調整）
 function getUserName(ownerId) {
-  return ownerId ? `User (${ownerId})` : '未指派'
+  return ownerId ? `User (${ownerId})` : t('assetDetail.unassigned')
 }
 
 function getShortReqId(req) {
@@ -100,7 +100,7 @@ const isWarrantyExpired = computed(() => {
 })
 
 function categoryIcon(cat) {
-  const icons = { computer: '💻', phone: '📱', tablet: '平板' }
+  const icons = { computer: '💻', phone: '📱', tablet: '▣' }
   return icons[cat] || '📦'
 }
 </script>
@@ -158,11 +158,11 @@ function categoryIcon(cat) {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 pt-4 pb-4">
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.supplier') }}</span><span>{{ asset?.supplier }}</span></div>
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.purchaseDate') }}</span><span>{{ asset?.purchase_date ?? asset?.purchaseDate }}</span></div>
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.purchasePrice') }}</span><span class="font-medium text-green-700">NT$ {{ (asset?.purchase_price ?? asset?.purchasePrice)?.toLocaleString() }}</span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.purchasePrice') }}</span><span class="font-medium text-green-700">{{ t('common.currency') }} {{ (asset?.purchase_price ?? asset?.purchasePrice)?.toLocaleString() }}</span></div>
           <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.activationDate') }}</span><span>{{ asset?.activationDate }}</span></div>
-          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.warrantyExpiry') }}</span><span :class="isWarrantyExpired ? 'text-red-600 font-medium' : ''">{{ asset?.warrantyExpiry }}<span v-if="isWarrantyExpired" class="text-xs text-red-500 ml-1">（已過期）</span></span></div>
+          <div class="flex items-center mb-2"><span class="w-28 text-gray-500">{{ t('assetDetail.warrantyExpiry') }}</span><span :class="isWarrantyExpired ? 'text-red-600 font-medium' : ''">{{ asset?.warrantyExpiry }}<span v-if="isWarrantyExpired" class="text-xs text-red-500 ml-1">（{{ t('assetDetail.expired') }}）</span></span></div>
         </div>
-        <div v-if="asset?.notes" class="pt-4"><span class="w-28 text-gray-500 inline-block">備註</span><span class="text-gray-600 text-sm">{{ asset?.notes }}</span></div>
+        <div v-if="asset?.notes" class="pt-4"><span class="w-28 text-gray-500 inline-block">{{ t('assetDetail.notes') }}</span><span class="text-gray-600 text-sm">{{ asset?.notes }}</span></div>
       </div>
       <!-- 維修紀錄 -->
       <div class="bg-white rounded-2xl shadow p-8">
@@ -180,11 +180,11 @@ function categoryIcon(cat) {
             <!-- <pre>{{ JSON.stringify(req, null, 2) }}</pre> -->
             <div class="flex flex-wrap gap-4 items-center mb-2">
               <span class="font-mono text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">{{ getShortReqId(req) }}</span>
-              <span class="text-xs text-gray-500">審查人：{{ req.reviewerName || req.reviewer_id }}</span>
-              <span class="text-xs text-gray-500">費用：NT$ {{ (req.repairCost ?? req.repair_cost ?? '').toLocaleString() }}</span>
+              <span class="text-xs text-gray-500">{{ t('assetDetail.reviewer') }}：{{ req.reviewerName || req.reviewer_id }}</span>
+              <span class="text-xs text-gray-500">{{ t('assetDetail.cost') }}：{{ t('common.currency') }} {{ (req.repairCost ?? req.repair_cost ?? '').toLocaleString() }}</span>
             </div>
-            <div class="mb-1 text-sm text-gray-700"><b>問題：</b>{{ req.faultDescription || req.issue_description }}</div>
-            <div class="mb-1 text-sm text-gray-700"><b>維修說明：</b>{{ req.repairSolution || req.repair_solution || req.repairContent || req.repair_description || '無' }}</div>
+            <div class="mb-1 text-sm text-gray-700"><b>{{ t('assetDetail.issue') }}：</b>{{ req.faultDescription || req.issue_description }}</div>
+            <div class="mb-1 text-sm text-gray-700"><b>{{ t('assetDetail.repairDescription') }}：</b>{{ req.repairSolution || req.repair_solution || req.repairContent || req.repair_description || t('request.none') }}</div>
           </div>
         </div>
       </div>

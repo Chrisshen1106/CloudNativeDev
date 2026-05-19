@@ -6,13 +6,14 @@ const locales = { 'zh-TW': zhTW, en }
 const currentLocale = ref(localStorage.getItem('ams_locale') || 'zh-TW')
 
 export function useI18n() {
-  function t(key) {
+  function t(key, params = {}) {
     const segments = key.split('.')
     let value = locales[currentLocale.value]
     for (const seg of segments) {
       value = value?.[seg]
     }
-    return value ?? key
+    if (typeof value !== 'string') return value ?? key
+    return value.replace(/\{(\w+)\}/g, (_, name) => params[name] ?? `{${name}}`)
   }
 
   function setLocale(locale) {

@@ -91,7 +91,7 @@
                     :to="`/requests/${req.id}/edit`"
                     class="btn-primary btn-sm"
                   >
-                    編輯
+                    {{ t('common.edit') }}
                   </RouterLink>
                   <button
                     v-if="['pending', 'completed'].includes(req.status)"
@@ -102,10 +102,10 @@
               </td>
               <div v-if="showDeleteConfirm" style="position:fixed;top:30%;left:50%;transform:translate(-50%,0);z-index:1000;">
                 <div class="bg-white rounded shadow-lg p-6 w-80 border border-gray-200">
-                  <div class="mb-4 text-lg font-semibold text-gray-800">{{ t('request.deleteConfirmMsg') }}</div>
+                  <div class="mb-4 text-lg font-semibold text-gray-800">{{ t('request.deleteConfirmTitle') }}</div>
                   <div class="flex justify-end gap-3">
                     <button class="btn-secondary" @click="showDeleteConfirm = false">{{ t('common.cancel') }}</button>
-                    <button class="btn-danger" @click="handleDeleteRequest">{{ t('request.confirmDelete') }}</button>
+                    <button class="btn-danger" @click="handleDeleteRequest">{{ t('common.delete') }}</button>
                   </div>
                 </div>
               </div>
@@ -157,7 +157,7 @@ async function loadRequests() {
     await requestsStore.fetchAll(authStore.token)
     sourceRequests.value = requestsStore.getAll()
   } catch (e) {
-    error.value = e.message || '載入失敗'
+    error.value = e.message || t('request.loadFailed')
   } finally {
     loading.value = false
   }
@@ -184,7 +184,7 @@ async function handleDeleteRequest() {
         'Authorization': token
       }
     })
-    if (!res.ok) throw new Error('刪除失敗')
+    if (!res.ok) throw new Error(t('request.deleteFailed'))
     showDeleteConfirm.value = false
     deleteTargetId.value = null
     await loadRequests()

@@ -1,34 +1,14 @@
-  // 刪除資產
-  async function deleteAsset(id, token) {
-    // 只傳純數字 id
-    if (typeof id === 'string') {
-      const match = id.match(/(\d+)/)
-      if (match) id = match[1]
-    }
-    const res = await fetch(`${API_BASE}/assets/${id}`, {
-      method: 'DELETE',
-      headers: {
-        ...(token ? { 'Authorization': token } : {})
-      }
-    })
-    if (!res.ok) throw new Error('刪除資產失敗')
-    // 刪除本地 assets 資料
-    const idx = assets.value.findIndex(a => String(a.id).replace(/\D/g, '') === String(id))
-    if (idx !== -1) {
-      assets.value.splice(idx, 1)
-      persist()
-    }
-    return true
-  }
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { useI18n } from '@/composables/useI18n'
 
 const STORAGE_KEY = 'ams_assets'
 const API_BASE = '/user-api'
 
 export class AssetConflictError extends Error {
   constructor(latestAsset) {
-    super('資產已被其他人更新')
+    const { t } = useI18n()
+    super(t('asset.conflictError'))
     this.name = 'AssetConflictError'
     this.status = 409
     this.latestAsset = latestAsset || {}
@@ -37,6 +17,7 @@ export class AssetConflictError extends Error {
 
 export const useAssetsStore = defineStore('assets', () => {
   const assets = ref([])
+  const { t } = useI18n()
 
   function persist() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(assets.value))
@@ -85,7 +66,7 @@ export const useAssetsStore = defineStore('assets', () => {
         'Authorization': token
       }
     })
-    if (!res.ok) throw new Error('取得資產失敗')
+    if (!res.ok) throw new Error(t('asset.fetchFailed'))
     const data = await res.json()
     console.log('API 回傳 data:', data)
     assets.value = data.items.map(item => ({
@@ -123,7 +104,7 @@ export const useAssetsStore = defineStore('assets', () => {
     const res = await fetch(`${API_BASE}/assets/${id}`, {
       headers: token ? { 'Authorization': token } : {}
     })
-    if (!res.ok) throw new Error('取得資產詳情失敗')
+    if (!res.ok) throw new Error(t('asset.detailLoadFailed'))
     const data = await res.json()
     // 確保回傳物件有 idEquipment 欄位（數字主鍵）
     if (data && !data.idEquipment) {
@@ -158,7 +139,7 @@ export const useAssetsStore = defineStore('assets', () => {
     }
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
-      throw new Error(data.message || '資產更新失敗')
+      throw new Error(data.message || t('asset.updateFailed'))
     }
     return await res.json()
   }
@@ -173,7 +154,7 @@ export const useAssetsStore = defineStore('assets', () => {
       },
       body: JSON.stringify(assetData)
     })
-    if (!res.ok) throw new Error('新增資產失敗')
+    if (!res.ok) throw new Error(t('asset.createFailed'))
     const data = await res.json()
     return data
   }
@@ -186,14 +167,14 @@ export const useAssetsStore = defineStore('assets', () => {
       id = idOrAssetNumber.idEquipment
     }
     id = parseInt(id, 10)
-    if (isNaN(id)) throw new Error('資產 id 不正確')
+    if (isNaN(id)) throw new Error(t('asset.invalidId'))
     const res = await fetch(`${API_BASE}/asset/status/repairing/${id}`, {
       method: 'PUT',
       headers: {
         ...(token ? { 'Authorization': token } : {})
       }
     })
-    if (!res.ok) throw new Error('設為維修中失敗')
+    if (!res.ok) throw new Error(t('asset.setRepairingFailed'))
     return await res.json()
   }
 
@@ -214,8 +195,28 @@ export const useAssetsStore = defineStore('assets', () => {
         ...(token ? { 'Authorization': token } : {})
       }
     })
-    if (!res.ok) throw new Error('設為使用中失敗')
+    if (!res.ok) throw new Error(t('asset.setInUseFailed'))
     return await res.json()
+  }
+
+  async function deleteAsset(id, token) {
+    if (typeof id === 'string') {
+      const match = id.match(/(\d+)/)
+      if (match) id = match[1]
+    }
+    const res = await fetch(`${API_BASE}/assets/${id}`, {
+      method: 'DELETE',
+      headers: {
+        ...(token ? { 'Authorization': token } : {})
+      }
+    })
+    if (!res.ok) throw new Error(t('asset.deleteFailed'))
+    const idx = assets.value.findIndex(a => String(a.id).replace(/\D/g, '') === String(id))
+    if (idx !== -1) {
+      assets.value.splice(idx, 1)
+      persist()
+    }
+    return true
   }
 
   return {
