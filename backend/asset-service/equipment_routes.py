@@ -6,11 +6,6 @@ from models import db, Equipment, Form, User
 equipment_bp = Blueprint('equipment_bp', __name__, url_prefix='/api')
 
 
-def format_asset_number(equipment):
-    year = equipment.purchase_date.year if equipment.purchase_date else datetime.now().year
-    return equipment.idEquipment;
-
-
 # Request JSON key -> Equipment model attribute
 FIELD_MAP = {
     'name':           'name',
@@ -48,7 +43,7 @@ def get_user_assets():
 
     items = [
         {
-            "assetNumber": format_asset_number(e),
+            "assetNumber": e.idEquipment,
             "name": e.name,
             "category": e.category,
             "model": e.model,
