@@ -124,7 +124,7 @@
         <button type="button" class="btn-secondary" @click="router.back()">
           {{ t('common.cancel') }}
         </button>
-        <button type="submit" class="btn-primary">
+        <button type="submit" class="btn-primary" :disabled="isSaving">
           {{ t('common.save') }}
         </button>
         <!--
@@ -143,6 +143,14 @@
         </div>
       </div>
     </form>
+
+    <AssetConflictModal
+      v-if="assetConflict"
+      :my-content="assetConflict.myContent"
+      :latest-content="assetConflict.latestContent"
+      @submit="handleConflictSubmit"
+      @cancel="cancelConflictEdit"
+    />
   </div>
 </template>
 
@@ -155,6 +163,7 @@ import { useRequestsStore } from '@/stores/requests'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useI18n } from '@/composables/useI18n'
+import AssetConflictModal from '@/components/common/AssetConflictModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -167,6 +176,8 @@ const requestsStore = useRequestsStore()
 const authStore = useAuthStore()
 
 const holderUsers = ref([])
+const isSaving = ref(false)
+const assetConflict = ref(null)
 // 當選擇負責人時自動帶出部門
 function handleUserChange() {
   const user = holderUsers.value.find(u => (u.idUser || u.id) == form.value.ownerId)
@@ -249,22 +260,30 @@ onMounted(() => {
 })
 
 
+function buildAssetPayload(source = form.value) {
+  const payload = {
+    ...source,
+    serial_Number: source.serialNumber ?? source.serial_Number ?? '',
+    purchase_price: source.purchasePrice ?? source.purchase_price ?? null,
+    purchase_date: source.purchaseDate ?? source.purchase_date ?? '',
+  }
+
+  if (payload.idUser) {
+    payload.isOwner = String(payload.idUser)
+  }
+
+  delete payload.serialNumber
+  delete payload.purchasePrice
+  delete payload.purchaseDate
+
+  return payload
+}
+
 
 async function handleAssetSubmit() {
+  const payload = buildAssetPayload()
   try {
-    // idUser (int) 轉 string 給 isOwner
-    let payload = {
-      ...form.value,
-      serial_Number: form.value.serialNumber ?? form.value.serial_Number ?? '',
-      purchase_price: form.value.purchasePrice ?? form.value.purchase_price ?? null,
-      purchase_date: form.value.purchaseDate ?? form.value.purchase_date ?? '',
-    }
-    if (payload.idUser) {
-      payload.isOwner = String(payload.idUser)
-    }
-    delete payload.serialNumber
-    delete payload.purchasePrice
-    delete payload.purchaseDate
+    isSaving.value = true
     if (isEdit.value) {
       await assetsStore.updateAsset(route.params.id, payload, authStore.token)
       notifStore.add('資產已更新', 'success')
@@ -274,9 +293,48 @@ async function handleAssetSubmit() {
     }
     router.back()
   } catch (e) {
+    if (e.status === 409 && e.latestAsset) {
+      assetConflict.value = {
+        myContent: payload,
+        latestContent: e.latestAsset || {},
+      }
+      notifStore.add('資料已被其他人更新，請確認衝突內容', 'error')
+      return
+    }
     notifStore.add(e.message || '儲存失敗', 'error')
+  } finally {
+    isSaving.value = false
   }
 }
+
+async function handleConflictSubmit(resolvedPayload) {
+  try {
+    isSaving.value = true
+    const payload = buildAssetPayload(resolvedPayload)
+    await assetsStore.updateAsset(route.params.id, payload, authStore.token)
+    notifStore.add('資產已更新', 'success')
+    assetConflict.value = null
+    router.back()
+  } catch (e) {
+    if (e.status === 409 && e.latestAsset) {
+      assetConflict.value = {
+        myContent: buildAssetPayload(resolvedPayload),
+        latestContent: e.latestAsset || {},
+      }
+      notifStore.add('資料再次被更新，請重新確認衝突內容', 'error')
+      return
+    }
+    notifStore.add(e.message || '重新提交失敗', 'error')
+  } finally {
+    isSaving.value = false
+  }
+}
+
+function cancelConflictEdit() {
+  assetConflict.value = null
+  router.back()
+}
+
 import { onUnmounted } from 'vue'
     const showDeleteConfirm = ref(false)
     onUnmounted(() => { showDeleteConfirm.value = false })
