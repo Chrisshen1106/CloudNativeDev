@@ -31,8 +31,23 @@
                 {{ field.label }}
               </div>
               <div :class="['px-4 py-3 border-l', isDifferent(field.key) ? 'border-red-200' : 'border-gray-200']">
+                <select
+                  v-if="field.control === 'select'"
+                  v-model="draft[field.key]"
+                  :class="['form-select', isDifferent(field.key) ? 'border-red-300 focus:ring-red-500' : '']"
+                  @change="handleFieldChange(field.key)"
+                >
+                  <option value="">{{ field.placeholder }}</option>
+                  <option
+                    v-for="option in getOptions(field)"
+                    :key="`${field.key}-${option.value}`"
+                    :value="option.value"
+                  >
+                    {{ option.label }}
+                  </option>
+                </select>
                 <textarea
-                  v-if="field.multiline"
+                  v-else-if="field.multiline"
                   v-model="draft[field.key]"
                   rows="2"
                   :class="['form-textarea min-h-[64px]', isDifferent(field.key) ? 'border-red-300 focus:ring-red-500' : '']"
@@ -49,7 +64,7 @@
                   'min-h-[38px] rounded-lg border px-3 py-2 text-sm text-gray-700 whitespace-pre-wrap',
                   isDifferent(field.key) ? 'border-red-200 bg-white' : 'border-gray-200 bg-gray-50'
                 ]">
-                  {{ displayValue(latestContent?.[field.key]) }}
+                  {{ displayFieldValue(field, latestContent?.[field.key]) }}
                 </div>
               </div>
             </div>
@@ -85,14 +100,15 @@ import { ref, watch } from 'vue'
 const props = defineProps({
   myContent: { type: Object, required: true },
   latestContent: { type: Object, required: true },
+  holderUsers: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['submit', 'cancel'])
 
 const fields = [
   { key: 'name', label: '資產名稱' },
-  { key: 'category', label: '分類' },
-  { key: 'status', label: '狀態' },
+  { key: 'category', label: '分類', control: 'select', placeholder: '-- 選擇分類 --' },
+  { key: 'status', label: '狀態', control: 'select', placeholder: '-- 選擇狀態 --' },
   { key: 'model', label: '型號' },
   { key: 'specs', label: '規格' },
   { key: 'serial_Number', label: '序號' },
@@ -103,10 +119,22 @@ const fields = [
   { key: 'activationDate', label: '啟用日期', type: 'date' },
   { key: 'warrantyExpiry', label: '保固期限', type: 'date' },
   { key: 'location', label: '存放地點' },
-  { key: 'ownerId', label: '負責人' },
-  { key: 'idUser', label: '使用者ID' },
+  { key: 'ownerId', label: '負責人', control: 'select', placeholder: '-- 選擇負責人 --' },
+  { key: 'idUser', label: '使用者ID', control: 'select', placeholder: '-- 選擇 idUser --' },
   { key: 'department', label: '部門' },
   { key: 'userDepartment', label: '使用部門' },
+]
+
+const categoryOptions = [
+  { value: 'computer', label: '電腦類' },
+  { value: 'phone', label: '手機類' },
+  { value: 'tablet', label: '平板類' },
+]
+
+const statusOptions = [
+  { value: 'in_use', label: '正常使用' },
+  { value: 'repairing', label: '維修中' },
+  { value: 'scrapped', label: '已報廢' },
 ]
 
 const draft = ref({})
@@ -129,8 +157,74 @@ function displayValue(value) {
   return normalized || '-'
 }
 
+function userId(user) {
+  return user?.idUser ?? user?.id ?? ''
+}
+
+function userDepartment(user) {
+  return user?.department || user?.departmentName || ''
+}
+
+function findUser(value) {
+  return props.holderUsers.find((user) => normalize(userId(user)) === normalize(value))
+}
+
+function appendCurrentOption(options, key) {
+  const values = [draft.value?.[key], props.latestContent?.[key]]
+  const nextOptions = [...options]
+
+  for (const value of values) {
+    const normalized = normalize(value)
+    if (!normalized) continue
+    if (!nextOptions.some((option) => normalize(option.value) === normalized)) {
+      nextOptions.push({ value, label: normalized })
+    }
+  }
+
+  return nextOptions
+}
+
+function getOptions(field) {
+  if (field.key === 'category') return appendCurrentOption(categoryOptions, field.key)
+  if (field.key === 'status') return appendCurrentOption(statusOptions, field.key)
+  if (field.key === 'ownerId') {
+    const options = props.holderUsers.map((user) => ({
+      value: userId(user),
+      label: `${user.name || userId(user)} (${userDepartment(user)})`,
+    }))
+    return appendCurrentOption(options, field.key)
+  }
+  if (field.key === 'idUser') {
+    const options = props.holderUsers.map((user) => ({
+      value: userId(user),
+      label: `${userId(user)} - ${user.name || ''}`,
+    }))
+    return appendCurrentOption(options, field.key)
+  }
+  return []
+}
+
+function displayFieldValue(field, value) {
+  if (field.control !== 'select') return displayValue(value)
+
+  const option = getOptions(field).find((item) => normalize(item.value) === normalize(value))
+  return option?.label || displayValue(value)
+}
+
 function isDifferent(key) {
   return normalize(draft.value?.[key]) !== normalize(props.latestContent?.[key])
+}
+
+function handleFieldChange(key) {
+  if (key === 'ownerId') {
+    const user = findUser(draft.value.ownerId)
+    draft.value.department = user ? userDepartment(user) : ''
+  }
+
+  if (key === 'idUser') {
+    const user = findUser(draft.value.idUser)
+    draft.value.userDepartment = user ? userDepartment(user) : ''
+  }
 }
 
 function submit() {

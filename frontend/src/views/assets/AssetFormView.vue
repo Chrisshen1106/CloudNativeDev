@@ -148,6 +148,7 @@
       v-if="assetConflict"
       :my-content="assetConflict.myContent"
       :latest-content="assetConflict.latestContent"
+      :holder-users="holderUsers"
       @submit="handleConflictSubmit"
       @cancel="cancelConflictEdit"
     />
