@@ -60,7 +60,7 @@
               <th>{{ t('request.requestDate') }}</th>
               <th>{{ t('request.faultDescription') }}</th>
               <th>{{ t('asset.status') }}</th>
-              <th class="text-center">{{ t('common.actions') }}</th>
+              <th class="text-center pl-2">{{ t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -81,22 +81,24 @@
                 <span class="line-clamp-1 text-sm">{{ req.faultDescription }}</span>
               </td>
               <td><StatusBadge :status="req.status" type="request" /></td>
-              <td class="text-center whitespace-nowrap">
-                <RouterLink :to="`/requests/${req.id}`" class="btn-secondary btn-sm">
-                  {{ t('common.detail') }}
-                </RouterLink>
-                <RouterLink
-                  v-if="['pending', 'Pending Review', '待審查'].includes(req.status) && req.requesterId === `U${authStore.currentUser?.id}` && authStore.currentUser?.role !== 'admin'"
-                  :to="`/requests/${req.id}/edit`"
-                  class="btn-primary btn-sm ml-2"
-                >
-                  編輯
-                </RouterLink>
-                <button
-                  v-if="['pending', 'completed'].includes(req.status)"
-                  class="btn-danger btn-sm ml-2"
-                  @click="openDeleteConfirm(req.id)"
-                >刪除</button>
+              <td class="text-center whitespace-nowrap pl-4">
+                <div class="flex items-center gap-2 justify-start">
+                  <RouterLink :to="`/requests/${req.id}`" class="btn-secondary btn-sm">
+                    {{ t('common.detail') }}
+                  </RouterLink>
+                  <RouterLink
+                    v-if="['pending', 'Pending Review', '待審查'].includes(req.status) && req.requesterId === `U${authStore.currentUser?.id}` && authStore.currentUser?.role !== 'admin'"
+                    :to="`/requests/${req.id}/edit`"
+                    class="btn-primary btn-sm"
+                  >
+                    編輯
+                  </RouterLink>
+                  <button
+                    v-if="['pending', 'completed'].includes(req.status)"
+                    class="btn-danger btn-sm"
+                    @click="openDeleteConfirm(req.id)"
+                  >{{ t('common.delete') }}</button>
+                </div>
               </td>
               <div v-if="showDeleteConfirm" style="position:fixed;top:30%;left:50%;transform:translate(-50%,0);z-index:1000;">
                 <div class="bg-white rounded shadow-lg p-6 w-80 border border-gray-200">

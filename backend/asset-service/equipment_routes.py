@@ -22,7 +22,9 @@ FIELD_MAP = {
     'warrantyExpiry': 'warranty_expiry',
     'location':       'location',
     'ownerId':        'idOwner',
+    'idUser':         'idUser',
     'department':     'department',
+    'userDepartment': 'userDepartment',
 }
 
 
@@ -41,18 +43,24 @@ def get_user_assets():
 
     equipments = query.order_by(Equipment.idEquipment.desc()).all()
 
-    items = [
-        {
+    items = []
+    for e in equipments:
+        user_department = None
+        if e.idUser:
+            user = User.query.filter_by(idUser=e.idUser).first()
+            if user and user.dept:
+                user_department = user.dept.name
+        items.append({
             "assetNumber": e.idEquipment,
             "name": e.name,
             "category": e.category,
             "model": e.model,
             "location": e.location,
             "department": e.department,
-            "status": e.status, 
-        }
-        for e in equipments
-    ]
+            "status": e.status,
+            "idUser": e.idUser,
+            "userDepartment": user_department,
+        })
 
     return jsonify({
         "total": len(items),
@@ -101,20 +109,21 @@ def create_asset():
     if get_jwt().get('role') != 'admin':
         return jsonify({"message": "僅管理員可新增資產"}), 403
 
+
     data = request.get_json()
     if not data:
         return jsonify({"message": "未提供資料"}), 400
 
-
-    # 若有 ownerId，則 idUser 也設為 ownerId，確保資產歸屬正確
-    id_user = data.get('ownerId')
+    # 若有 idUser，優先設為 idUser，否則 fallback ownerId 或 isOwner
+    id_user = data.get('idUser') or data.get('ownerId') or data.get('isOwner')
     if id_user is not None:
-      equipment = Equipment(idUser=id_user)
+        equipment = Equipment(idUser=int(id_user))
     else:
-      equipment = Equipment(idUser=int(get_jwt_identity()))
+        equipment = Equipment(idUser=int(get_jwt_identity()))
+
     for api_key, model_attr in FIELD_MAP.items():
-      if api_key in data:
-        setattr(equipment, model_attr, data[api_key])
+        if api_key in data:
+            setattr(equipment, model_attr, data[api_key])
 
     try:
         db.session.add(equipment)
@@ -142,6 +151,9 @@ def _equipment_to_dict(equipment):
         "warrantyExpiry": equipment.warranty_expiry.isoformat() if equipment.warranty_expiry else None,
         "location": equipment.location,
         "ownerId": equipment.idOwner,
+        "isOwner": str(equipment.idUser) if equipment.idUser is not None else None,
+        "idUser": equipment.idUser,
+        "userDepartment": equipment.userDepartment,
         "department": equipment.department,
         "version": equipment.version,
     }
@@ -168,7 +180,15 @@ def update_asset(id):
 
     for api_key, model_attr in FIELD_MAP.items():
         if api_key in data:
-            setattr(equipment, model_attr, data[api_key])
+            # isOwner 轉 int 存 idUser
+            if api_key == 'isOwner':
+                setattr(equipment, model_attr, int(data[api_key]))
+            else:
+                setattr(equipment, model_attr, data[api_key])
+
+    # 若有 idUser，直接設置
+    if 'idUser' in data:
+        equipment.idUser = int(data['idUser'])
 
     equipment.version += 1
 

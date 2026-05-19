@@ -41,8 +41,8 @@ export const useAssetsStore = defineStore('assets', () => {
     return assets.value.find((a) => a.id === id) || null
   }
 
-  function getByOwnerId(ownerId) {
-    return assets.value.filter((a) => String(a.ownerId) === String(ownerId))
+  function getByIdUser(idUser) {
+    return assets.value.filter((a) => String(a.idUser) === String(idUser))
   }
 
   function add(assetData) {
@@ -88,6 +88,7 @@ export const useAssetsStore = defineStore('assets', () => {
       model: item.model || '',
       location: item.location || '',
       ownerId: item.idOwner || item.ownerId || '',
+      idUser: item.idUser || '',
       department: item.department || '',
       status: item.status || '',
       ...item
@@ -115,6 +116,10 @@ export const useAssetsStore = defineStore('assets', () => {
     })
     if (!res.ok) throw new Error('取得資產詳情失敗')
     const data = await res.json()
+    // 確保回傳物件有 idEquipment 欄位（數字主鍵）
+    if (data && !data.idEquipment) {
+      data.idEquipment = id
+    }
     return data
   }
   
@@ -201,7 +206,7 @@ export const useAssetsStore = defineStore('assets', () => {
     assets,
     getAll,
     getById,
-    getByOwnerId,
+    getByIdUser,
     add,
     update,
     fetchUserAssets,

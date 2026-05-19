@@ -65,8 +65,8 @@
               <th>{{ t('asset.category') }}</th>
               <th>{{ t('asset.model') }}</th>
               <th>{{ t('asset.location') }}</th>
-              <th v-if="authStore.isManager">{{ t('asset.owner') }}</th>
-              <th>{{ t('asset.department') }}</th>
+              <th v-if="authStore.isManager">{{ t('asset.idUser') }}</th>
+              <th>{{ t('asset.userDepartment') }}</th>
               <th>{{ t('asset.status') }}</th>
               <th class="text-center">{{ t('common.actions') }}</th>
             </tr>
@@ -91,13 +91,12 @@
               <td class="text-gray-600">{{ asset.model }}</td>
               <td class="text-gray-600 text-xs">{{ asset.location }}</td>
               <td v-if="authStore.isManager" class="text-gray-600">
-                <div class="text-xs text-gray-400">{{ asset.ownerId }}</div>
-                <div>{{ getUserName(asset.ownerId) }}</div>
+                <div class="text-xs text-gray-400">{{ asset.idUser }}</div>
               </td>
-              <td class="text-gray-600 text-xs">{{ asset.department }}</td>
+              <td class="text-gray-600 text-xs">{{ asset.userDepartment }}</td>
               <td><StatusBadge :status="asset.status" type="asset" /></td>
               <td class="text-center">
-                <div class="flex items-center justify-center gap-2">
+                <div class="flex items-center justify-start gap-2">
                   <button
                     class="btn-secondary btn-sm"
                     @click="openDetailModal(asset.idEquipment || asset.id)"
@@ -210,7 +209,7 @@ const filteredAssets = computed(() => {
       (a.assetNumber ? a.assetNumber.toString().toLowerCase() : '').includes(q) ||
       (a.model ? a.model.toString().toLowerCase() : '').includes(q) ||
       (a.location ? a.location.toString().toLowerCase() : '').includes(q) ||
-      (getUserName(a.ownerId) ? getUserName(a.ownerId).toString().toLowerCase() : '').includes(q)
+      (getUserName(a.idUser) ? getUserName(a.idUser).toString().toLowerCase() : '').includes(q)
     )
   }
   if (filterCategory.value) list = list.filter((a) => a.category === filterCategory.value)
@@ -232,9 +231,9 @@ function resetFilters() {
 }
 
 
-function getUserName(ownerId) {
-  // 目前沒有 users 資料，直接回傳 ownerId
-  return ownerId
+function getUserName(idUser) {
+  // 目前沒有 users 資料，直接回傳 idUser
+  return idUser
 }
 
 function categoryIcon(cat) {

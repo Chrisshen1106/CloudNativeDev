@@ -9,6 +9,7 @@ CREATE TABLE User(
     idUser INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(45),
     email VARCHAR(45) UNIQUE,
+    password VARCHAR(255) NOT NULL,
     idDepartment INT NOT NULL,
     role ENUM('user', 'admin'),
     FOREIGN KEY (idDepartment) REFERENCES department(idDepartment)
@@ -26,6 +27,7 @@ CREATE TABLE Equipment(
     purchase_price DECIMAL(10,2),
     location VARCHAR(100),
     department VARCHAR(100),
+    userDepartment VARCHAR(100),
     start_date DATE,
     warranty_expiry DATE,
     status ENUM('in_use','repairing','scrapped'),

@@ -30,7 +30,7 @@
         <div class="flex items-center justify-between mb-4">
           <h2 class="section-title mb-0">{{ t('dashboard.recentRequests') }}</h2>
           <RouterLink to="/requests" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
-            查看全部 →
+            {{ t('dashboard.viewAll') }}
           </RouterLink>
         </div>
         <div v-if="recentRequests.length === 0" class="text-center py-8 text-gray-400 text-sm">
@@ -72,18 +72,7 @@
           </RouterLink>
         </div>
 
-        <!-- Status summary (manager) -->
-        <div v-if="authStore.isManager" class="mt-6">
-          <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">待處理事項</h3>
-          <div class="space-y-2">
-            <div class="flex items-center text-sm">
-              <span class="text-gray-600"> 待審查申請</span>
-            </div>
-            <div class="flex items-center text-sm">
-              <span class="text-gray-600"> 維修中資產</span>
-            </div>
-          </div>
-        </div>
+        <!-- Status summary (manager) 已移除 -->
       </div>
     </div>
   </div>
@@ -143,22 +132,22 @@ const statCards = computed(() => {
       {
         key: 'total', icon: '', value: all.length,
         label: t('dashboard.totalAssets'),
-        tag: '全部', tagClass: 'bg-gray-100 text-gray-600',
+        tag: t('dashboard.tagAll'), tagClass: 'bg-gray-100 text-gray-600',
       },
       {
         key: 'in_use', icon: '', value: all.filter(a => a.status === 'in_use').length,
         label: t('dashboard.normalAssets'),
-        tag: '正常', tagClass: 'bg-emerald-100 text-emerald-700',
+        tag: t('dashboard.tagNormal'), tagClass: 'bg-emerald-100 text-emerald-700',
       },
       {
         key: 'repair', icon: '', value: underRepairCount.value,
         label: t('dashboard.underRepairAssets'),
-        tag: '維修中', tagClass: 'bg-amber-100 text-amber-700',
+        tag: t('dashboard.tagRepairing'), tagClass: 'bg-amber-100 text-amber-700',
       },
       {
         key: 'pending', icon: '', value: pendingCount.value,
         label: t('dashboard.pendingRequests'),
-        tag: '待審', tagClass: 'bg-blue-100 text-blue-700',
+        tag: t('dashboard.tagPending'), tagClass: 'bg-blue-100 text-blue-700',
       },
     ]
   } else {

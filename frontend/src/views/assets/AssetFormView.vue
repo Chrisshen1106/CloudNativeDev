@@ -17,12 +17,12 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="sm:col-span-2">
             <label class="form-label">{{ t('asset.name') }} <span class="text-red-500">*</span></label>
-            <input v-model="form.name" type="text" class="form-input" required :placeholder="`例：MacBook Pro 16`" />
+            <input v-model="form.name" type="text" class="form-input" required :placeholder="t('assetForm.namePlaceholder') || '例：MacBook Pro 16'" />
           </div>
           <div>
             <label class="form-label">{{ t('asset.category') }} <span class="text-red-500">*</span></label>
             <select v-model="form.category" class="form-select" required>
-              <option value="">-- 選擇分類 --</option>
+              <option value="">-- {{ t('assetForm.categoryPlaceholder') || '選擇分類' }} --</option>
               <option value="computer">{{ t('asset.categories.computer') }}</option>
               <option value="phone">{{ t('asset.categories.phone') }}</option>
               <option value="tablet">{{ t('asset.categories.tablet') }}</option>
@@ -31,6 +31,7 @@
           <div>
             <label class="form-label">{{ t('asset.status') }}</label>
             <select v-model="form.status" class="form-select">
+              <option value="">{{ t('assetForm.statusPlaceholder') || '選擇狀態' }}</option>
               <option value="in_use">{{ t('asset.statuses.in_use') }}</option>
               <option value="repairing">{{ t('asset.statuses.repairing') }}</option>
 
@@ -38,19 +39,19 @@
           </div>
           <div>
             <label class="form-label">{{ t('asset.model') }} <span class="text-red-500">*</span></label>
-            <input v-model="form.model" type="text" class="form-input" required :placeholder="`例：MacBook Pro M3 Max`" />
+            <input v-model="form.model" type="text" class="form-input" required :placeholder="t('assetForm.modelPlaceholder') || '例：MacBook Pro M3 Max'" />
           </div>
           <div>
             <label class="form-label">{{ t('asset.specs') }}</label>
-            <input v-model="form.specs" type="text" class="form-input" placeholder="例：48GB RAM, 1TB SSD" />
+            <input v-model="form.specs" type="text" class="form-input" :placeholder="t('assetForm.specsPlaceholder') || '例：48GB RAM, 1TB SSD'" />
           </div>
           <div>
             <label class="form-label">{{ t('asset.serialNumber') }}</label>
-            <input v-model="form.serialNumber" type="text" class="form-input" placeholder="設備序號" />
+            <input v-model="form.serialNumber" type="text" class="form-input" :placeholder="t('assetForm.serialNumberPlaceholder') || '設備序號'" />
           </div>
           <div class="sm:col-span-2">
             <label class="form-label">{{ t('asset.notes') }}</label>
-            <textarea v-model="form.notes" rows="2" class="form-textarea" placeholder="備註..."></textarea>
+            <textarea v-model="form.notes" rows="2" class="form-textarea" :placeholder="t('assetForm.notesPlaceholder') || '備註...'" ></textarea>
           </div>
         </div>
       </div>
@@ -61,7 +62,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="form-label">{{ t('asset.supplier') }}</label>
-            <input v-model="form.supplier" type="text" class="form-input" placeholder="供應商名稱" />
+            <input v-model="form.supplier" type="text" class="form-input" :placeholder="t('assetForm.supplierPlaceholder') || '供應商名稱'" />
           </div>
           <div>
             <label class="form-label">{{ t('asset.purchasePrice') }} (NT$)</label>
@@ -88,20 +89,33 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="sm:col-span-2">
             <label class="form-label">{{ t('asset.location') }} <span class="text-red-500">*</span></label>
-            <input v-model="form.location" type="text" class="form-input" required placeholder="例：台北總部 3F-A302" />
+            <input v-model="form.location" type="text" class="form-input" required :placeholder="t('assetForm.locationPlaceholder') || '例：台北總部 3F-A302'" />
           </div>
           <div>
             <label class="form-label">{{ t('asset.owner') }} <span class="text-red-500">*</span></label>
             <select v-model="form.ownerId" class="form-select" required @change="handleUserChange">
-              <option value="">-- 選擇負責人 --</option>
+              <option value="">-- {{ t('assetForm.ownerPlaceholder') || '選擇負責人' }} --</option>
               <option v-for="user in holderUsers" :key="user.idUser || user.id" :value="user.idUser || user.id">
                 {{ user.name }} ({{ user.department || user.departmentName || '' }})
               </option>
             </select>
           </div>
           <div>
-            <label class="form-label">{{ t('asset.department') }}</label>
-            <input v-model="form.department" type="text" class="form-input" placeholder="例：研發部" />
+            <label class="form-label">{{ t('assetForm.user') }} <span class="text-red-500">*</span></label>
+            <select v-model="form.idUser" class="form-select" required @change="handleIdUserChange">
+              <option value="">-- {{ t('assetForm.user') }} --</option>
+              <option v-for="user in holderUsers" :key="user.idUser || user.id" :value="user.idUser || user.id">
+                {{ user.idUser || user.id }} - {{ user.name }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">{{ t('assetForm.department') }}</label>
+            <input v-model="form.department" type="text" class="form-input" :placeholder="t('assetForm.departmentPlaceholder') || '例：研發部'" />
+          </div>
+          <div>
+            <label class="form-label">{{ t('assetForm.userDepartment') }}</label>
+            <input v-model="form.userDepartment" type="text" class="form-input" :placeholder="t('assetForm.userDepartmentPlaceholder') || '例：研發部'" />
           </div>
         </div>
       </div>
@@ -159,6 +173,11 @@ function handleUserChange() {
   const user = holderUsers.value.find(u => (u.idUser || u.id) == form.value.ownerId)
   form.value.department = user ? (user.department || user.departmentName || '') : ''
 }
+// 當選擇 idUser 時自動帶出使用部門
+function handleIdUserChange() {
+  const user = holderUsers.value.find(u => (u.idUser || u.id) == form.value.idUser)
+  form.value.userDepartment = user ? (user.department || user.departmentName || '') : ''
+}
 onMounted(async () => {
   try {
     const users = await authStore.fetchAllUsers()
@@ -170,6 +189,13 @@ onMounted(async () => {
     try {
       const asset = await assetsStore.getAssetDetail(route.params.id, authStore.token)
       if (asset) {
+        // idOwner (string) 轉 int 給 idUser
+        if (asset.idOwner && !asset.idUser) {
+          form.value.idUser = parseInt(asset.idOwner, 10)
+        } else if (asset.idUser) {
+          form.value.idUser = asset.idUser
+        }
+        // 其餘欄位
         Object.assign(form.value, asset)
         // 修正底線命名欄位對應
         form.value.serialNumber = asset.serial_Number ?? asset.serialNumber ?? ''
@@ -183,6 +209,9 @@ onMounted(async () => {
 })
 
 const form = ref({
+  idEquipment: '', // 資產主鍵
+  assetNumber: '', // 資產編號
+  id: '', // 資產ID
   name: '',
   category: '',
   model: '',
@@ -193,6 +222,7 @@ const form = ref({
   purchase_price: null,
   location: '',
   ownerId: '',
+  idUser: '',
   department: '',
   activationDate: '',
   warrantyExpiry: '',
@@ -204,6 +234,12 @@ onMounted(() => {
   if (isEdit.value) {
     const asset = assetsStore.getById(route.params.id)
     if (asset) {
+      // idOwner (string) 轉 int 給 idUser
+      if (asset.idOwner && !asset.idUser) {
+        form.value.idUser = parseInt(asset.idOwner, 10)
+      } else if (asset.idUser) {
+        form.value.idUser = asset.idUser
+      }
       Object.assign(form.value, asset)
       // 修正底線命名欄位對應
       form.value.serialNumber = asset.serial_Number ?? asset.serialNumber ?? ''
@@ -217,30 +253,23 @@ onMounted(() => {
 
 async function handleAssetSubmit() {
   try {
+    // idUser (int) 轉 string 給 isOwner
+    let payload = {
+      ...form.value,
+      serial_Number: form.value.serialNumber ?? form.value.serial_Number ?? '',
+      purchase_price: form.value.purchasePrice ?? form.value.purchase_price ?? null,
+      purchase_date: form.value.purchaseDate ?? form.value.purchase_date ?? '',
+    }
+    if (payload.idUser) {
+      payload.isOwner = String(payload.idUser)
+    }
+    delete payload.serialNumber
+    delete payload.purchasePrice
+    delete payload.purchaseDate
     if (isEdit.value) {
-      // 編輯資產
-      const payload = {
-        ...form.value,
-        serial_Number: form.value.serialNumber ?? form.value.serial_Number ?? '',
-        purchase_price: form.value.purchasePrice ?? form.value.purchase_price ?? null,
-        purchase_date: form.value.purchaseDate ?? form.value.purchase_date ?? '',
-      }
-      delete payload.serialNumber
-      delete payload.purchasePrice
-      delete payload.purchaseDate
       await assetsStore.updateAsset(route.params.id, payload, authStore.token)
       notifStore.add('資產已更新', 'success')
     } else {
-      // 新增資產
-      const payload = {
-        ...form.value,
-        serial_Number: form.value.serialNumber,
-        purchase_price: form.value.purchasePrice,
-        purchase_date: form.value.purchaseDate,
-      }
-      delete payload.serialNumber
-      delete payload.purchasePrice
-      delete payload.purchaseDate
       await assetsStore.createAsset(payload, authStore.token)
       notifStore.add('資產已新增', 'success')
     }
