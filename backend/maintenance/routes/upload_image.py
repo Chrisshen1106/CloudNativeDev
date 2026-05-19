@@ -52,9 +52,9 @@ def create_upload_url():
     }), 200
 
 
-@uploadImg_bp.route("/upload-url/<image_id:str>", methods=["GET"])
+@uploadImg_bp.route("/upload-url/<string:image_id>", methods=["GET"])
 @jwt_required()
-def create_read_url(image_id):
+def create_read_url(image_id: str):
     """
     取得 S3 presigned GET URL
     """
