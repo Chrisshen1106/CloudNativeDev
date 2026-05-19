@@ -257,7 +257,7 @@ export default {
   assetForm: {
     department: '負責部門',
     userDepartment: '使用部門',
-    user: '-- 選擇使用者 --',
+    user: '選擇使用者',
     departmentPlaceholder: '例：研發部',
     userDepartmentPlaceholder: '例：研發部',
     namePlaceholder: '例：MacBook Pro 16',
@@ -269,6 +269,6 @@ export default {
     supplierPlaceholder: '供應商名稱',
     locationPlaceholder: '例：台北總部 3F-A302',
     statusPlaceholder: '-- 選擇狀態 --',
-    ownerPlaceholder: '-- 選擇負責人 --',
+    ownerPlaceholder: '選擇負責人',
   },
 }
