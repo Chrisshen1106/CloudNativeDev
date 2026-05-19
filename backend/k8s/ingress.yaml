@@ -1,0 +1,48 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cloud-native-ingress
+  namespace: default
+  annotations:
+    # 💡 告訴 EKS 使用 AWS ALB Controller 來實作這個 Ingress
+    kubernetes.io/ingress.class: alb
+    # 💡 讓這個 ALB 直接面向公網（Internet-facing）
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    # 💡 指定 Target 類型為 ip（直接路由到 Pod 的 IP，效能最好）
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  rules:
+    - http:
+        paths:
+          # --------------------------------------------------
+          # 1. User Service 路由
+          # --------------------------------------------------
+          - path: /api/user
+            pathType: Prefix
+            backend:
+              service:
+                name: user-service
+                port:
+                  number: 8001
+
+          # --------------------------------------------------
+          # 2. Asset Service 路由
+          # --------------------------------------------------
+          - path: /api/asset
+            pathType: Prefix
+            backend:
+              service:
+                name: asset-service
+                port:
+                  number: 8000
+
+          # --------------------------------------------------
+          # 3. Maintenance Service 路由
+          # --------------------------------------------------
+          - path: /api/maintenance
+            pathType: Prefix
+            backend:
+              service:
+                name: maintenance-service
+                port:
+                  number: 8002

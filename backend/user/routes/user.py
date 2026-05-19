@@ -6,7 +6,7 @@ from utils.utils import verify_login
 from controllers.user import user_controller
 
 
-user_bp = Blueprint('user', __name__, url_prefix='/api')
+user_bp = Blueprint('user', __name__, url_prefix='/api/user')
 
 @user_bp.route('/signup', methods=['POST'])
 def create_user():

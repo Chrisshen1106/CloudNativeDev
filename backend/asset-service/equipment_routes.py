@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from datetime import datetime
 from models import db, Equipment, Form, User
 
-equipment_bp = Blueprint('equipment_bp', __name__, url_prefix='/api')
+equipment_bp = Blueprint('equipment_bp', __name__, url_prefix='/api/asset')
 
 
 def format_asset_number(equipment):
