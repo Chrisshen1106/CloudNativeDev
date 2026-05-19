@@ -212,6 +212,8 @@ export default {
     position: 'Location',
   },
   request: {
+    deleteConfirmMsg: 'Delete this maintenance request?',
+    confirmDelete: 'Delete',
     info: 'Request Info',
     title: 'Request List',
     titleMy: 'My Repair Requests',
