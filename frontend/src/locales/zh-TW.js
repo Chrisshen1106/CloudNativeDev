@@ -253,6 +253,8 @@ export default {
     notFoundId: '找不到申請單編號',
     completeReturnList: '維修完成，將自動返回列表',
     deleted: '維修單已刪除',
+    deleteConfirmMsg: '確認要刪除此筆維修訂單？',
+    confirmDelete: '確認刪除',
   },
   assetForm: {
     department: '負責部門',
