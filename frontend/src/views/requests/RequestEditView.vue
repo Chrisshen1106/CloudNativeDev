@@ -52,9 +52,6 @@
             <h2 class="section-title mb-0">{{ t('request.attachments') }}</h2>
             <p class="text-xs text-gray-500 mt-1">{{ t('request.attachmentsHint') }}</p>
           </div>
-          <button v-if="previewUrl" type="button" class="btn-secondary btn-sm" @click="fileInput?.click()">
-            {{ t('common.edit') }}
-          </button>
         </div>
 
         <input

@@ -12,12 +12,6 @@
       <StatusBadge v-if="request" :status="request.status" type="request" />
     </div>
 
-    <div v-if="canEditRequest" class="flex justify-end mt-8 mb-6">
-      <RouterLink :to="`/requests/${request.id}/edit`" class="btn-primary">
-        {{ t('common.edit') }}
-      </RouterLink>
-    </div>
-
     <div v-if="!request" class="card p-12 text-center text-gray-400">
       <p class="text-4xl mb-2"></p>
       <p>{{ t('request.notFound') }}</p>
