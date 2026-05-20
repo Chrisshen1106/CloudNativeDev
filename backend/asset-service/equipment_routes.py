@@ -10,6 +10,18 @@ def format_asset_number(equipment):
     year = equipment.purchase_date.year if equipment.purchase_date else datetime.now().year
     return equipment.idEquipment;
 
+def format_user(user_id):
+    if not user_id:
+        return None
+    user = User.query.filter_by(idUser=user_id).first()
+    if not user:
+        return None
+    return {
+        "idUser": user.idUser,
+        "name": user.name,
+        "department": user.dept.name if user.dept else None,
+    }
+
 
 # Request JSON key -> Equipment model attribute
 FIELD_MAP = {
@@ -50,11 +62,7 @@ def get_user_assets():
 
     items = []
     for e in equipments:
-        user_department = None
-        if e.idUser:
-            user = User.query.filter_by(idUser=e.idUser).first()
-            if user and user.dept:
-                user_department = user.dept.name
+        assigned_user = format_user(e.idUser)
         items.append({
             "assetNumber": format_asset_number(e),
             "name": e.name,
@@ -64,7 +72,8 @@ def get_user_assets():
             "department": e.department,
             "status": e.status,
             "idUser": e.idUser,
-            "userDepartment": user_department,
+            "userName": assigned_user["name"] if assigned_user else None,
+            "userDepartment": assigned_user["department"] if assigned_user else e.userDepartment,
         })
 
     return jsonify({
@@ -92,9 +101,10 @@ def get_asset(id):
             "id": f"REQ-{req_year}-{form.idForm:03d}",
             "requestDate": form.requestDate.isoformat() if form.requestDate else None,
             "faultDescription": form.issue_description,
+            "status": form.status,
             "reviewerId": form.reviewer_id,
             "reviewerName": reviewer_name,
-            "reviewNote": form.repair_description,
+            "reviewNote": form.reviewNote,
             "repairDate": form.repair_start_date.isoformat() if form.repair_start_date else None,
             "repairCost": float(form.repair_cost) if form.repair_cost is not None else None,
             "completionDate": form.repair_end_date.isoformat() if form.repair_end_date else None,
@@ -141,6 +151,8 @@ def create_asset():
 
 
 def _equipment_to_dict(equipment):
+    assigned_user = format_user(equipment.idUser)
+    owner_user = format_user(equipment.idOwner)
     return {
         "name": equipment.name,
         "category": equipment.category,
@@ -156,9 +168,11 @@ def _equipment_to_dict(equipment):
         "warrantyExpiry": equipment.warranty_expiry.isoformat() if equipment.warranty_expiry else None,
         "location": equipment.location,
         "ownerId": equipment.idOwner,
+        "ownerName": owner_user["name"] if owner_user else None,
         "isOwner": str(equipment.idUser) if equipment.idUser is not None else None,
         "idUser": equipment.idUser,
-        "userDepartment": equipment.userDepartment,
+        "userName": assigned_user["name"] if assigned_user else None,
+        "userDepartment": assigned_user["department"] if assigned_user else equipment.userDepartment,
         "department": equipment.department,
         "version": equipment.version,
     }
