@@ -64,8 +64,7 @@
             <input
               ref="fileInput"
               type="file"
-              accept="image/*"
-              multiple
+              accept="image/jpeg,image/png,image/webp,image/gif"
               class="hidden"
               @change="handleFileChange"
             />
@@ -166,14 +165,14 @@ function handleDrop(event) {
 }
 
 function processFiles(files) {
-  files.forEach((file) => {
+  files.slice(0, 1).forEach((file) => {
     if (file.size > 5 * 1024 * 1024) {
       notifStore.add(t('request.fileTooLarge', { name: file.name }), 'warning')
       return
     }
     const reader = new FileReader()
     reader.onloadend = () => {
-      form.value.attachments.push({ name: file.name, type: file.type, data: reader.result })
+      form.value.attachments = [{ name: file.name, type: file.type, data: reader.result, file }]
     }
     reader.readAsDataURL(file)
   })
@@ -187,9 +186,9 @@ function removeAttachment(idx) {
 async function createRequestSubmit() {
   try {
     const payload = {
-      assetId: form.value.assetId,
+      idEquipment: selectedAsset.value?.idEquipment || form.value.assetId,
       faultDescription: form.value.faultDescription,
-      attachments: form.value.attachments,
+      attachmentFile: form.value.attachments[0]?.file || null,
     }
     // 呼叫 requestsStore.createRequest
     await requestsStore.createRequest(payload)

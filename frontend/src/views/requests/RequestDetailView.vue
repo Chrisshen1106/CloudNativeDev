@@ -12,9 +12,7 @@
       <StatusBadge v-if="request" :status="request.status" type="request" />
     </div>
 
-    <!-- 編輯按鈕：僅本人且狀態為 pending 可見，修正為直接比對 applicant_id 數字型別 -->
-    <!-- 僅非 admin 本人且狀態為 pending 可見編輯按鈕 -->
-    <div v-if="request && request.status === 'pending' && (request.applicant_id === authStore.currentUser?.id) && authStore.currentUser?.role !== 'admin'" class="flex justify-end mt-8">
+    <div v-if="canEditRequest" class="flex justify-end mt-8 mb-6">
       <RouterLink :to="`/requests/${request.id}/edit`" class="btn-primary">
         {{ t('common.edit') }}
       </RouterLink>
@@ -288,6 +286,7 @@ const { t } = useI18n()
 
 const requestId = computed(() => route.params.id)
 const request = ref(null)
+const users = ref([])
 const loading = ref(true)
 const error = ref(null)
 
@@ -302,6 +301,17 @@ const repairForm = ref({
   repairSolution: '',
   repairCost: null,
   repairPersonnel: '',
+})
+
+const currentUserId = computed(() => {
+  const user = authStore.currentUser || {}
+  return String(user.idUser || user.id || user.userId || '').replace(/[^\d]/g, '')
+})
+
+const canEditRequest = computed(() => {
+  if (!request.value || request.value.status !== 'pending' || authStore.isManager) return false
+  const applicantId = String(request.value.applicant_id || request.value.requesterId || '').replace(/[^\d]/g, '')
+  return !!currentUserId.value && applicantId === currentUserId.value
 })
 
 function todayDateInputValue() {
@@ -324,6 +334,9 @@ onMounted(async () => {
   error.value = null
   try {
     request.value = await requestsStore.fetchById(requestId.value)
+    if (authStore.isManager) {
+      users.value = await authStore.fetchAllUsers().catch(() => [])
+    }
     repairForm.value = {
       repairDate: toDateInputValue(request.value.repairDate),
       repairContent: request.value.repairContent || '',
@@ -464,8 +477,10 @@ function getAssetNumber(assetId) {
 }
 
 function getUserName(userId) {
-  // 目前沒有 users 資料，直接回傳 userId
-  return userId
+  const id = String(userId || '').replace(/[^\d]/g, '')
+  const user = users.value.find((u) => String(u.idUser || u.id) === id)
+  if (!id) return userId || ''
+  return user?.name ? `${user.name} (U${id})` : `U${id}`
 }
 
 function stepDotClass(status) {

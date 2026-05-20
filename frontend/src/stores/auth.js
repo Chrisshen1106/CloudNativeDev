@@ -63,13 +63,17 @@ export const useAuthStore = defineStore('auth', () => {
 
   // 取得所有使用者資料
   async function fetchAllUsers() {
-    const res = await fetch('/api/users', {
-      headers: {
-        'Authorization': localStorage.getItem('ams_token') || '',
-      },
-    })
-    if (!res.ok) throw new Error(t('login.fetchUsersFailed'))
-    return await res.json()
+    const headers = {
+      'Authorization': localStorage.getItem('ams_token') || '',
+    }
+    const endpoints = ['/user-api/users', '/api/users']
+
+    for (const endpoint of endpoints) {
+      const res = await fetch(endpoint, { headers })
+      if (res.ok) return await res.json()
+    }
+
+    throw new Error(t('login.fetchUsersFailed'))
   }
 
   return { currentUser, token, isLoggedIn, isManager, isHolder, login, logout, fetchAllUsers }
