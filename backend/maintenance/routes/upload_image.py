@@ -36,8 +36,8 @@ def create_upload_url():
     
     try:
         upload_url = bucket_manager.generate_upload_url(object_key, contentType)
-    except ClientError as e:
-        return jsonify({"error": "failed to create upload url"}), 500
+    except (ClientError, ValueError) as e:
+        return jsonify({"error": str(e) or "failed to create upload url"}), 500
     
     new_image = {
         "image_id": image_id,
@@ -63,18 +63,19 @@ def create_read_url(image_id: str):
     取得 S3 presigned GET URL
     """
     user_id = int(get_jwt_identity())
+    claims = get_jwt()
 
     if not image_id:
         return jsonify({"error": "imageId is required"}), 400
 
     image = image_controller.getImageByImageId(image_id)
-    if not image or image.user_id != user_id:
+    if not image or (image.user_id != user_id and claims.get("role") != "admin"):
         return jsonify({"error": "image not found"}), 404
 
     try:
         read_url = bucket_manager.generate_read_url(image.object_key)
-    except ClientError as e:
-        return jsonify({"error": "failed to create read url"}), 500
+    except (ClientError, ValueError) as e:
+        return jsonify({"error": str(e) or "failed to create read url"}), 500
 
     return jsonify({
         "readUrl": read_url,
