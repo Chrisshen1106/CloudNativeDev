@@ -87,14 +87,14 @@
                     {{ t('common.detail') }}
                   </RouterLink>
                   <RouterLink
-                    v-if="['pending', 'Pending Review', '待審查'].includes(req.status) && req.requesterId === `U${authStore.currentUser?.id}` && authStore.currentUser?.role !== 'admin'"
+                    v-if="canEditRequest(req)"
                     :to="`/requests/${req.id}/edit`"
                     class="btn-primary btn-sm"
                   >
                     {{ t('common.edit') }}
                   </RouterLink>
                   <button
-                    v-if="['pending', 'completed'].includes(req.status)"
+                    v-if="['pending', 'completed', 'rejected'].includes(req.status)"
                     class="btn-danger btn-sm"
                     @click="openDeleteConfirm(req.id)"
                   >{{ t('common.delete') }}</button>
@@ -145,9 +145,14 @@ const currentPage = ref(1)
 const pageSize = 10
 
 const sourceRequests = ref([])
+const users = ref([])
 const loading = ref(false)
 const error = ref(null)
 
+const currentUserId = computed(() => {
+  const user = authStore.currentUser || {}
+  return String(user.idUser || user.id || user.userId || '').replace(/[^\d]/g, '')
+})
 
 async function loadRequests() {
   loading.value = true
@@ -156,6 +161,9 @@ async function loadRequests() {
     // fetchAll 會自動依權限過濾
     await requestsStore.fetchAll(authStore.token)
     sourceRequests.value = requestsStore.getAll()
+    if (authStore.isManager) {
+      users.value = await authStore.fetchAllUsers().catch(() => [])
+    }
   } catch (e) {
     error.value = e.message || t('request.loadFailed')
   } finally {
@@ -195,7 +203,7 @@ async function handleDeleteRequest() {
   }
 }
 onMounted(loadRequests)
-watch(() => authStore.currentUser?.id, loadRequests)
+watch(() => currentUserId.value, loadRequests)
 
 const filteredRequests = computed(() => {
   let list = [...sourceRequests.value].sort((a, b) => (b.requestDate || '').localeCompare(a.requestDate || ''))
@@ -233,7 +241,16 @@ function getAssetName(assetId) {
 }
 
 function getUserName(userId) {
-  return userId
+  const id = String(userId || '').replace(/[^\d]/g, '')
+  const user = users.value.find((u) => String(u.idUser || u.id) === id)
+  if (!id) return userId || ''
+  return user?.name ? `${user.name} (U${id})` : `U${id}`
+}
+
+function canEditRequest(req) {
+  if (!req || req.status !== 'pending' || authStore.isManager) return false
+  const applicantId = String(req.applicant_id || req.requesterId || '').replace(/[^\d]/g, '')
+  return !!currentUserId.value && applicantId === currentUserId.value
 }
 
 </script>
