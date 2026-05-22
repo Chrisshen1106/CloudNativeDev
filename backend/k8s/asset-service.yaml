@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: asset-service
+  labels:
+    app: asset-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: asset-service
+  template:
+    metadata:
+      labels:
+        app: asset-service
+    spec:
+      containers:
+      - name: asset-service
+        image: 794934876006.dkr.ecr.ap-east-2.amazonaws.com/cloud-native-asset-service:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: SQLALCHEMY_DATABASE_URI
+          valueFrom:
+            secretKeyRef:
+              name: backend-secret # 👈 已改名
+              key: SQLALCHEMY_DATABASE_URI
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: backend-secret # 👈 已改名
+              key: JWT_SECRET_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: asset-service
+spec:
+  selector:
+    app: asset-service
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP
