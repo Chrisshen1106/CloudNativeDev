@@ -185,14 +185,17 @@
         </div>
       </div>
 
-      <!-- 資產狀態：正常使用 -->
-      <div v-if="request.status === 'normal'" class="card p-5">
-        <div class="flex items-start justify-between mb-3">
-          <div class="text-2xl"></div>
-          <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-emerald-100 text-emerald-700">{{ t('dashboard.tagNormal') }}</span>
+      <!-- 資產狀態：維修完成 -->
+      <div v-if="request.status === 'completed'" class="card p-5 bg-emerald-50 border border-emerald-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl">
+            ✓
+          </div>
+          <div>
+            <h3 class="font-semibold text-emerald-900">{{ t('request.repairCompleted') }}</h3>
+            <p class="text-sm text-emerald-700">{{ t('request.completeSuccess') }}</p>
+          </div>
         </div>
-        <p class="text-3xl font-bold text-gray-900 mb-1">0</p>
-        <p class="text-sm text-gray-500">{{ t('asset.statuses.in_use') }}</p>
       </div>
     </div>
 
@@ -404,7 +407,7 @@ async function handleRepair() {
     }
     // 3. 維修單狀態設為 repairing，帶維修資訊
     const formId = (request.value.idForm || requestId.value).toString().replace(/[^\d]/g, '')
-    await fetch(`/maintenance-api/repair/${formId}`, {
+    await fetch(`/api/maintenance/repair/${formId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

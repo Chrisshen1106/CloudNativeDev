@@ -238,7 +238,7 @@ def delete_asset(id):
     return jsonify({"success": True}), 200
 
 
-@equipment_bp.route('/asset/status/repairing/<int:id>', methods=['PUT'])
+@equipment_bp.route('/status/repairing/<int:id>', methods=['PUT'])
 @jwt_required()
 def set_status_repairing(id):
     if get_jwt().get('role') != 'admin':
@@ -256,7 +256,7 @@ def set_status_repairing(id):
     return jsonify({}), 200
 
 
-@equipment_bp.route('/asset/status/in_use/<int:id>', methods=['PUT'])
+@equipment_bp.route('/status/in_use/<int:id>', methods=['PUT'])
 @jwt_required()
 def set_status_in_use(id):
     if get_jwt().get('role') != 'admin':
