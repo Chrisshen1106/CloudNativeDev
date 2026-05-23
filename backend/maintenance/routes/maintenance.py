@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from controllers.maintenance import maintenance_controller
 from utils.enum import MaintenanceStatus
 
-maintenance_bp = Blueprint('maintenance', __name__, url_prefix='/api')
+maintenance_bp = Blueprint('maintenance', __name__, url_prefix='/api/maintenance')
 
 # 取得維修申請單列表
 @maintenance_bp.route('/forms', methods=['GET'])

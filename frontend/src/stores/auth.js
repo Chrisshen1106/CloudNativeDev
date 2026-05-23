@@ -18,7 +18,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function login({ email, password }) {
     try {
-      const res = await fetch('/api/login', {
+      const res = await fetch('/api/user/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -42,7 +42,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
   async function signup(payload) {
-    const res = await fetch('/api/signup', {
+    const res = await fetch('/api/user/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -66,12 +66,8 @@ export const useAuthStore = defineStore('auth', () => {
     const headers = {
       'Authorization': localStorage.getItem('ams_token') || '',
     }
-    const endpoints = ['/user-api/users', '/api/users']
-
-    for (const endpoint of endpoints) {
-      const res = await fetch(endpoint, { headers })
-      if (res.ok) return await res.json()
-    }
+    const res = await fetch('/api/user/users', { headers })
+    if (res.ok) return await res.json()
 
     throw new Error(t('login.fetchUsersFailed'))
   }

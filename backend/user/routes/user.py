@@ -6,7 +6,7 @@ from utils.utils import verify_login
 from controllers.user import user_controller
 
 
-user_bp = Blueprint('user', __name__, url_prefix='/api')
+user_bp = Blueprint('user', __name__, url_prefix='/api/user')
 
 @user_bp.route('/signup', methods=['POST'])
 def create_user():
@@ -65,6 +65,19 @@ def get_all_users():
         role = get_jwt().get("role", "")
         if role != "admin":
             return jsonify({"message": "Unauthorized user role"}), 403
+        users = user_controller.getAllUsers()
+        response = user_controller.schema(many=True, only=['idUser', 'name', 'department']).dump(users)
+        return jsonify(response), 200
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 400
+    except Exception as e:
+        return jsonify({"message": f"Internal server error: {str(e)}"}), 500
+
+# 測試在 eks 上能不能正常連線到 S3
+@user_bp.route('/users_test_s3', methods=['GET'])
+# @jwt_required()  # 1. 先註解掉驗證
+def get_all_users_test_s3():
+    try:
         users = user_controller.getAllUsers()
         response = user_controller.schema(many=True, only=['idUser', 'name', 'department']).dump(users)
         return jsonify(response), 200

@@ -30,6 +30,16 @@ spec:
             secretKeyRef:
               name: backend-secret # 👈 已改名
               key: JWT_SECRET_KEY
+        - name: BUCKET_NAME
+          valueFrom:
+            secretKeyRef:
+              name: backend-secret
+              key: BUCKET_NAME
+        - name: AWS_REGION
+          valueFrom:
+            secretKeyRef:
+              name: backend-secret
+              key: AWS_REGION
 ---
 apiVersion: v1
 kind: Service

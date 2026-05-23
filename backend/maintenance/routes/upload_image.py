@@ -6,7 +6,7 @@ from controllers.image import image_controller
 from utils.s3_bucket import bucket_manager
 
 
-uploadImg_bp = Blueprint('uploadImg', __name__, url_prefix='/api/images')
+uploadImg_bp = Blueprint('uploadImg', __name__, url_prefix='/api/maintenance/images')
 
 @uploadImg_bp.route("/upload-url", methods=["POST"])
 @jwt_required()

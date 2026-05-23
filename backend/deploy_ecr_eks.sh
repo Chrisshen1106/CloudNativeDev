@@ -32,8 +32,8 @@ fi
 # ==============================================================================
 # 你可以隨時取消註解來同步更新其他服務
 SERVICES=(
-    "asset:cloud-native-asset-service"
-    "maintenance:cloud-native-maintenance"
+    # "asset-service:cloud-native-asset-service"
+    # "maintenance:cloud-native-maintenance"
     "user:cloud-native-user"
 )
 
@@ -45,8 +45,12 @@ for SERVICE_INFO in "${SERVICES[@]}"; do
     DIR="${SERVICE_INFO%%:*}"
     REPO="${SERVICE_INFO##*:}"
     
-    # 自動對應 K8s 的 Deployment 名稱（例如 user 變成 user-service）
-    DEPLOYMENT_NAME="${DIR}-service"
+    # 如果資料夾名稱本身就包含 "-service"，就直接當成 Deployment 名稱；否則才加上 "-service"
+    if [[ "$DIR" == *-service ]]; then
+        DEPLOYMENT_NAME="${DIR}"
+    else
+        DEPLOYMENT_NAME="${DIR}-service"
+    fi
 
     echo "------------------------------------------"
     echo "📦 正在處理服務: ${DIR} -> ${REPO}"
