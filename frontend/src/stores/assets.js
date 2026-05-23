@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { useI18n } from '@/composables/useI18n'
 
 const STORAGE_KEY = 'ams_assets'
-const API_BASE = '/user-api'
+const API_BASE = '/api/asset'
 
 export class AssetConflictError extends Error {
   constructor(latestAsset) {
@@ -189,7 +189,7 @@ export const useAssetsStore = defineStore('assets', () => {
       const match = id.match(/(\d+)/)
       if (match) id = match[1]
     }
-    const res = await fetch(`${API_BASE}/asset/status/in_use/${id}`, {
+    const res = await fetch(`${API_BASE}/status/in_use/${id}`, {
       method: 'PUT',
       headers: {
         ...(token ? { 'Authorization': token } : {})

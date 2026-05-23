@@ -50,11 +50,11 @@ uv run gunicorn "app:app" --bind 0.0.0.0:8000
 
 | Method | Path | 權限 | 說明 |
 |--------|------|------|------|
-| GET | `/api/user` | user / admin | 取得資產列表（user 只看自己的，admin 看全部） |
-| GET | `/api/assets/<id>` | user / admin | 取得單一資產詳情（含維修紀錄） |
-| POST | `/api/assets` | admin | 新增資產 |
-| PUT | `/api/assets/<id>` | admin | 編輯資產 |
-| DELETE | `/api/assets/<id>` | admin | 刪除資產 |
+| GET | `/api/asset/user` | user / admin | 取得資產列表（user 只看自己的，admin 看全部） |
+| GET | `/api/asset/assets/<id>` | user / admin | 取得單一資產詳情（含維修紀錄） |
+| POST | `/api/asset/assets` | admin | 新增資產 |
+| PUT | `/api/asset/assets/<id>` | admin | 編輯資產 |
+| DELETE | `/api/asset/assets/<id>` | admin | 刪除資產 |
 
 所有 API 需在 Header 帶 JWT Token：
 ```

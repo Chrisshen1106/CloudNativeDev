@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from controllers.department import department_controller
 
-dept_bp = Blueprint('department', __name__, url_prefix='/department')
+dept_bp = Blueprint('department', __name__, url_prefix='/api/user/department')
 
 @dept_bp.route('/create', methods=['POST'])
 def create_department():

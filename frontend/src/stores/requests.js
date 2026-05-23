@@ -4,7 +4,7 @@ import { useAssetsStore } from './assets'
 import { useAuthStore } from './auth'
 import { useI18n } from '@/composables/useI18n'
 
-const API_BASE = '/maintenance-api'
+const API_BASE = '/api/maintenance'
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
 function authHeaders(token) {

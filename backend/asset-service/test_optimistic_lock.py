@@ -34,7 +34,7 @@ def client():
 
 def put(client, token, asset_id, payload):
     return client.put(
-        f'/api/assets/{asset_id}',
+        f'/api/asset/assets/{asset_id}',
         json=payload,
         headers={'Authorization': f'Bearer {token}'},
     )

@@ -11,16 +11,17 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': 'http://localhost:8001',
-      '/maintenance-api': {
-        target: 'http://localhost:8002',
-        changeOrigin: true,
-        rewrite: path => path.replace(/^\/maintenance-api/, '/api')
+      '/api/user': {
+        target: 'http://localhost:8001',
+        changeOrigin: true
       },
-      '/user-api': {
+      '/api/maintenance': {
+        target: 'http://localhost:8002',
+        changeOrigin: true
+      },
+      '/api/asset': {
         target: 'http://localhost:8000',
-        changeOrigin: true,
-        rewrite: path => path.replace(/^\/user-api/, '/api')
+        changeOrigin: true
       }
     }
   }
