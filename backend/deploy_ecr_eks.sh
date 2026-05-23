@@ -32,8 +32,8 @@ fi
 # ==============================================================================
 # 你可以隨時取消註解來同步更新其他服務
 SERVICES=(
-    # "asset-service:cloud-native-asset-service"
-    # "maintenance:cloud-native-maintenance"
+    "asset-service:cloud-native-asset-service"
+    "maintenance:cloud-native-maintenance"
     "user:cloud-native-user"
 )
 
