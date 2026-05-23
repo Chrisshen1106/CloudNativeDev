@@ -22,13 +22,20 @@ class BucketManager:
         self.bucket_name = None
 
     def _load_config(self):
-        self.bucket_name = os.getenv("S3_BUCKET_NAME") or os.getenv("BUCKET_NAME")
+        self.bucket_name = (os.getenv("S3_BUCKET_NAME") or os.getenv("BUCKET_NAME") or "").strip('"')
         if not self.bucket_name:
             raise ValueError("Missing S3 bucket config. Please set BUCKET_NAME or S3_BUCKET_NAME in backend/.env")
 
         if self.s3_client is None:
-            region = os.getenv("AWS_REGION") or os.getenv("AWS_DEFAULT_REGION")
+            region = (os.getenv("AWS_REGION") or os.getenv("AWS_DEFAULT_REGION") or "").strip('"')
+            access_key = (os.getenv("AWS_ACCESS_KEY_ID") or "").strip('"')
+            secret_key = (os.getenv("AWS_SECRET_ACCESS_KEY") or "").strip('"')
+
             kwargs = {"region_name": region} if region else {}
+            if access_key and secret_key:
+                kwargs["aws_access_key_id"] = access_key
+                kwargs["aws_secret_access_key"] = secret_key
+            
             self.s3_client = boto3.client("s3", **kwargs)
 
     def generate_upload_url(self, object_key, content_type):
