@@ -28,7 +28,9 @@ export const useAssetsStore = defineStore('assets', () => {
   }
 
   function getById(id) {
-    return assets.value.find((a) => a.id === id) || null
+    if (!id) return null
+    const cleanId = String(id).replace(/[^\d]/g, '')
+    return assets.value.find((a) => String(a.id).replace(/[^\d]/g, '') === cleanId || String(a.idEquipment) === cleanId) || null
   }
 
   function getByIdUser(idUser) {
@@ -168,7 +170,7 @@ export const useAssetsStore = defineStore('assets', () => {
     }
     id = parseInt(id, 10)
     if (isNaN(id)) throw new Error(t('asset.invalidId'))
-    const res = await fetch(`${API_BASE}/asset/status/repairing/${id}`, {
+    const res = await fetch(`${API_BASE}/status/repairing/${id}`, {
       method: 'PUT',
       headers: {
         ...(token ? { 'Authorization': token } : {})

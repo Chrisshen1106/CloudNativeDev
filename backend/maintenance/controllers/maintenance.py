@@ -43,6 +43,10 @@ class MaintenanceController:
             form = self.model.query.get(id)
             if form:
                 form.status = status
+                # 如果是完成維修，應該也要把資產狀態設回 in_use
+                if status == 'completed':
+                   from sqlalchemy import text
+                   db.session.execute(text("UPDATE Equipment SET status = 'in_use' WHERE idEquipment = :id"), {'id': form.idEquipment})
                 db.session.commit()
                 return form
             raise ValueError("Form not found")
@@ -58,6 +62,15 @@ class MaintenanceController:
                 for key, value in data.items():
                     print(f'setting {key} = {value}')
                     setattr(form, key, value)
+                
+                # 同步更新資產狀態
+                if 'status' in data:
+                    from sqlalchemy import text
+                    if data['status'] in ['approved', 'repairing']:
+                        db.session.execute(text("UPDATE Equipment SET status = 'repairing' WHERE idEquipment = :id"), {'id': form.idEquipment})
+                    elif data['status'] == 'completed':
+                        db.session.execute(text("UPDATE Equipment SET status = 'in_use' WHERE idEquipment = :id"), {'id': form.idEquipment})
+
                 db.session.commit()
                 print('after commit, reviewer_id:', getattr(form, 'reviewer_id', None))
                 return form
