@@ -260,6 +260,22 @@ export const useRequestsStore = defineStore('requests', () => {
     return await res.json()
   }
 
+  async function deleteRequest(formId, token) {
+    const id = normalizeFormId(formId)
+    const res = await fetch(`${API_BASE}/form/${id}`, {
+      method: 'DELETE',
+      headers: authHeaders(token),
+    })
+    if (!res.ok) throw new Error(t('common.apiError'))
+    
+    // 從本地列表中移除
+    const idx = requests.value.findIndex(r => normalizeFormId(r.id) === id)
+    if (idx !== -1) {
+      requests.value.splice(idx, 1)
+    }
+    return true
+  }
+
   async function editRequest(formId, payload) {
     const id = normalizeFormId(formId)
     if (!id) throw new Error(t('request.invalidFormId'))
@@ -382,6 +398,7 @@ export const useRequestsStore = defineStore('requests', () => {
     createRequest,
     editRequest,
     editRepairRequest,
+    deleteRequest,
     reviewRequest,
     completeRequest,
     submitRepairRequest,

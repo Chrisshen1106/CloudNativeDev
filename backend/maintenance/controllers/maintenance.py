@@ -83,6 +83,10 @@ class MaintenanceController:
         try:
             form = self.model.query.get(id)
             if form:
+                # 刪除前先把資產狀態設回 in_use，避免資產卡在維修狀態
+                from sqlalchemy import text
+                db.session.execute(text("UPDATE Equipment SET status = 'in_use' WHERE idEquipment = :id"), {'id': form.idEquipment})
+                
                 db.session.delete(form)
                 db.session.commit()
                 return
