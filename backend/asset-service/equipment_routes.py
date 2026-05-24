@@ -6,10 +6,6 @@ from models import db, Equipment, Form, User
 equipment_bp = Blueprint('equipment_bp', __name__, url_prefix='/api/asset')
 
 
-def format_asset_number(equipment):
-    year = equipment.purchase_date.year if equipment.purchase_date else datetime.now().year
-    return equipment.idEquipment;
-
 def format_user(user_id):
     if not user_id:
         return None
