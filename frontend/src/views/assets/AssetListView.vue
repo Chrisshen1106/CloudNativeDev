@@ -90,9 +90,7 @@
               </td>
               <td class="text-gray-600">{{ asset.model }}</td>
               <td class="text-gray-600 text-xs">{{ asset.location }}</td>
-              <td v-if="authStore.isManager" class="text-gray-600">
-                <div class="text-xs text-gray-400">{{ asset.idUser }}</div>
-              </td>
+              <td v-if="authStore.isManager" class="text-gray-600 text-xs">{{ getUserName(asset) }}</td>
               <td class="text-gray-600 text-xs">{{ asset.userDepartment }}</td>
               <td><StatusBadge :status="asset.status" type="asset" /></td>
               <td class="text-center">
@@ -105,7 +103,7 @@
                   <Teleport to="body">
                     <div v-if="showDetailModal && detailAssetId === (asset.idEquipment || asset.id)" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="closeDetailModal">
                       <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="closeDetailModal"></div>
-                      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8 animate-modal">
+                      <div class="relative w-full max-w-3xl overflow-hidden rounded-xl bg-gray-50 shadow-2xl animate-modal">
                         <AssetDetailView v-if="detailAssetId" :id="String(detailAssetId)" modal @close="closeDetailModal" />
                       </div>
                     </div>
@@ -177,7 +175,7 @@ async function fetchAssets() {
       console.log('authStore.currentUser.sub', authStore.currentUser?.sub)
       console.log('assetsStore.assets', assetsStore.assets)
     } catch (e) {
-      errorMsg.value = e.message || '取得資產失敗'
+      errorMsg.value = e.message || t('asset.detailLoadFailed')
       console.error(e)
     }
   }
@@ -209,7 +207,7 @@ const filteredAssets = computed(() => {
       (a.assetNumber ? a.assetNumber.toString().toLowerCase() : '').includes(q) ||
       (a.model ? a.model.toString().toLowerCase() : '').includes(q) ||
       (a.location ? a.location.toString().toLowerCase() : '').includes(q) ||
-      (getUserName(a.idUser) ? getUserName(a.idUser).toString().toLowerCase() : '').includes(q)
+      (getUserName(a) ? getUserName(a).toString().toLowerCase() : '').includes(q)
     )
   }
   if (filterCategory.value) list = list.filter((a) => a.category === filterCategory.value)
@@ -231,9 +229,12 @@ function resetFilters() {
 }
 
 
-function getUserName(idUser) {
-  // 目前沒有 users 資料，直接回傳 idUser
-  return idUser
+function getUserName(assetOrId) {
+  if (assetOrId && typeof assetOrId === 'object') {
+    const id = assetOrId.idUser
+    return assetOrId.userName ? `${assetOrId.userName} (U${id})` : id ? `U${id}` : t('assetDetail.unassigned')
+  }
+  return assetOrId ? `U${assetOrId}` : t('assetDetail.unassigned')
 }
 
 function categoryIcon(cat) {

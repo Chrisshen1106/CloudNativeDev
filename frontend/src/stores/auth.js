@@ -1,10 +1,12 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import { useI18n } from '@/composables/useI18n'
 
 const STORAGE_KEY = 'ams_current_user'
 const TOKEN_KEY = 'ams_token'
 
 export const useAuthStore = defineStore('auth', () => {
+  const { t } = useI18n()
   const currentUser = ref(
     JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
   )
@@ -16,14 +18,14 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function login({ email, password }) {
     try {
-      const res = await fetch('/api/login', {
+      const res = await fetch('/api/user/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       })
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data?.message || '登入失敗')
+        throw new Error(data?.message || t('login.loginFailed'))
       }
       console.log('JWT token:', data.token)
       currentUser.value = data
@@ -40,14 +42,14 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
   async function signup(payload) {
-    const res = await fetch('/api/signup', {
+    const res = await fetch('/api/user/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      throw new Error(err?.message || '註冊失敗')
+      throw new Error(err?.message || t('login.registerFailed'))
     }
     return await res.json()
   }
@@ -61,13 +63,13 @@ export const useAuthStore = defineStore('auth', () => {
 
   // 取得所有使用者資料
   async function fetchAllUsers() {
-    const res = await fetch('/api/users', {
-      headers: {
-        'Authorization': localStorage.getItem('ams_token') || '',
-      },
-    })
-    if (!res.ok) throw new Error('取得使用者資料失敗')
-    return await res.json()
+    const headers = {
+      'Authorization': localStorage.getItem('ams_token') || '',
+    }
+    const res = await fetch('/api/user/users', { headers })
+    if (res.ok) return await res.json()
+
+    throw new Error(t('login.fetchUsersFailed'))
   }
 
   return { currentUser, token, isLoggedIn, isManager, isHolder, login, logout, fetchAllUsers }

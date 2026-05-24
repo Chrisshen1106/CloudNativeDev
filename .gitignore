@@ -2,3 +2,9 @@ __pycache__
 node_modules
 .venv
 .env
+frontend/node_modules
+dist
+
+# Ignore testing reports
+.coverage
+testing_report/

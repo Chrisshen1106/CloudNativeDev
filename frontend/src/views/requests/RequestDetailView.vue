@@ -12,14 +12,6 @@
       <StatusBadge v-if="request" :status="request.status" type="request" />
     </div>
 
-    <!-- 編輯按鈕：僅本人且狀態為 pending 可見，修正為直接比對 applicant_id 數字型別 -->
-    <!-- 僅非 admin 本人且狀態為 pending 可見編輯按鈕 -->
-    <div v-if="request && request.status === 'pending' && (request.applicant_id === authStore.currentUser?.id) && authStore.currentUser?.role !== 'admin'" class="flex justify-end mt-8">
-      <RouterLink :to="`/requests/${request.id}/edit`" class="btn-primary">
-        編輯
-      </RouterLink>
-    </div>
-
     <div v-if="!request" class="card p-12 text-center text-gray-400">
       <p class="text-4xl mb-2"></p>
       <p>{{ t('request.notFound') }}</p>
@@ -121,7 +113,7 @@
 
       <!-- Review result (approved/rejected) -->
       <div v-if="request.reviewDate" class="card p-5">
-        <h2 class="section-title"> 審查結果</h2>
+        <h2 class="section-title">{{ t('request.reviewResult') }}</h2>
         <div class="divide-y divide-gray-50">
           <div class="detail-row">
             <span class="detail-label">{{ t('request.reviewer') }}</span>
@@ -193,14 +185,17 @@
         </div>
       </div>
 
-      <!-- 資產狀態：正常使用 -->
-      <div v-if="request.status === 'normal'" class="card p-5">
-        <div class="flex items-start justify-between mb-3">
-          <div class="text-2xl"></div>
-          <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-emerald-100 text-emerald-700">正常</span>
+      <!-- 資產狀態：維修完成 -->
+      <div v-if="request.status === 'completed'" class="card p-5 bg-emerald-50 border border-emerald-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl">
+            ✓
+          </div>
+          <div>
+            <h3 class="font-semibold text-emerald-900">{{ t('request.repairCompleted') }}</h3>
+            <p class="text-sm text-emerald-700">{{ t('request.completeSuccess') }}</p>
+          </div>
         </div>
-        <p class="text-3xl font-bold text-gray-900 mb-1">0</p>
-        <p class="text-sm text-gray-500">正常使用</p>
       </div>
     </div>
 
@@ -212,8 +207,8 @@
       :confirm-text="t('common.approve')"
       variant="success"
       show-input
-      :input-label="t('request.reviewNote') + '（選填）'"
-      :input-placeholder="'填寫審查備註（非必填）'"
+      :input-label="t('request.reviewNoteOptional')"
+      :input-placeholder="t('request.reviewNoteOptionalPlaceholder')"
       @confirm="handleApprove"
       @cancel="showApproveModal = false"
     />
@@ -288,6 +283,7 @@ const { t } = useI18n()
 
 const requestId = computed(() => route.params.id)
 const request = ref(null)
+const users = ref([])
 const loading = ref(true)
 const error = ref(null)
 
@@ -304,21 +300,49 @@ const repairForm = ref({
   repairPersonnel: '',
 })
 
+const currentUserId = computed(() => {
+  const user = authStore.currentUser || {}
+  return String(user.idUser || user.id || user.userId || '').replace(/[^\d]/g, '')
+})
+
+const canEditRequest = computed(() => {
+  if (!request.value || request.value.status !== 'pending' || authStore.isManager) return false
+  const applicantId = String(request.value.applicant_id || request.value.requesterId || '').replace(/[^\d]/g, '')
+  return !!currentUserId.value && applicantId === currentUserId.value
+})
+
+function todayDateInputValue() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function toDateInputValue(value) {
+  if (!value) return todayDateInputValue()
+  if (typeof value === 'string') return value.slice(0, 10)
+  return todayDateInputValue()
+}
+
 
 onMounted(async () => {
   loading.value = true
   error.value = null
   try {
     request.value = await requestsStore.fetchById(requestId.value)
+    if (authStore.isManager) {
+      users.value = await authStore.fetchAllUsers().catch(() => [])
+    }
     repairForm.value = {
-      repairDate: request.value.repairDate || '',
+      repairDate: toDateInputValue(request.value.repairDate),
       repairContent: request.value.repairContent || '',
       repairSolution: request.value.repairSolution || '',
       repairCost: request.value.repairCost || null,
       repairPersonnel: request.value.repairPersonnel || '',
     }
   } catch (e) {
-    error.value = e.message || '載入失敗'
+    error.value = e.message || t('request.loadFailed')
   } finally {
     loading.value = false
   }
@@ -343,7 +367,7 @@ async function handleApprove(note) {
     // 可選：重新整理或跳轉
     router.push('/requests')
   } catch (e) {
-    notifStore.add(e.message || '審核失敗', 'error')
+    notifStore.add(e.message || t('request.approveFailed'), 'error')
   }
 }
 
@@ -354,7 +378,7 @@ async function handleReject(reason) {
     id = id.replace(/[^\d]/g, '')
   }
   if (!id) {
-    notifStore.add('找不到申請單編號', 'error')
+    notifStore.add(t('request.notFoundId'), 'error')
     return
   }
   try {
@@ -363,7 +387,7 @@ async function handleReject(reason) {
     notifStore.add(t('request.rejectSuccess'), 'warning')
     router.push('/requests')
   } catch (e) {
-    notifStore.add(e.message || '拒絕失敗', 'error')
+    notifStore.add(e.message || t('request.rejectFailed'), 'error')
   }
 }
 
@@ -383,7 +407,7 @@ async function handleRepair() {
     }
     // 3. 維修單狀態設為 repairing，帶維修資訊
     const formId = (request.value.idForm || requestId.value).toString().replace(/[^\d]/g, '')
-    await fetch(`/maintenance-api/repair/${formId}`, {
+    await fetch(`/api/maintenance/repair/${formId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -401,7 +425,7 @@ async function handleRepair() {
     // 重新整理 request 狀態
     request.value = await requestsStore.fetchById(requestId.value)
   } catch (e) {
-    notifStore.add(e.message || '送修失敗', 'error')
+    notifStore.add(e.message || t('request.sendRepairFailed'), 'error')
   }
 }
 
@@ -421,7 +445,7 @@ async function handleComplete() {
       router.push('/requests')
     }, 1500)
   } catch (e) {
-    notifStore.add(e.message || '維修完成失敗', 'error')
+    notifStore.add(e.message || t('request.completeFailed'), 'error')
   }
 }
 
@@ -429,7 +453,7 @@ async function handleDeleteRequest() {
   // 只取數字部分傳給 deleteRequest
   const id = request.value?.id?.replace(/[^\d]/g, '')
   if (!id) {
-    notifStore.add('找不到申請單編號', 'error')
+    notifStore.add(t('request.notFoundId'), 'error')
     return
   }
   try {
@@ -437,7 +461,7 @@ async function handleDeleteRequest() {
     notifStore.add(t('request.deleted'), 'success')
     router.push('/requests')
   } catch (e) {
-    notifStore.add(e.message || '刪除失敗', 'error')
+    notifStore.add(e.message || t('request.deleteFailed'), 'error')
   }
 }
 
@@ -450,8 +474,10 @@ function getAssetNumber(assetId) {
 }
 
 function getUserName(userId) {
-  // 目前沒有 users 資料，直接回傳 userId
-  return userId
+  const id = String(userId || '').replace(/[^\d]/g, '')
+  const user = users.value.find((u) => String(u.idUser || u.id) === id)
+  if (!id) return userId || ''
+  return user?.name ? `${user.name} (U${id})` : `U${id}`
 }
 
 function stepDotClass(status) {

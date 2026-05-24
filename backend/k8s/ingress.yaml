@@ -1,0 +1,45 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cloud-native-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  rules:
+    - http: # 💡 注意：前面必須有短橫線，代表這是一個 rules 陣列的項目
+        paths:
+          # --------------------------------------------------
+          # 1. User Service 路由
+          # --------------------------------------------------
+          - path: /api/user
+            pathType: Prefix
+            backend:
+              service:
+                name: user-service
+                port:
+                  number: 8001
+
+          # --------------------------------------------------
+          # 2. Asset Service 路由
+          # --------------------------------------------------
+          - path: /api/asset
+            pathType: Prefix
+            backend:
+              service:
+                name: asset-service
+                port:
+                  number: 8000
+
+          # --------------------------------------------------
+          # 3. Maintenance Service 路由
+          # --------------------------------------------------
+          - path: /api/maintenance
+            pathType: Prefix
+            backend:
+              service:
+                name: maintenance-service
+                port:
+                  number: 8002

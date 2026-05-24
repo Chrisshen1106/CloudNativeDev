@@ -34,7 +34,7 @@
         <!-- Actions -->
         <div class="flex justify-end gap-3 mt-5">
           <button type="button" class="btn-secondary" @click="$emit('cancel')">
-            {{ cancelText || '取消' }}
+            {{ cancelText || t('common.cancel') }}
           </button>
           <button
             type="button"
@@ -42,7 +42,7 @@
             :disabled="showInput && requireInput && !inputValue.trim()"
             @click="handleConfirm"
           >
-            {{ confirmText || '確認' }}
+            {{ confirmText || t('common.confirm') }}
           </button>
         </div>
       </div>
@@ -52,6 +52,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useI18n } from '@/composables/useI18n'
 
 const props = defineProps({
   title: { type: String, required: true },
@@ -66,6 +67,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['confirm', 'cancel'])
+const { t } = useI18n()
 
 const inputValue = ref('')
 

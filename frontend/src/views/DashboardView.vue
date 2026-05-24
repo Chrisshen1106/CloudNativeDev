@@ -157,22 +157,22 @@ const statCards = computed(() => {
       {
         key: 'total', icon: '', value: mine.length,
         label: t('dashboard.myAssets'),
-        tag: '我的', tagClass: 'bg-indigo-100 text-indigo-700',
+        tag: t('dashboard.tagMine'), tagClass: 'bg-indigo-100 text-indigo-700',
       },
       {
         key: 'in_use', icon: '', value: mine.filter(a => a.status === 'in_use').length,
         label: t('dashboard.myNormal'),
-        tag: '正常', tagClass: 'bg-emerald-100 text-emerald-700',
+        tag: t('dashboard.tagNormal'), tagClass: 'bg-emerald-100 text-emerald-700',
       },
       {
         key: 'repair', icon: '', value: mine.filter(a => a.status === 'repairing').length,
         label: t('dashboard.myUnderRepair'),
-        tag: '維修中', tagClass: 'bg-amber-100 text-amber-700',
+        tag: t('dashboard.tagRepairing'), tagClass: 'bg-amber-100 text-amber-700',
       },
       {
         key: 'pending', icon: '', value: myReqs.filter(r => r.status === 'pending').length,
         label: t('dashboard.myPending'),
-        tag: '待審', tagClass: 'bg-blue-100 text-blue-700',
+        tag: t('dashboard.tagPending'), tagClass: 'bg-blue-100 text-blue-700',
       },
     ]
   }

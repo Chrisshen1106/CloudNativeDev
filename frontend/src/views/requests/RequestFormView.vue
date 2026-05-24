@@ -23,18 +23,18 @@
               :disabled="asset.status === 'repairing'"
             >
               {{ asset.assetNumber }} — {{ asset.name }}
-              <template v-if="asset.status === 'repairing'"> （維修中，不可申請）</template>
+              <template v-if="asset.status === 'repairing'"> （{{ t('request.disabledRepairing') }}）</template>
             </option>
           </select>
           <p v-if="selectedAsset" class="mt-2 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
-            型號：{{ selectedAsset.model }} ｜ 地點：{{ selectedAsset.location }}
+            {{ t('request.selectedAssetMeta', { model: selectedAsset.model, location: selectedAsset.location }) }}
           </p>
         </div>
       </div>
 
       <!-- Fault description -->
       <div class="card p-5">
-        <h2 class="section-title"> 故障說明</h2>
+        <h2 class="section-title">{{ t('request.faultDescription') }}</h2>
         <div class="space-y-4">
           <div>
             <label class="form-label">{{ t('request.faultDescription') }} <span class="text-red-500">*</span></label>
@@ -45,7 +45,7 @@
               required
               :placeholder="t('request.faultDescPlaceholder')"
             ></textarea>
-            <p class="text-xs text-gray-400 mt-1 text-right">{{ form.faultDescription.length }} 字</p>
+            <p class="text-xs text-gray-400 mt-1 text-right">{{ t('request.characterCount', { count: form.faultDescription.length }) }}</p>
           </div>
 
           <!-- Image upload -->
@@ -58,14 +58,13 @@
               @drop.prevent="handleDrop"
             >
               <div class="text-3xl mb-2"></div>
-              <p class="text-sm text-gray-500 mb-1">點擊或拖曳圖片至此處上傳</p>
+              <p class="text-sm text-gray-500 mb-1">{{ t('request.uploadPrompt') }}</p>
               <p class="text-xs text-gray-400">{{ t('request.attachmentsHint') }}</p>
             </div>
             <input
               ref="fileInput"
               type="file"
-              accept="image/*"
-              multiple
+              accept="image/jpeg,image/png,image/webp,image/gif"
               class="hidden"
               @change="handleFileChange"
             />
@@ -166,14 +165,14 @@ function handleDrop(event) {
 }
 
 function processFiles(files) {
-  files.forEach((file) => {
+  files.slice(0, 1).forEach((file) => {
     if (file.size > 5 * 1024 * 1024) {
-      notifStore.add(`${file.name} 超過 5MB 限制，已略過`, 'warning')
+      notifStore.add(t('request.fileTooLarge', { name: file.name }), 'warning')
       return
     }
     const reader = new FileReader()
     reader.onloadend = () => {
-      form.value.attachments.push({ name: file.name, type: file.type, data: reader.result })
+      form.value.attachments = [{ name: file.name, type: file.type, data: reader.result, file }]
     }
     reader.readAsDataURL(file)
   })
@@ -187,16 +186,16 @@ function removeAttachment(idx) {
 async function createRequestSubmit() {
   try {
     const payload = {
-      assetId: form.value.assetId,
+      idEquipment: selectedAsset.value?.idEquipment || form.value.assetId,
       faultDescription: form.value.faultDescription,
-      attachments: form.value.attachments,
+      attachmentFile: form.value.attachments[0]?.file || null,
     }
     // 呼叫 requestsStore.createRequest
     await requestsStore.createRequest(payload)
     notifStore.add(t('request.submitSuccess'), 'success')
     router.push(`/requests`)
   } catch (e) {
-    notifStore.add(e.message || '申請失敗', 'error')
+    notifStore.add(e.message || t('request.submitFailed'), 'error')
   }
 }
 
@@ -212,7 +211,7 @@ async function handleSubmit() {
     notifStore.add(t('request.submitSuccess'), 'success')
     router.push(`/requests`)
   } catch (e) {
-    notifStore.add(e.message || '申請失敗', 'error')
+    notifStore.add(e.message || t('request.submitFailed'), 'error')
   }
 }
 </script>

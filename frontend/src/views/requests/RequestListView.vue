@@ -87,14 +87,14 @@
                     {{ t('common.detail') }}
                   </RouterLink>
                   <RouterLink
-                    v-if="['pending', 'Pending Review', '待審查'].includes(req.status) && req.requesterId === `U${authStore.currentUser?.id}` && authStore.currentUser?.role !== 'admin'"
+                    v-if="canEditRequest(req)"
                     :to="`/requests/${req.id}/edit`"
                     class="btn-primary btn-sm"
                   >
-                    編輯
+                    {{ t('common.edit') }}
                   </RouterLink>
                   <button
-                    v-if="['pending', 'completed'].includes(req.status)"
+                    v-if="['pending', 'completed', 'rejected'].includes(req.status)"
                     class="btn-danger btn-sm"
                     @click="openDeleteConfirm(req.id)"
                   >{{ t('common.delete') }}</button>
@@ -102,10 +102,10 @@
               </td>
               <div v-if="showDeleteConfirm" style="position:fixed;top:30%;left:50%;transform:translate(-50%,0);z-index:1000;">
                 <div class="bg-white rounded shadow-lg p-6 w-80 border border-gray-200">
-                  <div class="mb-4 text-lg font-semibold text-gray-800">確認要刪除此筆維修訂單？</div>
+                  <div class="mb-4 text-lg font-semibold text-gray-800">{{ t('request.deleteConfirmTitle') }}</div>
                   <div class="flex justify-end gap-3">
-                    <button class="btn-secondary" @click="showDeleteConfirm = false">取消</button>
-                    <button class="btn-danger" @click="handleDeleteRequest">確認刪除</button>
+                    <button class="btn-secondary" @click="showDeleteConfirm = false">{{ t('common.cancel') }}</button>
+                    <button class="btn-danger" @click="handleDeleteRequest">{{ t('common.delete') }}</button>
                   </div>
                 </div>
               </div>
@@ -145,9 +145,14 @@ const currentPage = ref(1)
 const pageSize = 10
 
 const sourceRequests = ref([])
+const users = ref([])
 const loading = ref(false)
 const error = ref(null)
 
+const currentUserId = computed(() => {
+  const user = authStore.currentUser || {}
+  return String(user.idUser || user.id || user.userId || '').replace(/[^\d]/g, '')
+})
 
 async function loadRequests() {
   loading.value = true
@@ -156,8 +161,11 @@ async function loadRequests() {
     // fetchAll 會自動依權限過濾
     await requestsStore.fetchAll(authStore.token)
     sourceRequests.value = requestsStore.getAll()
+    if (authStore.isManager) {
+      users.value = await authStore.fetchAllUsers().catch(() => [])
+    }
   } catch (e) {
-    error.value = e.message || '載入失敗'
+    error.value = e.message || t('request.loadFailed')
   } finally {
     loading.value = false
   }
@@ -184,7 +192,7 @@ async function handleDeleteRequest() {
         'Authorization': token
       }
     })
-    if (!res.ok) throw new Error('刪除失敗')
+    if (!res.ok) throw new Error(t('request.deleteFailed'))
     showDeleteConfirm.value = false
     deleteTargetId.value = null
     await loadRequests()
@@ -195,7 +203,7 @@ async function handleDeleteRequest() {
   }
 }
 onMounted(loadRequests)
-watch(() => authStore.currentUser?.id, loadRequests)
+watch(() => currentUserId.value, loadRequests)
 
 const filteredRequests = computed(() => {
   let list = [...sourceRequests.value].sort((a, b) => (b.requestDate || '').localeCompare(a.requestDate || ''))
@@ -233,7 +241,16 @@ function getAssetName(assetId) {
 }
 
 function getUserName(userId) {
-  return userId
+  const id = String(userId || '').replace(/[^\d]/g, '')
+  const user = users.value.find((u) => String(u.idUser || u.id) === id)
+  if (!id) return userId || ''
+  return user?.name ? `${user.name} (U${id})` : `U${id}`
+}
+
+function canEditRequest(req) {
+  if (!req || req.status !== 'pending' || authStore.isManager) return false
+  const applicantId = String(req.applicant_id || req.requesterId || '').replace(/[^\d]/g, '')
+  return !!currentUserId.value && applicantId === currentUserId.value
 }
 
 </script>

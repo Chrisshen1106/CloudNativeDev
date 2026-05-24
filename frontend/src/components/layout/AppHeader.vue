@@ -36,11 +36,11 @@ import { useI18n } from '@/composables/useI18n'
 
 const authStore = useAuthStore()
 const route = useRoute()
-const { t, currentLocale } = useI18n()
+const { t } = useI18n()
 
 const breadcrumb = computed(() => {
   const meta = route.meta
-  if (!meta?.title) return ''
-  return currentLocale.value === 'zh-TW' ? meta.title : (meta.titleEn || meta.title)
+  if (meta?.titleKey) return t(meta.titleKey)
+  return ''
 })
 </script>
