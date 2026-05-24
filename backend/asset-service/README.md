@@ -75,3 +75,37 @@ Authorization: Bearer <token>
 ```shell
 uv run python gen_token.py
 ```
+
+# Testing
+
+測試使用 SQLite in-memory，不需要連接真實資料庫。
+
+## Run tests
+```shell
+mkdir -p testing_report && \
+uv run -m pytest -v -rA \
+  --html=testing_report/report.html \
+  --self-contained-html \
+  --junitxml=testing_report/report.xml \
+  --cov=. \
+  --cov-report=term-missing \
+  --cov-report=html:testing_report/htmlcov \
+  --cov-report=xml:testing_report/coverage.xml
+```
+
+## View reports
+
+報告產生於 `testing_report/`：
+
+| 檔案 | 說明 |
+|------|------|
+| `report.html` | 測試結果報告（pass/fail） |
+| `report.xml` | 測試結果報告（CI 用） |
+| `coverage.xml` | 覆蓋率報告（CI 用） |
+| `htmlcov/index.html` | 覆蓋率報告（人工閱讀） |
+
+`report.html` 需用瀏覽器開啟才能正常顯示，建議透過本地伺服器：
+```shell
+python -m http.server 8080
+```
+然後在瀏覽器開啟 `http://localhost:8080/testing_report/report.html`

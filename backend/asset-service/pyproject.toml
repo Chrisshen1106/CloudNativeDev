@@ -19,4 +19,22 @@ dependencies = [
 dev-dependencies = [
     "pytest",
     "pytest-flask",
+    "pytest-cov",
+    "pytest-html",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::pytest.PytestUnraisableExceptionWarning",
+]
+
+[tool.coverage.run]
+omit = ["gen_token.py", "tests/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "if __name__ == .__main__.:",
+    "pragma: no cover",
 ]
