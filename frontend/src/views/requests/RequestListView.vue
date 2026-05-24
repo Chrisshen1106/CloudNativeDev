@@ -100,18 +100,20 @@
                   >{{ t('common.delete') }}</button>
                 </div>
               </td>
-              <div v-if="showDeleteConfirm" style="position:fixed;top:30%;left:50%;transform:translate(-50%,0);z-index:1000;">
-                <div class="bg-white rounded shadow-lg p-6 w-80 border border-gray-200">
-                  <div class="mb-4 text-lg font-semibold text-gray-800">{{ t('request.deleteConfirmTitle') }}</div>
-                  <div class="flex justify-end gap-3">
-                    <button class="btn-secondary" @click="showDeleteConfirm = false">{{ t('common.cancel') }}</button>
-                    <button class="btn-danger" @click="handleDeleteRequest">{{ t('common.delete') }}</button>
-                  </div>
-                </div>
-              </div>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Delete Confirmation Modal -->
+      <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div class="bg-white rounded-xl shadow-xl p-6 w-80 border border-gray-100 animate-in fade-in zoom-in duration-200">
+          <div class="mb-4 text-lg font-semibold text-gray-800">{{ t('request.deleteConfirmTitle') }}</div>
+          <div class="flex justify-end gap-3">
+            <button class="btn-secondary" @click="showDeleteConfirm = false">{{ t('common.cancel') }}</button>
+            <button class="btn-danger px-6" @click="handleDeleteRequest">{{ t('common.delete') }}</button>
+          </div>
+        </div>
       </div>
 
       <!-- Pagination -->
@@ -135,8 +137,11 @@ import { useI18n } from '@/composables/useI18n'
 import StatusBadge from '@/components/common/StatusBadge.vue'
 import Pagination from '@/components/common/Pagination.vue'
 
+import { useNotificationsStore } from '@/stores/notifications'
+
 const authStore = useAuthStore()
 const requestsStore = useRequestsStore()
+const notifStore = useNotificationsStore()
 const { t } = useI18n()
 
 const searchQuery = ref('')
@@ -180,26 +185,15 @@ function openDeleteConfirm(id) {
 
 async function handleDeleteRequest() {
   try {
-    let id = deleteTargetId.value
-    if (typeof id === 'string') {
-      const match = id.match(/(\d+)/)
-      if (match) id = match[1]
-    }
-    const token = authStore.token || localStorage.getItem('ams_token') || ''
-    const res = await fetch(`/maintenance-api/form/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': token
-      }
-    })
-    if (!res.ok) throw new Error(t('request.deleteFailed'))
+    await requestsStore.deleteRequest(deleteTargetId.value, authStore.token)
+    notifStore.add(t('request.deleted'), 'success')
     showDeleteConfirm.value = false
     deleteTargetId.value = null
     await loadRequests()
   } catch (e) {
+    notifStore.add(e.message || t('request.deleteFailed'), 'error')
     showDeleteConfirm.value = false
     deleteTargetId.value = null
-    // 可加通知：刪除失敗
   }
 }
 onMounted(loadRequests)
