@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-2xl mx-auto">
     <!-- Header -->
-    <div class="flex items-center gap-3 mb-6">
+    <div class="mb-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
       <button class="btn-secondary btn-sm" @click="router.back()">
         ← {{ t('common.back') }}
       </button>
@@ -94,7 +94,7 @@
       </div>
 
       <!-- Actions -->
-      <div class="flex justify-end gap-3">
+      <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <button type="button" class="btn-secondary" @click="router.back()">
           {{ t('common.cancel') }}
         </button>

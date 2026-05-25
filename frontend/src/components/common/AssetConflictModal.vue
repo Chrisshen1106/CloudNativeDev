@@ -1,17 +1,17 @@
 <template>
   <Teleport to="body">
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="$emit('cancel')">
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4" @click.self="$emit('cancel')">
       <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="$emit('cancel')"></div>
 
-      <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden animate-modal">
-        <div class="px-6 py-5 border-b border-gray-200">
+      <div class="relative flex max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl animate-modal sm:max-h-[90dvh]">
+        <div class="shrink-0 border-b border-gray-200 px-4 py-4 sm:px-6 sm:py-5">
           <h3 class="text-lg font-semibold text-gray-900">{{ t('conflict.title') }}</h3>
           <p class="mt-1 text-sm text-gray-600">
             {{ t('conflict.description') }}
           </p>
         </div>
 
-        <div class="overflow-auto max-h-[calc(90vh-150px)]">
+        <div class="min-h-0 flex-1 overflow-auto">
           <div class="min-w-[760px]">
             <div class="grid grid-cols-[180px_1fr_1fr] gap-0 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase">
               <div class="px-4 py-3">{{ t('common.field') }}</div>
@@ -81,7 +81,7 @@
           </div>
         </div>
 
-        <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-white">
+        <div class="shrink-0 flex flex-col-reverse gap-3 border-t border-gray-200 bg-white px-4 py-4 sm:flex-row sm:justify-end sm:px-6">
           <button type="button" class="btn-secondary" @click="$emit('cancel')">
             {{ t('conflict.cancelEdit') }}
           </button>

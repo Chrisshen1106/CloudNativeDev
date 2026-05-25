@@ -1,11 +1,11 @@
 <template>
   <div class="max-w-4xl mx-auto">
     <!-- Header -->
-    <div class="flex items-center gap-3 mb-6">
+    <div class="mb-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
       <button class="btn-secondary btn-sm" @click="router.back()">
         ← {{ t('common.back') }}
       </button>
-      <div class="flex-1">
+      <div class="min-w-0 flex-1">
         <h1 class="page-title text-xl font-mono">{{ request?.id || '...' }}</h1>
         <p class="text-sm text-gray-500">{{ getAssetName(request?.assetId) }}</p>
       </div>
@@ -101,7 +101,7 @@
       <div v-if="authStore.isManager && request.status === 'pending'" class="card p-5 border-2 border-blue-100">
         <h2 class="section-title text-blue-700">{{ t('request.reviewTitle') }}</h2>
         <p class="text-sm text-gray-600 mb-4">{{ t('request.reviewDesc') }}</p>
-        <div class="flex gap-3">
+        <div class="flex flex-col gap-3 sm:flex-row">
           <button class="btn-success flex-1" @click="handleApprove('')">
             {{ t('common.approve') }}
           </button>
@@ -168,7 +168,7 @@
             <input v-model.number="repairForm.repairCost" type="number" min="0" class="form-input" placeholder="0" />
           </div>
         </div>
-        <div class="flex gap-3 mt-5">
+        <div class="mt-5 flex flex-col gap-3 sm:flex-row">
            <button class="btn-success flex-1" @click="handleSendRepairOnly">
              {{ t('request.sendRepair') }}
            </button>
@@ -178,7 +178,7 @@
       <!-- 維修中：只顯示維修完成按鈕 -->
       <div v-if="authStore.isManager && request.status === 'repairing'" class="card p-5 border-2 border-green-100">
         <h2 class="section-title text-green-700">{{ t('request.repairing') }}</h2>
-        <div class="flex gap-3 mt-5">
+        <div class="mt-5 flex flex-col gap-3 sm:flex-row">
            <button class="btn-success flex-1" @click="handleComplete">
              {{ t('request.markComplete') }}
            </button>
@@ -187,7 +187,7 @@
 
       <!-- 資產狀態：維修完成 -->
       <div v-if="request.status === 'completed'" class="card p-5 bg-emerald-50 border border-emerald-100">
-        <div class="flex items-center gap-3">
+        <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
           <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl">
             ✓
           </div>
