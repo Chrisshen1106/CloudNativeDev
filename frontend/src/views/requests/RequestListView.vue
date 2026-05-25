@@ -55,7 +55,7 @@
           <thead>
             <tr>
               <th>{{ t('request.requestId') }}</th>
-              <th>{{ t('request.assetNumber') }}</th>
+              <th>{{ t('asset.name') }}</th>
               <th v-if="authStore.isManager">{{ t('request.requester') }}</th>
               <th>{{ t('request.requestDate') }}</th>
               <th>{{ t('request.faultDescription') }}</th>
@@ -74,7 +74,7 @@
             </tr>
             <tr v-for="req in pagedRequests" :key="req.id">
               <td class="font-mono text-xs text-indigo-600 font-medium whitespace-nowrap">{{ req.id }}</td>
-              <td class="font-medium text-gray-900 whitespace-nowrap">{{ getAssetName(req.assetId) }}</td>
+              <td class="font-medium text-gray-900 whitespace-nowrap">{{ getAssetDisplay(req.assetId) }}</td>
               <td v-if="authStore.isManager" class="text-gray-600">{{ getUserName(req.requesterId) }}</td>
               <td class="text-gray-500 text-sm whitespace-nowrap">{{ req.requestDate }}</td>
               <td class="text-gray-600 max-w-xs">
@@ -132,6 +132,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useAssetsStore } from '@/stores/assets'
 import { useRequestsStore } from '@/stores/requests'
 import { useI18n } from '@/composables/useI18n'
 import StatusBadge from '@/components/common/StatusBadge.vue'
@@ -140,6 +141,7 @@ import Pagination from '@/components/common/Pagination.vue'
 import { useNotificationsStore } from '@/stores/notifications'
 
 const authStore = useAuthStore()
+const assetsStore = useAssetsStore()
 const requestsStore = useRequestsStore()
 const notifStore = useNotificationsStore()
 const { t } = useI18n()
@@ -164,7 +166,10 @@ async function loadRequests() {
   error.value = null
   try {
     // fetchAll 會自動依權限過濾
-    await requestsStore.fetchAll(authStore.token)
+    await Promise.all([
+      requestsStore.fetchAll(authStore.token),
+      assetsStore.fetchUserAssets(authStore.token, 1, 1000).catch(() => null)
+    ])
     sourceRequests.value = requestsStore.getAll()
     if (authStore.isManager) {
       users.value = await authStore.fetchAllUsers().catch(() => [])
@@ -205,7 +210,7 @@ const filteredRequests = computed(() => {
   if (q) {
     list = list.filter((r) =>
       (r.id || '').toLowerCase().includes(q) ||
-      getAssetName(r.assetId || '').toLowerCase().includes(q) ||
+      getAssetDisplay(r.assetId || '').toLowerCase().includes(q) ||
       getUserName(r.requesterId || '').toLowerCase().includes(q)
     )
   }
@@ -230,8 +235,12 @@ function resetFilters() {
 }
 
 function getAssetName(assetId) {
-  // 可根據資產 id 顯示名稱
-  return assetId
+  return assetsStore.getById(assetId)?.name || assetId
+}
+
+function getAssetDisplay(assetId) {
+  const asset = assetsStore.getById(assetId)
+  return asset?.name ? `${asset.name} (${assetId})` : assetId
 }
 
 function getUserName(userId) {
