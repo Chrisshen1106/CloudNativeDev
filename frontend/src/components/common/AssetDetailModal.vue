@@ -12,7 +12,7 @@
             <div class="font-bold text-lg mb-1">{{ asset.name }}</div>
             <div class="text-sm text-gray-500 mb-2">{{ t('assetDetail.assetNumber') }}：{{ asset.id }}</div>
             <div>{{ t('assetDetail.model') }}：{{ asset.model }}</div>
-            <div>{{ t('assetDetail.category') }}：{{ asset.category }}</div>
+            <div>{{ t('assetDetail.category') }}：{{ displayCategory(asset.category) }}</div>
             <div>{{ t('assetDetail.serialNumber') }}：{{ asset.serialNumber }}</div>
             <div>{{ t('assetDetail.status') }}：{{ asset.status }}</div>
             <div>{{ t('assetDetail.startDate') }}：{{ asset.startDate }}</div>
@@ -51,4 +51,11 @@ const props = defineProps({
   errorMsg: String
 })
 const { t } = useI18n()
+
+function displayCategory(value) {
+  if (!value) return t('request.none')
+  const key = `asset.categories.${value}`
+  const label = t(key)
+  return label === key ? value : label
+}
 </script>

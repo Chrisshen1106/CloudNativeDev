@@ -79,6 +79,13 @@ function displayValue(value) {
   return value || t('request.none')
 }
 
+function displayCategory(value) {
+  if (!value) return t('request.none')
+  const key = `asset.categories.${value}`
+  const label = t(key)
+  return label === key ? value : label
+}
+
 function isRejectedRequest(req) {
   return req?.status === 'rejected' || req?.review_result === 'rejected'
 }
@@ -121,7 +128,7 @@ const ownerUserName = computed(() => getUserName(asset.value?.ownerId, asset.val
               </span>
             </div>
             <p class="break-words text-sm text-gray-500">
-              {{ displayValue(asset?.category) }} / {{ displayValue(asset?.model) }}
+              {{ displayCategory(asset?.category) }} / {{ displayValue(asset?.model) }}
             </p>
           </div>
           <button
@@ -152,7 +159,7 @@ const ownerUserName = computed(() => getUserName(asset.value?.ownerId, asset.val
           <h2 class="mb-3 text-sm font-semibold text-gray-900">{{ t('assetDetail.assetDetail') }}</h2>
           <div class="divide-y divide-gray-100">
             <div class="asset-detail-row"><span class="asset-detail-label">{{ t('assetDetail.assetNumber') }}</span><span class="asset-detail-value font-mono text-indigo-700">{{ asset?.idEquipment || asset?.assetNumber || asset?.id }}</span></div>
-            <div class="asset-detail-row"><span class="asset-detail-label">{{ t('assetDetail.category') }}</span><span class="asset-detail-value">{{ displayValue(asset?.category) }}</span></div>
+            <div class="asset-detail-row"><span class="asset-detail-label">{{ t('assetDetail.category') }}</span><span class="asset-detail-value">{{ displayCategory(asset?.category) }}</span></div>
             <div class="asset-detail-row"><span class="asset-detail-label">{{ t('assetDetail.model') }}</span><span class="asset-detail-value">{{ displayValue(asset?.model) }}</span></div>
             <div class="asset-detail-row"><span class="asset-detail-label">{{ t('assetDetail.specs') }}</span><span class="asset-detail-value">{{ displayValue(asset?.specs) }}</span></div>
             <div class="asset-detail-row"><span class="asset-detail-label">{{ t('assetDetail.serialNumber') }}</span><span class="asset-detail-value font-mono">{{ displayValue(asset?.serial_Number ?? asset?.serialNumber) }}</span></div>
