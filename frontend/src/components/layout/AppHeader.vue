@@ -1,16 +1,16 @@
 <template>
-  <header class="h-14 px-6 flex items-center justify-between bg-white border-b border-gray-200 shadow-sm shrink-0">
+  <header class="flex min-h-14 shrink-0 items-center justify-between gap-3 border-b border-gray-200 bg-white px-4 py-3 shadow-sm sm:px-6">
     <!-- Breadcrumb -->
-    <div class="flex items-center gap-2 text-sm">
+    <div class="flex min-w-0 items-center gap-2 text-sm">
       <RouterLink to="/dashboard" class="text-gray-400 hover:text-indigo-600 transition-colors">
         {{ t('nav.dashboard') }}
       </RouterLink>
       <span v-if="breadcrumb" class="text-gray-300 select-none">/</span>
-      <span v-if="breadcrumb" class="text-gray-700 font-medium">{{ breadcrumb }}</span>
+      <span v-if="breadcrumb" class="truncate text-gray-700 font-medium">{{ breadcrumb }}</span>
     </div>
 
     <!-- Right side -->
-    <div class="flex items-center gap-3">
+    <div class="flex min-w-0 shrink-0 items-center gap-3">
       <!-- Role badge -->
       <span
         class="hidden sm:inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium"
@@ -23,7 +23,7 @@
       </span>
 
       <!-- User name -->
-      <span class="text-sm font-medium text-gray-700">{{ authStore.currentUser?.name }}</span>
+      <span class="max-w-28 truncate text-sm font-medium text-gray-700 sm:max-w-none">{{ authStore.currentUser?.name }}</span>
     </div>
   </header>
 </template>

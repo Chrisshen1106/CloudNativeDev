@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-2xl mx-auto">
     <!-- Header -->
-    <div class="flex items-center gap-3 mb-6">
+    <div class="mb-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
       <button class="btn-secondary btn-sm" @click="router.back()">
         ← {{ t('common.back') }}
       </button>
@@ -128,7 +128,7 @@
       </div>
 
       <!-- Actions -->
-      <div class="flex justify-end gap-3">
+      <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <button type="button" class="btn-secondary" @click="router.back()">
           {{ t('common.cancel') }}
         </button>
@@ -136,10 +136,10 @@
           {{ t('common.save') }}
         </button>
       </div>
-      <div v-if="showDeleteConfirm" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
-        <div class="bg-white rounded shadow-lg p-6 w-80">
+      <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30 p-3">
+        <div class="w-full max-w-xs rounded bg-white p-5 shadow-lg sm:p-6">
           <div class="mb-4 text-lg font-semibold text-gray-800">{{ t('asset.deleteConfirmTitle') }}</div>
-          <div class="flex justify-end gap-3">
+          <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <button class="btn-secondary" @click="showDeleteConfirm = false">{{ t('common.cancel') }}</button>
             <button class="btn-danger" @click="handleDeleteAsset">{{ t('common.delete') }}</button>
           </div>

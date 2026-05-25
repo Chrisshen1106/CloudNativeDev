@@ -1,11 +1,11 @@
 <template>
   <Teleport to="body">
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="$emit('cancel')">
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4" @click.self="$emit('cancel')">
       <!-- Backdrop -->
       <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="$emit('cancel')"></div>
 
       <!-- Modal -->
-      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-modal">
+      <div class="relative max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl animate-modal sm:p-6">
         <!-- Icon -->
         <div class="flex items-center gap-3 mb-4">
           <div :class="iconWrapClass" class="flex items-center justify-center w-10 h-10 rounded-full shrink-0">
@@ -32,7 +32,7 @@
         <slot></slot>
 
         <!-- Actions -->
-        <div class="flex justify-end gap-3 mt-5">
+        <div class="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button type="button" class="btn-secondary" @click="$emit('cancel')">
             {{ cancelText || t('common.cancel') }}
           </button>

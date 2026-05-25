@@ -1,7 +1,7 @@
 <template>
-  <nav class="fixed left-0 top-0 h-screen w-60 bg-indigo-950 text-white flex flex-col z-30 shadow-xl">
+  <nav class="relative z-30 flex max-h-[42dvh] w-full shrink-0 flex-col bg-indigo-950 text-white shadow-xl lg:fixed lg:left-0 lg:top-0 lg:h-screen lg:max-h-none lg:w-60">
     <!-- Logo -->
-    <div class="px-5 py-5 border-b border-indigo-800">
+    <div class="px-4 py-3 border-b border-indigo-800 lg:px-5 lg:py-5">
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center shrink-0">
           <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -19,7 +19,7 @@
     </div>
 
     <!-- User info -->
-    <div class="px-5 py-4 border-b border-indigo-800">
+    <div class="hidden px-5 py-4 border-b border-indigo-800 sm:block">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold shrink-0">
           {{ authStore.currentUser?.name?.charAt(0) }}
@@ -35,12 +35,12 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="flex-1 px-3 py-4 overflow-y-auto space-y-1">
+    <nav class="flex gap-1 overflow-x-auto px-3 py-3 lg:block lg:flex-1 lg:space-y-1 lg:overflow-y-auto lg:py-4">
       <RouterLink
         v-for="item in navItems"
         :key="item.to"
         :to="item.to"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150"
+        class="flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 lg:w-full"
         :class="isActive(item.to)
           ? 'bg-indigo-600 text-white shadow-md'
           : 'text-indigo-200 hover:bg-indigo-800 hover:text-white'"
@@ -82,7 +82,7 @@
     </nav>
 
     <!-- Bottom actions -->
-    <div class="px-3 py-4 border-t border-indigo-800 space-y-1">
+    <div class="flex items-center justify-between gap-2 border-t border-indigo-800 px-3 py-2 lg:block lg:space-y-1 lg:py-4">
       <!-- Language switcher -->
       <div class="flex items-center gap-2 px-3 py-2">
         <span class="text-xs text-indigo-400 mr-1"></span>
@@ -98,7 +98,7 @@
       </div>
       <!-- Logout -->
       <button
-        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-indigo-200 hover:bg-indigo-800 hover:text-white transition-all duration-150"
+        class="flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-indigo-200 transition-all duration-150 hover:bg-indigo-800 hover:text-white lg:w-full"
         @click="handleLogout"
       >
         <span class="w-5 h-5 shrink-0 flex items-center justify-center">

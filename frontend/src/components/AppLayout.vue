@@ -1,9 +1,9 @@
 <template>
-  <div class="flex h-screen overflow-hidden bg-gray-50">
+  <div class="flex h-dvh flex-col overflow-hidden bg-gray-50 lg:flex-row">
     <AppSidebar />
-    <div class="flex-1 flex flex-col overflow-hidden ml-60">
+    <div class="flex min-w-0 flex-1 flex-col overflow-hidden lg:ml-60">
       <AppHeader />
-      <main class="flex-1 overflow-y-auto p-6">
+      <main class="min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6">
         <RouterView v-slot="{ Component }">
           <Transition name="page" mode="out-in">
             <component :is="Component" :key="$route.path" />

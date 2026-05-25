@@ -1,11 +1,11 @@
 <template>
-  <div v-if="totalPages > 1" class="flex items-center justify-between pt-4">
+  <div v-if="totalPages > 1" class="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
     <p class="text-sm text-gray-500">
       {{ t('pagination.summary', { total, current: currentPage, totalPages }) }}
     </p>
-    <div class="flex items-center gap-1">
+    <div class="flex max-w-full items-center gap-1 overflow-x-auto pb-1">
       <button
-        class="px-3 py-1.5 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        class="shrink-0 rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
         :disabled="currentPage <= 1"
         @click="$emit('pageChange', currentPage - 1)"
       >
@@ -14,7 +14,7 @@
       <button
         v-for="page in visiblePages"
         :key="page"
-        class="px-3 py-1.5 text-sm rounded-lg border transition-colors"
+        class="shrink-0 rounded-lg border px-3 py-1.5 text-sm transition-colors"
         :class="page === currentPage
           ? 'bg-indigo-600 text-white border-indigo-600'
           : 'border-gray-200 text-gray-600 hover:bg-gray-50'"
@@ -23,7 +23,7 @@
         {{ page }}
       </button>
       <button
-        class="px-3 py-1.5 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        class="shrink-0 rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
         :disabled="currentPage >= totalPages"
         @click="$emit('pageChange', currentPage + 1)"
       >

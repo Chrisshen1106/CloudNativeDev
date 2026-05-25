@@ -8,16 +8,16 @@
         </h1>
         <p class="text-sm text-gray-500 mt-1">{{ t('common.total') }} {{ filteredAssets.length }} {{ t('common.items') }}</p>
       </div>
-      <RouterLink v-if="authStore.isManager" to="/assets/new" class="btn-primary">
+      <RouterLink v-if="authStore.isManager" to="/assets/new" class="btn-primary w-full sm:w-auto">
         <span></span> {{ t('asset.addAsset') }}
       </RouterLink>
     </div>
 
     <!-- Filters -->
     <div class="card p-4 mb-5">
-      <div class="flex flex-wrap gap-3 items-center">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <!-- Search -->
-        <div class="flex-1 min-w-56">
+        <div class="w-full min-w-0 sm:min-w-56 sm:flex-1">
           <div class="relative">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></span>
             <input
@@ -29,14 +29,14 @@
           </div>
         </div>
         <!-- Category filter -->
-        <select v-model="filterCategory" class="form-select w-36">
+        <select v-model="filterCategory" class="form-select w-full sm:w-36">
           <option value="">{{ t('asset.filterCategory') }}: {{ t('common.all') }}</option>
           <option value="computer">{{ t('asset.categories.computer') }}</option>
           <option value="phone">{{ t('asset.categories.phone') }}</option>
           <option value="tablet">{{ t('asset.categories.tablet') }}</option>
         </select>
         <!-- Status filter -->
-        <select v-model="filterStatus" class="form-select w-36">
+        <select v-model="filterStatus" class="form-select w-full sm:w-36">
           <option value="">{{ t('asset.filterStatus') }}: {{ t('common.all') }}</option>
           <option value="in_use">{{ t('asset.statuses.in_use') }}</option>
           <option value="repairing">{{ t('asset.statuses.repairing') }}</option>
@@ -45,7 +45,7 @@
         <!-- Reset -->
         <button
           v-if="searchQuery || filterCategory || filterStatus"
-          class="btn-secondary btn-sm"
+          class="btn-secondary btn-sm w-full sm:w-auto"
           @click="resetFilters"
         >{{ t('common.reset') }}</button>
       </div>
@@ -57,7 +57,7 @@
         {{ errorMsg }}
       </div>
       <div class="table-container">
-        <table class="data-table">
+        <table class="data-table min-w-[980px]">
           <thead>
             <tr>
               <th>{{ t('asset.assetNumber') }}</th>

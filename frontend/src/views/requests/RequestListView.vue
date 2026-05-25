@@ -9,7 +9,7 @@
       <RouterLink
         v-if="authStore.isHolder"
         to="/requests/new"
-        class="btn-primary"
+        class="btn-primary w-full sm:w-auto"
       >
         <span></span> {{ t('request.newRequest') }}
       </RouterLink>
@@ -17,8 +17,8 @@
 
     <!-- Filters -->
     <div class="card p-4 mb-5">
-      <div class="flex flex-wrap gap-3 items-center">
-        <div class="flex-1 min-w-56">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <div class="w-full min-w-0 sm:min-w-56 sm:flex-1">
           <div class="relative">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></span>
             <input
@@ -29,7 +29,7 @@
             />
           </div>
         </div>
-        <select v-model="filterStatus" class="form-select w-40">
+        <select v-model="filterStatus" class="form-select w-full sm:w-40">
           <option value="">{{ t('request.filterStatus') }}: {{ t('common.all') }}</option>
           <option value="pending">{{ t('request.statuses.pending') }}</option>
           <option value="under_repair">{{ t('request.statuses.under_repair') }}</option>
@@ -39,7 +39,7 @@
         </select>
         <button
           v-if="searchQuery || filterStatus"
-          class="btn-secondary btn-sm"
+          class="btn-secondary btn-sm w-full sm:w-auto"
           @click="resetFilters"
         >{{ t('common.reset') }}</button>
       </div>
@@ -51,7 +51,7 @@
         {{ error }}
       </div>
       <div class="table-container">
-        <table class="data-table">
+        <table class="data-table min-w-[860px]">
           <thead>
             <tr>
               <th>{{ t('request.requestId') }}</th>
@@ -106,10 +106,10 @@
       </div>
 
       <!-- Delete Confirmation Modal -->
-      <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <div class="bg-white rounded-xl shadow-xl p-6 w-80 border border-gray-100 animate-in fade-in zoom-in duration-200">
+      <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3">
+        <div class="w-full max-w-xs rounded-xl border border-gray-100 bg-white p-5 shadow-xl animate-in fade-in zoom-in duration-200 sm:p-6">
           <div class="mb-4 text-lg font-semibold text-gray-800">{{ t('request.deleteConfirmTitle') }}</div>
-          <div class="flex justify-end gap-3">
+          <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <button class="btn-secondary" @click="showDeleteConfirm = false">{{ t('common.cancel') }}</button>
             <button class="btn-danger px-6" @click="handleDeleteRequest">{{ t('common.delete') }}</button>
           </div>
