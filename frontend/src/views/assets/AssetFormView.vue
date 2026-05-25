@@ -61,31 +61,32 @@
         <h2 class="section-title"> {{ t('asset.purchaseInfo') }}</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="form-label">{{ t('asset.supplier') }}</label>
-            <input v-model="form.supplier" type="text" class="form-input" :placeholder="t('assetForm.supplierPlaceholder')" />
+            <label class="form-label">{{ t('asset.supplier') }} <span class="text-red-500">*</span></label>
+            <input v-model="form.supplier" type="text" class="form-input" required :placeholder="t('assetForm.supplierPlaceholder')" />
           </div>
           <div>
-            <label class="form-label">{{ t('asset.purchasePrice') }} (NT$)</label>
+            <label class="form-label">{{ t('asset.purchasePrice') }} (NT$) <span class="text-red-500">*</span></label>
             <input
               v-model.number="form.purchasePrice"
               type="number"
               class="form-input"
               min="0"
+              required
               placeholder="0"
               @wheel.prevent="blurNumberInput"
             />
           </div>
           <div>
-            <label class="form-label">{{ t('asset.purchaseDate') }}</label>
-            <input v-model="form.purchaseDate" type="date" class="form-input" />
+            <label class="form-label">{{ t('asset.purchaseDate') }} <span class="text-red-500">*</span></label>
+            <input v-model="form.purchaseDate" type="date" class="form-input" required />
           </div>
           <div>
-            <label class="form-label">{{ t('asset.activationDate') }}</label>
-            <input v-model="form.activationDate" type="date" class="form-input" />
+            <label class="form-label">{{ t('asset.activationDate') }} <span class="text-red-500">*</span></label>
+            <input v-model="form.activationDate" type="date" class="form-input" required />
           </div>
           <div>
-            <label class="form-label">{{ t('asset.warrantyExpiry') }}</label>
-            <input v-model="form.warrantyExpiry" type="date" class="form-input" />
+            <label class="form-label">{{ t('asset.warrantyExpiry') }} <span class="text-red-500">*</span></label>
+            <input v-model="form.warrantyExpiry" type="date" class="form-input" required />
           </div>
         </div>
       </div>
