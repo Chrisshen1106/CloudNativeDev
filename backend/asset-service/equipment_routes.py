@@ -6,6 +6,14 @@ from models import db, Equipment, Form, User
 equipment_bp = Blueprint('equipment_bp', __name__, url_prefix='/api/asset')
 
 
+def _fmt_date(value):
+    if value is None:
+        return None
+    if hasattr(value, 'isoformat'):
+        return value.isoformat()
+    return str(value) if value else None
+
+
 def format_user(user_id):
     if not user_id:
         return None
@@ -159,9 +167,9 @@ def _equipment_to_dict(equipment):
         "notes": equipment.notes,
         "supplier": equipment.supplier,
         "purchase_price": float(equipment.purchase_price) if equipment.purchase_price is not None else None,
-        "purchase_date": equipment.purchase_date.isoformat() if equipment.purchase_date else None,
-        "activationDate": equipment.start_date.isoformat() if equipment.start_date else None,
-        "warrantyExpiry": equipment.warranty_expiry.isoformat() if equipment.warranty_expiry else None,
+        "purchase_date": _fmt_date(equipment.purchase_date),
+        "activationDate": _fmt_date(equipment.start_date),
+        "warrantyExpiry": _fmt_date(equipment.warranty_expiry),
         "location": equipment.location,
         "ownerId": equipment.idOwner,
         "ownerName": owner_user["name"] if owner_user else None,
