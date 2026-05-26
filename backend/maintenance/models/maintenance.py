@@ -1,6 +1,19 @@
-from datetime import datetime
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from marshmallow import Schema, fields, validate
 from models.database import db
+
+TAIPEI_TZ = ZoneInfo("Asia/Taipei")
+
+class TaipeiDateTime(fields.DateTime):
+    def _serialize(self, value, attr, obj, **kwargs):
+        if value is None:
+            return None
+
+        if value.tzinfo is None or value.utcoffset() is None:
+            value = value.replace(tzinfo=timezone.utc)
+
+        return value.astimezone(TAIPEI_TZ).strftime("%Y-%m-%d %H:%M:%S")
 
 class MaintenanceSchema(Schema):
     idForm = fields.Int(dump_only=True)
@@ -11,7 +24,7 @@ class MaintenanceSchema(Schema):
     issue_description = fields.Str(required=False, validate=validate.Length(max=255))
     attachments = fields.Str(required=False, validate=validate.Length(max=255))
     status = fields.Str(required=False, validate=validate.OneOf(['pending', 'approved', 'rejected', 'repairing', 'completed']))
-    requestDate = fields.DateTime(dump_only=True)
+    requestDate = TaipeiDateTime(dump_only=True)
     reviewNote = fields.Str(required=False, validate=validate.Length(max=255))
     review_result = fields.Str(required=False, validate=validate.OneOf(['approved', 'rejected']))
     repair_start_date = fields.DateTime(required=False)
@@ -37,7 +50,7 @@ class MaintenanceModel(db.Model):
         default='pending',
         nullable=False,
     )
-    requestDate = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    requestDate = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     reviewNote = db.Column(db.String(255), nullable=True)
     review_result = db.Column(db.Enum('approved', 'rejected', name='review_result_enum'))
     repair_start_date = db.Column(db.DateTime)
