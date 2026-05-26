@@ -12,9 +12,11 @@
       <StatusBadge v-if="request" :status="request.status" type="request" />
     </div>
 
-    <div v-if="!request" class="card p-12 text-center text-gray-400">
+    <LoadingState v-if="loading" :label="t('request.loadingDetail')" />
+
+    <div v-else-if="!request" class="card p-12 text-center text-gray-400">
       <p class="text-4xl mb-2"></p>
-      <p>{{ t('request.notFound') }}</p>
+      <p>{{ error || t('request.notFound') }}</p>
     </div>
 
     <div v-else class="space-y-5">
@@ -271,6 +273,7 @@ import { useNotificationsStore } from '@/stores/notifications'
 import { useI18n } from '@/composables/useI18n'
 import StatusBadge from '@/components/common/StatusBadge.vue'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
 
 const route = useRoute()
 const router = useRouter()

@@ -50,7 +50,8 @@
       <div v-if="error && filteredRequests.length === 0" class="mb-4 text-red-500 text-sm">
         {{ error }}
       </div>
-      <div class="table-container">
+      <LoadingState v-if="loading" :label="t('request.loadingList')" />
+      <div v-else class="table-container">
         <table class="data-table min-w-[860px]">
           <thead>
             <tr>
@@ -117,7 +118,7 @@
       </div>
 
       <!-- Pagination -->
-      <div class="px-4 pb-4">
+      <div v-if="!loading" class="px-4 pb-4">
         <Pagination
           :total="filteredRequests.length"
           :page-size="pageSize"
@@ -137,6 +138,7 @@ import { useRequestsStore } from '@/stores/requests'
 import { useI18n } from '@/composables/useI18n'
 import StatusBadge from '@/components/common/StatusBadge.vue'
 import Pagination from '@/components/common/Pagination.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
 
 import { useNotificationsStore } from '@/stores/notifications'
 

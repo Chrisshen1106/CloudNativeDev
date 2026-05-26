@@ -10,7 +10,9 @@
       </h1>
     </div>
 
-    <form @submit.prevent="handleAssetSubmit" class="space-y-5">
+    <LoadingState v-if="isLoading" :label="isEdit ? t('assetDetail.loading') : t('common.loading')" />
+
+    <form v-else @submit.prevent="handleAssetSubmit" class="space-y-5">
       <!-- Basic info -->
       <div class="card p-5">
         <h2 class="section-title">{{ t('asset.basicInfo') }}</h2>
@@ -169,6 +171,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useI18n } from '@/composables/useI18n'
 import AssetConflictModal from '@/components/common/AssetConflictModal.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -181,6 +184,7 @@ const requestsStore = useRequestsStore()
 const authStore = useAuthStore()
 
 const holderUsers = ref([])
+const isLoading = ref(false)
 const isSaving = ref(false)
 const assetConflict = ref(null)
 // 當選擇負責人時自動帶出部門
@@ -199,6 +203,7 @@ function blurNumberInput(event) {
 }
 
 onMounted(async () => {
+  isLoading.value = true
   try {
     const users = await authStore.fetchAllUsers()
     holderUsers.value = users
@@ -226,6 +231,7 @@ onMounted(async () => {
       notifStore.add(t('asset.detailLoadFailed'), 'error')
     }
   }
+  isLoading.value = false
 })
 
 const form = ref({

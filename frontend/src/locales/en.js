@@ -116,6 +116,7 @@ export default {
   asset: {
     title: 'Asset List',
     titleMy: 'My Assets',
+    loadingList: 'Loading assets...',
     addAsset: 'Add Asset',
     editAsset: 'Edit Asset',
     assetNumber: 'Asset No.',
@@ -219,6 +220,8 @@ export default {
     info: 'Request Info',
     title: 'Request List',
     titleMy: 'My Repair Requests',
+    loadingList: 'Loading requests...',
+    loadingDetail: 'Loading request...',
     newRequest: 'New Repair Request',
     requestId: 'Request ID',
     assetNumber: 'Asset Number',

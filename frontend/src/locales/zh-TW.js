@@ -111,6 +111,7 @@ export default {
   asset: {
     title: '資產列表',
     titleMy: '我的資產',
+    loadingList: '資產載入中...',
     addAsset: '新增資產',
     editAsset: '編輯資產',
     assetNumber: '資產編號',
@@ -215,6 +216,8 @@ export default {
     faultDescriptionLabel: '故障描述',
     title: '申請單列表',
     titleMy: '我的維修申請',
+    loadingList: '申請單載入中...',
+    loadingDetail: '申請單載入中...',
     newRequest: '新增維修申請',
     requestId: '申請單號',
     assetNumber: '資產編號',
