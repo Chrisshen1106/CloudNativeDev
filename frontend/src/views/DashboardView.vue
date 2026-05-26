@@ -8,9 +8,6 @@
       </p>
     </div>
 
-    <LoadingState v-if="loading" :label="t('common.loading')" />
-
-    <template v-else>
     <!-- Stats cards -->
     <!-- Stats cards 暫時隱藏數字，待 API 完成再補 -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -78,18 +75,15 @@
         <!-- Status summary (manager) 已移除 -->
       </div>
     </div>
-    </template>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 const assetError = ref('')
-const loading = ref(false)
 onMounted(async () => {
   // 自動載入資產與申請單資料
   if (authStore.token) {
-    loading.value = true
     try {
       await assetsStore.fetchUserAssets(authStore.token)
     } catch (e) {
@@ -103,8 +97,6 @@ onMounted(async () => {
       }
     } catch (e) {
       // 不顯示錯誤訊息
-    } finally {
-      loading.value = false
     }
   }
 })
@@ -114,7 +106,6 @@ import { useAssetsStore } from '@/stores/assets'
 import { useRequestsStore } from '@/stores/requests'
 import { useI18n } from '@/composables/useI18n'
 import StatusBadge from '@/components/common/StatusBadge.vue'
-import LoadingState from '@/components/common/LoadingState.vue'
 
 const authStore = useAuthStore()
 const assetsStore = useAssetsStore()
