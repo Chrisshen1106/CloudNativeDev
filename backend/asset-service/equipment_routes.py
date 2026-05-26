@@ -84,6 +84,38 @@ def get_user_assets():
         "total": len(items),
         "items": items,
     }), 200
+    
+    
+@equipment_bp.route('/user/requestForms', methods=['GET'])
+@jwt_required()
+def get_user_forms():
+    user_id = int(get_jwt_identity())
+    role = get_jwt().get('role')
+
+    query = Equipment.query
+    if role != 'admin':
+        query = query.filter_by(idUser=user_id)
+
+    equipments = query.order_by(Equipment.idEquipment.desc()).all()
+
+    items = [
+        {
+            "assetNumber": e.idEquipment,
+            "name": e.name,
+            "category": e.category,
+            "model": e.model,
+            "location": e.location,
+            "department": e.department,
+            "status": e.status,
+            "idUser": e.idUser,
+        }
+        for e in equipments
+    ]
+
+    return jsonify({
+        "total": len(items),
+        "items": items,
+    }), 200
 
 
 @equipment_bp.route('/assets/<int:id>', methods=['GET'])
