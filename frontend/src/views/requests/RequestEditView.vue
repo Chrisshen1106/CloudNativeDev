@@ -11,7 +11,9 @@
       <StatusBadge v-if="request" :status="request.status" type="request" />
     </div>
 
-    <form @submit.prevent="handleSubmit" class="space-y-5">
+    <LoadingState v-if="loading" :label="t('request.loadingDetail')" />
+
+    <form v-else @submit.prevent="handleSubmit" class="space-y-5">
       <div class="card overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 bg-gray-50/70">
           <h2 class="section-title mb-0">{{ t('request.assetInfo') }}</h2>
@@ -108,6 +110,7 @@ import { useRequestsStore } from '@/stores/requests'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useI18n } from '@/composables/useI18n'
 import StatusBadge from '@/components/common/StatusBadge.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -117,6 +120,7 @@ const notifStore = useNotificationsStore()
 const { t } = useI18n()
 
 const request = ref(null)
+const loading = ref(false)
 const previewUrl = ref('')
 const fileInput = ref(null)
 const form = ref({
@@ -130,6 +134,7 @@ const form = ref({
 
 onMounted(async () => {
   // 取得原始申請單資料
+  loading.value = true
   try {
     const id = route.params.id
     request.value = await requestsStore.fetchById(id)
@@ -147,6 +152,8 @@ onMounted(async () => {
   } catch (e) {
     notifStore.add(e.message || t('request.loadFailed'), 'error')
     router.replace('/requests')
+  } finally {
+    loading.value = false
   }
 })
 

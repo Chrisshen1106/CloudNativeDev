@@ -56,7 +56,8 @@
       <div v-if="errorMsg && filteredAssets.length === 0" class="mb-4 text-red-500 text-sm">
         {{ errorMsg }}
       </div>
-      <div class="table-container">
+      <LoadingState v-if="loading" :label="t('asset.loadingList')" />
+      <div v-else class="table-container">
         <table class="data-table min-w-[980px]">
           <thead>
             <tr>
@@ -120,7 +121,7 @@
         </table>
       </div>
       <!-- Pagination -->
-      <div class="px-4 pb-4">
+      <div v-if="!loading" class="px-4 pb-4">
         <Pagination
           :total="filteredAssets.length"
           :page-size="pageSize"
@@ -141,6 +142,7 @@ import { useAssetsStore } from '@/stores/assets'
 import { useI18n } from '@/composables/useI18n'
 import StatusBadge from '@/components/common/StatusBadge.vue'
 import Pagination from '@/components/common/Pagination.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
 
 
 const authStore = useAuthStore()
@@ -164,10 +166,12 @@ function closeDetailModal() {
 
 
 const errorMsg = ref('')
+const loading = ref(false)
 async function fetchAssets() {
   errorMsg.value = ''
   console.log('authStore.token', authStore.token)
   if (authStore.token) {
+    loading.value = true
     try {
       await assetsStore.fetchUserAssets(authStore.token)
       // 這裡加 log
@@ -177,6 +181,8 @@ async function fetchAssets() {
     } catch (e) {
       errorMsg.value = e.message || t('asset.detailLoadFailed')
       console.error(e)
+    } finally {
+      loading.value = false
     }
   }
 }
