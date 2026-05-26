@@ -6,7 +6,6 @@ import { useAssetsStore } from '@/stores/assets'
 import { useRequestsStore } from '@/stores/requests'
 import { useI18n } from '@/composables/useI18n'
 import StatusBadge from '@/components/common/StatusBadge.vue'
-import LoadingState from '@/components/common/LoadingState.vue'
 
 const props = defineProps({
   id: [String, Number],
@@ -110,7 +109,9 @@ const ownerUserName = computed(() => getUserName(asset.value?.ownerId, asset.val
     :class="modal ? 'w-full' : 'max-w-4xl mx-auto'"
     class="max-h-[88vh] min-h-[200px] overflow-y-auto overflow-x-hidden bg-gray-50"
   >
-    <LoadingState v-if="loading" :label="t('assetDetail.loading')" />
+    <div v-if="loading" class="flex justify-center p-12">
+      <span class="text-sm text-gray-500">{{ t('assetDetail.loading') }}</span>
+    </div>
 
     <div v-else-if="errorMsg" class="m-6 rounded-lg bg-red-50 p-4 text-center text-sm text-red-600">
       {{ errorMsg }}

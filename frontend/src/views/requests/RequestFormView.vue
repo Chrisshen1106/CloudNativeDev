@@ -8,9 +8,7 @@
       <h1 class="page-title text-xl">{{ t('request.newRequest') }}</h1>
     </div>
 
-    <LoadingState v-if="loadingAssets" :label="t('asset.loadingList')" />
-
-    <form v-else @submit.prevent="createRequestSubmit" class="space-y-5">
+    <form @submit.prevent="createRequestSubmit" class="space-y-5">
       <!-- Asset selection -->
       <div class="card p-5">
         <h2 class="section-title"> {{ t('request.selectAsset') }}</h2>
@@ -117,7 +115,6 @@ import { useAssetsStore } from '@/stores/assets'
 import { useRequestsStore } from '@/stores/requests'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useI18n } from '@/composables/useI18n'
-import LoadingState from '@/components/common/LoadingState.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -128,7 +125,6 @@ const notifStore = useNotificationsStore()
 const { t } = useI18n()
 
 const fileInput = ref(null)
-const loadingAssets = ref(false)
 
 const form = ref({
   assetId: route.query.assetId || '',
@@ -143,15 +139,8 @@ const eligibleAssets = ref([])
 onMounted(async () => {
   // 取得個人資產
   const token = localStorage.getItem('ams_token') || ''
-  loadingAssets.value = true
-  try {
-    const result = await assetsStore.fetchUserAssets(token)
-    eligibleAssets.value = result.items
-  } catch (e) {
-    notifStore.add(e.message || t('asset.fetchFailed'), 'error')
-  } finally {
-    loadingAssets.value = false
-  }
+  const result = await assetsStore.fetchUserAssets(token)
+  eligibleAssets.value = result.items
 })
 
 const selectedAsset = computed(() =>
