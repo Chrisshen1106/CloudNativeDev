@@ -168,7 +168,7 @@ async function loadRequests() {
     // fetchAll 會自動依權限過濾
     await Promise.all([
       requestsStore.fetchAll(authStore.token),
-      assetsStore.fetchUserAssets(authStore.token, 1, 1000).catch(() => null)
+      assetsStore.fetchUserAssets2(authStore.token, 1, 1000).catch(() => null)
     ])
     sourceRequests.value = requestsStore.getAll()
     if (authStore.isManager) {

@@ -95,6 +95,39 @@ export const useAssetsStore = defineStore('assets', () => {
     }
   }
 
+  // 抓那個人的資產
+  async function fetchUserAssets2(token, page = 1, pageSize = 20) {
+    const res = await fetch(`${API_BASE}/user/requestForms?page=${page}&pageSize=${pageSize}`, {
+      headers: {
+        'Authorization': token
+      }
+    })
+    if (!res.ok) throw new Error(t('asset.fetchFailed'))
+    const data = await res.json()
+    console.log('API 回傳 data:', data)
+    assets.value = data.items.map(item => ({
+      id: item.assetNumber,
+      assetNumber: item.assetNumber,
+      idEquipment: item.idEquipment || item.id || null, // 保留資料庫主鍵
+      name: item.name || '',
+      category: item.category || '',
+      model: item.model || '',
+      location: item.location || '',
+      ownerId: item.idOwner || item.ownerId || '',
+      idUser: item.idUser || '',
+      department: item.department || '',
+      status: item.status || '',
+    }))
+    persist()
+    // 回傳 API 分頁資訊
+    return {
+      total: data.total,
+      page: data.page,
+      pageSize: data.pageSize,
+      items: assets.value
+    }
+  }
+
   // 取得資產詳情（支援 assetNumber 查詢）
   async function getAssetDetail(idOrAssetNumber, token) {
     let id = idOrAssetNumber
@@ -229,6 +262,7 @@ export const useAssetsStore = defineStore('assets', () => {
     add,
     update,
     fetchUserAssets,
+    fetchUserAssets2,
     getAssetDetail,
     createAsset,
     updateAsset,
