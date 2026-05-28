@@ -4,6 +4,7 @@ node_modules
 .env
 frontend/node_modules
 dist
+.sonar
 
 # Ignore testing reports
 .coverage

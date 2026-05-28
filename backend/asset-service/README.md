@@ -109,3 +109,23 @@ uv run -m pytest -v -rA \
 python -m http.server 8080
 ```
 然後在瀏覽器開啟 `http://localhost:8080/testing_report/report.html`
+
+# To check code quality
+
+## Install SonarCube
+```shell
+docker pull sonarqube
+docker run --name sonarqube --restart always -p 9000:9000 -d sonarqube
+```
+
+## Run command
+```shell
+uv run pysonar \
+  --sonar-host-url=http://localhost:9000 \
+  --sonar-token=sqp_bcef807e768dac9a9bb3c97eec8092570a6f6a4d \
+  --sonar-project-key=Cloud-Native-Asset \
+  --sonar-python-coverage-report-paths=testing_report/coverage.xml \
+  --sonar-python-xunit-report-path=testing_report/report.xml
+```
+
+You will see the result on **sonar-host-url**
