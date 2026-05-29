@@ -58,3 +58,27 @@ testing_report/
 └── htmlcov/ -------> Code coverage summary
     └── index.html
 ```
+
+# To check code quality
+## Install SonarCube
+```shell
+docker pull sonarqube
+docker run --name sonarqube --restart always -p 9000:9000 -d sonarqube
+```
+
+## Run command
+```shell
+uv run pysonar \
+    --sonar-host-url=http://localhost:9000 \
+    --sonar-token=sqp_a5045d501bba1a00b161d3eb5ac74b61a1addd21 \
+    --sonar-project-key=Cloud-Native-User-Module \
+    --sonar-sources=app.py,controllers,models,routes,utils,dockerfile \
+    --sonar-tests=tests \
+    -Dsonar.exclusions=.venv/**,testing_report/**,__pycache__/**,**/__pycache__/** \
+    --sonar-python-coverage-report-paths=testing_report/coverage.xml \
+    --sonar-python-xunit-report-path=testing_report/report.xml \
+    --sonar-scm-exclusions-disabled \
+    --sonar-qualitygate-wait
+```
+
+You will see the result on **sonar-host-url**

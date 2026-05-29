@@ -13,6 +13,7 @@ dependencies = [
     "gunicorn>=25.3.0",
     "marshmallow>=4.3.0",
     "pymysql>=1.1.2",
+    "pysonar>=1.5.0.4793",
     "pytest>=9.0.3",
     "pytest-cov>=7.1.0",
     "pytest-html>=4.2.0",
