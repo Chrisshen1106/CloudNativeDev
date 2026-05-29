@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from controllers.maintenance import maintenance_controller
 from utils.enum import MaintenanceStatus
+from utils import error_message
 
 maintenance_bp = Blueprint('maintenance', __name__, url_prefix='/api/maintenance')
 
@@ -54,7 +55,7 @@ def get_form_by_id(id: int):
         if form:
             response = maintenance_controller.schema().dump(form)
             return jsonify(response), 200
-        return jsonify({'error': 'Form not found'}), 404
+        return jsonify({'error': error_message.FORM_NOT_FOUND_ERROR}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -65,7 +66,7 @@ def review_form(form_id: int):
     try:
         claims = get_jwt()
         if claims.get('role') != 'admin':
-            return jsonify({'error': 'Admin privileges required'}), 403
+            return jsonify({'error': error_message.ADMIN_PRIVILEGES_REQUIRED_ERROR}), 403
         data = request.get_json()
         print('review_form data:', data)
         valided_data = maintenance_controller.schema(only=['status', 'reviewNote', 'reviewer_id']).load(data)
@@ -85,7 +86,7 @@ def repair_maintenance(form_id: int):
     try:
         claims = get_jwt()
         if claims.get('role') != 'admin':
-            return jsonify({'error': 'Admin privileges required'}), 403
+            return jsonify({'error': error_message.ADMIN_PRIVILEGES_REQUIRED_ERROR}), 403
         
         payload = request.get_json()
         payload['status'] = MaintenanceStatus.REPAIRING
@@ -105,7 +106,7 @@ def complete_maintenance(form_id: int):
     try:
         claims = get_jwt()
         if claims.get('role') != 'admin':
-            return jsonify({'error': 'Admin privileges required'}), 403
+            return jsonify({'error': error_message.ADMIN_PRIVILEGES_REQUIRED_ERROR}), 403
         
         updated_form = maintenance_controller.update_form_status_by_id(form_id, MaintenanceStatus.COMPLETED)
         response = maintenance_controller.schema(only=['idForm', 'idEquipment', 'status']).dump(updated_form)
