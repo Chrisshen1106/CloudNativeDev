@@ -16,9 +16,9 @@ def get_all_forms():
         
         match role:
             case 'admin':
-                forms = maintenance_controller.getAllForms()
+                forms = maintenance_controller.get_all_forms()
             case 'user':
-                forms = maintenance_controller.getAllFormsByUserId(user_id)
+                forms = maintenance_controller.get_all_forms_by_user_id(user_id)
             case _:
                 return jsonify({'error': 'Invalid role'}), 403
 
@@ -39,7 +39,7 @@ def create_form():
         current_user = get_jwt_identity()
         data = request.get_json()
         valided_data = maintenance_controller.schema(only=['idEquipment', 'issue_description', 'attachments']).load(data)
-        form = maintenance_controller.createForm({**valided_data, 'applicant_id': current_user})
+        form = maintenance_controller.create_form({**valided_data, 'applicant_id': current_user})
         response = maintenance_controller.schema(only=['idForm', 'status']).dump(form)
         return jsonify(response), 201
     except Exception as e:
@@ -50,7 +50,7 @@ def create_form():
 @jwt_required()
 def get_form_by_id(id: int):
     try:
-        form = maintenance_controller.getFormById(id)
+        form = maintenance_controller.get_form_by_id(id)
         if form:
             response = maintenance_controller.schema().dump(form)
             return jsonify(response), 200
@@ -70,7 +70,7 @@ def review_form(form_id: int):
         print('review_form data:', data)
         valided_data = maintenance_controller.schema(only=['status', 'reviewNote', 'reviewer_id']).load(data)
         print('review_form valided_data:', valided_data)
-        updated_form = maintenance_controller.updateFormById(form_id, valided_data)
+        updated_form = maintenance_controller.update_form_by_id(form_id, valided_data)
         response = maintenance_controller.schema(only=['idForm', 'idEquipment', 'status', 'reviewer_id']).dump(updated_form)
         return jsonify(response), 200
     except ValueError as e:
@@ -90,7 +90,7 @@ def repair_maintenance(form_id: int):
         payload = request.get_json()
         payload['status'] = MaintenanceStatus.REPAIRING
         data = maintenance_controller.schema(only=['repair_description', 'repair_solution', 'repair_cost', 'repair_vendor', 'repair_person', 'status']).load(payload)        
-        updated_form = maintenance_controller.updateFormById(form_id, data)
+        updated_form = maintenance_controller.update_form_by_id(form_id, data)
         response = maintenance_controller.schema(only=['idForm', 'status']).dump(updated_form)
         return jsonify(response), 200
     except ValueError as e:
@@ -107,7 +107,7 @@ def complete_maintenance(form_id: int):
         if claims.get('role') != 'admin':
             return jsonify({'error': 'Admin privileges required'}), 403
         
-        updated_form = maintenance_controller.updateFormStatusById(form_id, MaintenanceStatus.COMPLETED)
+        updated_form = maintenance_controller.update_form_status_by_id(form_id, MaintenanceStatus.COMPLETED)
         response = maintenance_controller.schema(only=['idForm', 'idEquipment', 'status']).dump(updated_form)
         return jsonify(response), 200
     except ValueError as e:
@@ -120,7 +120,7 @@ def complete_maintenance(form_id: int):
 @jwt_required()
 def delete_form(id: int):
     try:
-        maintenance_controller.deleteFormById(id)
+        maintenance_controller.delete_form_by_id(id)
         return jsonify({}), 200
     except ValueError as e:
         return jsonify({'error': str(e)}), 404
@@ -134,7 +134,7 @@ def edit_form(id: int):
     try:
         data = request.get_json()
         valided_data = maintenance_controller.schema(only=['issue_description', 'attachments']).load(data)
-        updated_form = maintenance_controller.updateFormById(id, valided_data)
+        updated_form = maintenance_controller.update_form_by_id(id, valided_data)
         response = maintenance_controller.schema(only=['idForm', 'status']).dump(updated_form)
         return jsonify(response), 200
     except ValueError as e:

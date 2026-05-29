@@ -30,7 +30,7 @@ def test_user_can_create_form(client, auth_headers):
     assert response.status_code == 201
     assert response.get_json() == {"idForm": 1, "status": "pending"}
 
-    form = maintenance_controller.getFormById(1)
+    form = maintenance_controller.get_form_by_id(1)
     assert form.applicant_id == 7
     assert form.idEquipment == 10
 

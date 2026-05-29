@@ -7,19 +7,19 @@ class MaintenanceController:
         self.schema = MaintenanceSchema
         self.model = MaintenanceModel
 
-    def getAllForms(self) -> list[MaintenanceModel]:
+    def get_all_forms(self) -> list[MaintenanceModel]:
         try:
             return MaintenanceModel.query.all()
         except Exception as e:
             raise e
 
-    def getAllFormsByUserId(self, user_id: int) -> list[MaintenanceModel]:
+    def get_all_forms_by_user_id(self, user_id: int) -> list[MaintenanceModel]:
         try:
             return MaintenanceModel.query.filter_by(applicant_id=user_id).all()
         except Exception as e:
             raise e
 
-    def createForm(self, data: dict) -> MaintenanceModel:
+    def create_form(self, data: dict) -> MaintenanceModel:
         try:
             new_form = MaintenanceModel(**data)
             db.session.add(new_form)
@@ -29,7 +29,7 @@ class MaintenanceController:
             db.session.rollback()
             raise e
         
-    def getFormById(self, id: int) -> MaintenanceModel | None:
+    def get_form_by_id(self, id: int) -> MaintenanceModel | None:
         try:
             form = self.model.query.get(id)
             if form:
@@ -38,7 +38,7 @@ class MaintenanceController:
         except Exception as e:
             raise e
         
-    def updateFormStatusById(self, id: int, status: str) -> MaintenanceModel:
+    def update_form_status_by_id(self, id: int, status: str) -> MaintenanceModel:
         try:            
             form = self.model.query.get(id)
             if form:
@@ -54,11 +54,11 @@ class MaintenanceController:
             db.session.rollback()
             raise e
         
-    def updateFormById(self, id: int, data: dict) -> MaintenanceModel:
+    def update_form_by_id(self, id: int, data: dict) -> MaintenanceModel:
         try:
             form = self.model.query.get(id)
             if form:
-                print('updateFormById data:', data)
+                print('update_form_by_id data:', data)
                 for key, value in data.items():
                     print(f'setting {key} = {value}')
                     setattr(form, key, value)
@@ -79,7 +79,7 @@ class MaintenanceController:
             db.session.rollback()
             raise e
         
-    def deleteFormById(self, id: int) -> None:
+    def delete_form_by_id(self, id: int) -> None:
         try:
             form = self.model.query.get(id)
             if form:
