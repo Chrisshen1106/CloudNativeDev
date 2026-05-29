@@ -58,7 +58,7 @@ def test_signup_creates_user_with_hashed_password(client, app):
     }
 
     with app.app_context():
-        user = user_controller.getUserByEmail("ada@example.com")
+        user = user_controller.get_user_by_email("ada@example.com")
         assert user is not None
         assert user.password != "correct-password"
         assert pbkdf2_sha256.verify("correct-password", user.password)

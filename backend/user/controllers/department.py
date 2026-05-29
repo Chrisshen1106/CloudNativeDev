@@ -2,7 +2,7 @@ from models.database import db
 from models import DepartmentSchema, DepartmentModel
 
 class DepartmentController:
-    def createDepartment(self, data: dict) -> dict | None:
+    def create_department(self, data: dict) -> dict | None:
         try:
             schema = DepartmentSchema()
             department_data = schema.load(data)
@@ -14,13 +14,13 @@ class DepartmentController:
             print(f"Error creating department: {e}")
             return None
     
-    def getDepartmentById(self, id: int) -> dict | None:
+    def get_department_by_id(self, id: int) -> dict | None:
         department = DepartmentModel.query.get(id)
         if department:
             return DepartmentSchema().dump(department)
         return None
     
-    def getAllDepartments(self) -> list[dict]:
+    def get_all_departments(self) -> list[dict]:
         departments = DepartmentModel.query.all()
         return DepartmentSchema(many=True).dump(departments)
 

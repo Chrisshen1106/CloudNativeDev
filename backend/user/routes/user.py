@@ -12,7 +12,7 @@ user_bp = Blueprint('user', __name__, url_prefix='/api/user')
 def create_user():
     data = request.get_json()
     data['password'] = pbkdf2_sha256.hash(data['password'])
-    user = user_controller.createUser(data)
+    user = user_controller.create_user(data)
     if user:
         return jsonify(user), 200
     else:
@@ -21,7 +21,7 @@ def create_user():
 @user_bp.route('/<int:id>', methods=['GET'])
 def get_user_by_id(id: int):
     try:
-        user = user_controller.getUserById(id)
+        user = user_controller.get_user_by_id(id)
         if user:
             return jsonify(user), 200
         return jsonify({"message": "User not found"}), 404
@@ -33,7 +33,7 @@ def login():
     try:
         data = request.get_json()
         validated_data = user_controller.schema(only=['email', 'password']).load(data)
-        user = user_controller.getUserByEmail(validated_data['email'])
+        user = user_controller.get_user_by_email(validated_data['email'])
         if user and verify_login(validated_data['password'], user.password):
             response = user_controller.schema().dump(user)
             response['token'] = create_access_token(identity=str(user.idUser), additional_claims={"role": user.role}, expires_delta=datetime.timedelta(days=1))
@@ -52,7 +52,7 @@ def get_all_users():
         role = get_jwt().get("role", "")
         if role != "admin":
             return jsonify({"message": "Unauthorized user role"}), 403
-        users = user_controller.getAllUsers()
+        users = user_controller.get_all_users()
         response = user_controller.schema(many=True, only=['idUser', 'name', 'department']).dump(users)
         return jsonify(response), 200
     except ValueError as e:
@@ -65,7 +65,7 @@ def get_all_users():
 # @jwt_required()  # 1. 先註解掉驗證
 def get_all_users_test_s3():
     try:
-        users = user_controller.getAllUsers()
+        users = user_controller.get_all_users()
         response = user_controller.schema(many=True, only=['idUser', 'name', 'department']).dump(users)
         return jsonify(response), 200
     except ValueError as e:

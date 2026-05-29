@@ -6,7 +6,7 @@ class UserController:
         self.schema = UserSchema
         self.model = UserModel
         
-    def createUser(self, data: dict) -> dict:
+    def create_user(self, data: dict) -> dict:
         try:
             schema = self.schema()
             user_data = schema.load(data)
@@ -17,7 +17,7 @@ class UserController:
         except Exception as e:
             raise ValueError(f"Error creating user: {e}")
     
-    def getUserById(self, id: int) -> dict | None:
+    def get_user_by_id(self, id: int) -> dict | None:
         try:
             user = self.model.query.get(id)
             if user:
@@ -26,7 +26,7 @@ class UserController:
         except Exception as e:
             raise ValueError(f"Error getting user by ID: {e}")
     
-    def getUserByEmail(self, email: str) -> UserModel | None:
+    def get_user_by_email(self, email: str) -> UserModel | None:
         try:
             user = self.model.query.filter_by(email=email).first()
             if user:
@@ -35,11 +35,11 @@ class UserController:
         except Exception as e:
             raise ValueError(f"Error getting user by email: {e}")
     
-    def getAllUsers(self) -> list[UserModel]:
+    def get_all_users(self) -> list[UserModel]:
         users = self.model.query.all()
         return users
     
-    def deleteUserById(self, id: int) -> bool:
+    def delete_user_by_id(self, id: int) -> bool:
         try:
             user = self.model.query.get(id)
             if user:
