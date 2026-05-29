@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from datetime import datetime
 from models import db, Equipment, Form, User
+import error_message
 
 equipment_bp = Blueprint('equipment_bp', __name__, url_prefix='/api/asset')
 
@@ -54,9 +55,6 @@ FIELD_MAP = {
 def get_user_assets():
     user_id = int(get_jwt_identity())
     role = get_jwt().get('role')
-
-    page = request.args.get('page', 1, type=int)
-    page_size = request.args.get('pageSize', 20, type=int)
 
     query = Equipment.query
     if role != 'admin':
@@ -124,7 +122,7 @@ def get_asset(id):
     user_id = int(get_jwt_identity())
     role = get_jwt().get('role')
 
-    equipment = Equipment.query.filter_by(idEquipment=id).first_or_404(description="找不到該資產")
+    equipment = Equipment.query.filter_by(idEquipment=id).first_or_404(description=error_message.ASSET_NOT_FOUND)
 
     if role != 'admin' and equipment.idUser != user_id:
         return jsonify({"message": "權限不足"}), 403
@@ -220,7 +218,7 @@ def update_asset(id):
     if get_jwt().get('role') != 'admin':
         return jsonify({"message": "僅管理員可編輯資產"}), 403
 
-    equipment = Equipment.query.filter_by(idEquipment=id).first_or_404(description="找不到該資產")
+    equipment = Equipment.query.filter_by(idEquipment=id).first_or_404(description=error_message.ASSET_NOT_FOUND)
 
     data = request.get_json()
     if not data:
@@ -262,7 +260,7 @@ def delete_asset(id):
     if get_jwt().get('role') != 'admin':
         return jsonify({"message": "僅管理員可刪除資產"}), 403
 
-    equipment = Equipment.query.filter_by(idEquipment=id).first_or_404(description="找不到該資產")
+    equipment = Equipment.query.filter_by(idEquipment=id).first_or_404(description=error_message.ASSET_NOT_FOUND)
 
     try:
         db.session.delete(equipment)
@@ -280,7 +278,7 @@ def set_status_repairing(id):
     if get_jwt().get('role') != 'admin':
         return jsonify({"message": "僅管理員可修改資產狀態"}), 403
 
-    equipment = Equipment.query.filter_by(idEquipment=id).first_or_404(description="找不到該資產")
+    equipment = Equipment.query.filter_by(idEquipment=id).first_or_404(description=error_message.ASSET_NOT_FOUND)
     equipment.status = 'repairing'
 
     try:
@@ -298,7 +296,7 @@ def set_status_in_use(id):
     if get_jwt().get('role') != 'admin':
         return jsonify({"message": "僅管理員可修改資產狀態"}), 403
 
-    equipment = Equipment.query.filter_by(idEquipment=id).first_or_404(description="找不到該資產")
+    equipment = Equipment.query.filter_by(idEquipment=id).first_or_404(description=error_message.ASSET_NOT_FOUND)
     equipment.status = 'in_use'
 
     try:

@@ -14,7 +14,7 @@ def test_equipment_schema_loads_valid_payload():
     assert result["status"] == "in_use"
 
 
-def test_equipment_schema_requires_idUser():
+def test_equipment_schema_requires_id_user():
     with pytest.raises(ValidationError) as exc_info:
         EquipmentSchema().load({"name": "Laptop"})
 

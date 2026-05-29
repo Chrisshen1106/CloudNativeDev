@@ -48,7 +48,7 @@ def create_upload_url():
         "contentType": contentType,
     }
     new_image = image_controller.schema().load(new_image)
-    image_controller.createImage(new_image)
+    image_controller.create_image(new_image)
 
     return jsonify({
         "imageId": image_id,
@@ -68,7 +68,7 @@ def create_read_url(image_id: str):
     if not image_id:
         return jsonify({"error": "imageId is required"}), 400
 
-    image = image_controller.getImageByImageId(image_id)
+    image = image_controller.get_image_by_image_id(image_id)
     if not image or (image.user_id != user_id and claims.get("role") != "admin"):
         return jsonify({"error": "image not found"}), 404
 

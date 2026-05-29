@@ -29,7 +29,6 @@ class Equipment(db.Model):
     __tablename__ = 'Equipment'
     
     idEquipment = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    # asset_uid = db.Column(db.String(20), unique=True, nullable=False)
     idUser = db.Column(db.Integer, db.ForeignKey('User.idUser'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
     category = db.Column(db.String(100))
@@ -49,7 +48,6 @@ class Equipment(db.Model):
     notes = db.Column(db.String(255), nullable=True)
     version = db.Column(db.Integer, nullable=False, default=0, server_default='0')
 
-    # is_deleted = db.Column(db.Boolean, default=False)
     # created_at = db.Column(db.DateTime, default=datetime.utcnow)
     # updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
