@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+USER_ID_FK = "User.idUser"
+
 class Department(db.Model):
     __tablename__ = 'department'
     
@@ -29,7 +31,7 @@ class Equipment(db.Model):
     __tablename__ = 'Equipment'
     
     idEquipment = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    idUser = db.Column(db.Integer, db.ForeignKey('User.idUser'), nullable=False)
+    idUser = db.Column(db.Integer, db.ForeignKey(USER_ID_FK), nullable=False)
     name = db.Column(db.String(100), nullable=False)
     category = db.Column(db.String(100))
     model = db.Column(db.String(100))
@@ -51,10 +53,10 @@ class Form(db.Model):
     __tablename__ = 'Form'
     
     idForm = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    applicant_id = db.Column(db.Integer, db.ForeignKey('User.idUser'), nullable=False)
+    applicant_id = db.Column(db.Integer, db.ForeignKey(USER_ID_FK), nullable=False)
     idEquipment = db.Column(db.Integer, db.ForeignKey('Equipment.idEquipment'), nullable=False)
     issue_description = db.Column(db.Text)
-    reviewer_id = db.Column(db.Integer, db.ForeignKey('User.idUser'))
+    reviewer_id = db.Column(db.Integer, db.ForeignKey(USER_ID_FK))
     review_result = db.Column(db.String(100))
     repair_start_date = db.Column(db.Date)
     repair_end_date = db.Column(db.Date)
