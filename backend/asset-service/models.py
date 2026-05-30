@@ -47,10 +47,6 @@ class Equipment(db.Model):
     idOwner = db.Column(db.Integer, nullable=True)
     notes = db.Column(db.String(255), nullable=True)
     version = db.Column(db.Integer, nullable=False, default=0, server_default='0')
-
-    # created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    # updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
 class Form(db.Model):
     __tablename__ = 'Form'
     

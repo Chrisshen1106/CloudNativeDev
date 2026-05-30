@@ -45,7 +45,5 @@ class EquipmentSchema(Schema):
     reviewNote = fields.Str(validate=validate.Length(max=255), allow_none=True)
     requestDate = fields.DateTime(allow_none=True)
     
-    # updated_at = fields.DateTime(dump_only=True)
-
 equipment_schema = EquipmentSchema()
 equipments_schema = EquipmentSchema(many=True)
