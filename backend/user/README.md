@@ -72,7 +72,7 @@ uv run pysonar \
     --sonar-host-url=http://localhost:9000 \
     --sonar-token=sqp_ca10a7cd1142b5c96b68215fc76688d9e89b002e \
     --sonar-project-key=Cloud-Native-User \
-    --sonar-sources=app.py,controllers,models,routes,utils,dockerfile \
+    --sonar-sources=app.py,controllers,models,routes,utils \
     --sonar-tests=tests \
     -Dsonar.exclusions=.venv/**,testing_report/**,__pycache__/**,**/__pycache__/** \
     --sonar-python-coverage-report-paths=testing_report/coverage.xml \
