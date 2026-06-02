@@ -122,8 +122,12 @@ docker run --name sonarqube --restart always -p 9000:9000 -d sonarqube
 ```shell
 uv run pysonar \
   --sonar-host-url=http://localhost:9000 \
-  --sonar-token=sqp_bcef807e768dac9a9bb3c97eec8092570a6f6a4d \
+  --sonar-token=sqp_1e0247bd5685e820e6ac4e224925bb560f17f8a4 \
   --sonar-project-key=Cloud-Native-Asset \
+  --sonar-sources=. \
+  --sonar-tests=tests \
+  --sonar-scm-exclusions-disabled \
+  -Dsonar.exclusions=tests/**,.venv/**,.sonar/**,__pycache__/**,testing_report/**,.pytest_cache/** \
   --sonar-python-coverage-report-paths=testing_report/coverage.xml \
   --sonar-python-xunit-report-path=testing_report/report.xml
 ```

@@ -71,10 +71,10 @@ docker run --name sonarqube --restart always -p 9000:9000 -d sonarqube
 ```shell
 uv run pysonar \
   --sonar-host-url=http://localhost:9000 \
-  --sonar-token=sqp_2b7359376a0829848870c2994d96ae73b1ccd416 \
+  --sonar-token=sqp_063146c838ee88ca65a28f86f775a372cb31ac69 \
+  --sonar-project-key=Cloud-Native-Maintenance \
   --sonar-python-coverage-report-paths=testing_report/coverage.xml \
-  --sonar-python-xunit-report-path=testing_report/report.xml \
-  --sonar-project-key=Cloud-Native
+  --sonar-python-xunit-report-path=testing_report/report.xml
 ```
 
 You will see the result on **sonar-host-url**

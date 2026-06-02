@@ -10,16 +10,10 @@ class MaintenanceController:
         self.model = MaintenanceModel
 
     def get_all_forms(self) -> list[MaintenanceModel]:
-        try:
-            return MaintenanceModel.query.all()
-        except Exception:
-            raise
+        return MaintenanceModel.query.all()
 
     def get_all_forms_by_user_id(self, user_id: int) -> list[MaintenanceModel]:
-        try:
-            return MaintenanceModel.query.filter_by(applicant_id=user_id).all()
-        except Exception:
-            raise
+        return MaintenanceModel.query.filter_by(applicant_id=user_id).all()
 
     def create_form(self, data: dict) -> MaintenanceModel:
         try:
@@ -32,13 +26,11 @@ class MaintenanceController:
             raise e
         
     def get_form_by_id(self, id: int) -> MaintenanceModel | None:
-        try:
-            form = self.model.query.get(id)
-            if form:
-                return form
-            return None
-        except Exception:
-            raise
+        form = self.model.query.get(id)
+        if form:
+            return form
+        return None
+
         
     def update_form_status_by_id(self, id: int, status: str) -> MaintenanceModel:
         try:            

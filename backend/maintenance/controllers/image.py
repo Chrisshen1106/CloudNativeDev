@@ -18,12 +18,9 @@ class ImageController:
             raise e
         
     def get_image_by_image_id(self, image_id: str) -> ImageModel | None:
-        try:
-            image = self.model.query.filter_by(image_id=image_id).first()
-            if image:
-                return image
-            return None
-        except Exception as e:
-            raise
+        image = self.model.query.filter_by(image_id=image_id).first()
+        if image:
+            return image
+        return None
     
 image_controller = ImageController()

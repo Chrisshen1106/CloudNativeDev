@@ -21,21 +21,21 @@ def create_upload_url():
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    fileName = data.get("fileName")
-    contentType = data.get("contentType")
+    file_name = data.get("fileName")
+    content_type = data.get("contentType")
 
-    if not fileName:
+    if not file_name:
         return jsonify({"error": "fileName is required"}), 400
 
-    if contentType not in bucket_manager.ALLOWED_CONTENT_TYPES:
+    if content_type not in bucket_manager.ALLOWED_CONTENT_TYPES:
         return jsonify({"error": "unsupported image type"}), 400
     
     image_id = str(uuid.uuid4())
-    ext = bucket_manager.ALLOWED_CONTENT_TYPES[contentType]
+    ext = bucket_manager.ALLOWED_CONTENT_TYPES[content_type]
     object_key = f"users/{user_id}/images/{image_id}.{ext}"
     
     try:
-        upload_url = bucket_manager.generate_upload_url(object_key, contentType)
+        upload_url = bucket_manager.generate_upload_url(object_key, content_type)
     except (ClientError, ValueError) as e:
         return jsonify({"error": str(e) or "failed to create upload url"}), 500
     
@@ -44,8 +44,8 @@ def create_upload_url():
         "user_id": user_id,
         "bucket": bucket_manager.bucket_name,
         "object_key": object_key,
-        "fileName": fileName,
-        "contentType": contentType,
+        "fileName": file_name,
+        "contentType": content_type,
     }
     new_image = image_controller.schema().load(new_image)
     image_controller.create_image(new_image)
